@@ -50,6 +50,27 @@ export function CommitteeDesk({ onPick }: { onPick: (a: Address) => void }) {
       ),
   });
 
+  // This wallet's own votes on open cases (a member can vote once per round; the reporter's flag is its first vote).
+  const myVotes = useQuery({
+    queryKey: ["myVotes", wallet.address, queue.map((e) => `${e.net.key}${e.account}${e.flag.round}`).join()],
+    enabled: !!wallet.address && queue.length > 0,
+    refetchInterval: 4000,
+    queryFn: async () =>
+      Object.fromEntries(
+        await Promise.all(
+          queue.map(async (e) => {
+            const action = await e.net.client.readContract({
+              address: e.net.dep!.registry,
+              abi: registryAbi,
+              functionName: "hasVoted",
+              args: [e.account, e.flag.round, wallet.address!],
+            });
+            return [`${e.net.key}${e.account}`, Number(action)] as const;
+          }),
+        ),
+      ),
+  });
+
   const memberOf = (chainId: number) => {
     const s = stats.data?.find((x) => x.net.chainId === chainId);
     return !!wallet.address && !!s?.committee.some((m) => m.toLowerCase() === wallet.address!.toLowerCase());
@@ -105,6 +126,7 @@ export function CommitteeDesk({ onPick }: { onPick: (a: Address) => void }) {
             {queue.map((e) => {
               const f = e.flag;
               const member = memberOf(e.net.chainId);
+              const voted = myVotes.data?.[`${e.net.key}${e.account}`] ?? 0;
               return (
                 <tr key={`${e.net.key}${e.account}`}>
                   <td>
@@ -125,6 +147,11 @@ export function CommitteeDesk({ onPick }: { onPick: (a: Address) => void }) {
                   <td>{f.stake > 0n ? `${eth(f.stake)} ETH` : <span className="dim">committee</span>}</td>
                   <td className="muted">{ago(Number(f.timestamp) * 1000, now)}</td>
                   <td>
+                    {voted ? (
+                      <span className={`mono ${voted === 1 ? "red" : "green"}`} style={{ fontSize: 11, display: "block", textAlign: "right" }}>
+                        you voted {voted === 1 ? "✓ confirm" : "✕ reject"} · needs another member
+                      </span>
+                    ) : (
                     <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                       <button className="btn sm bad" disabled={!member || !!busy} onClick={() => act(e, "confirmFlag", "Confirm vote")}>
                         Confirm
@@ -133,6 +160,7 @@ export function CommitteeDesk({ onPick }: { onPick: (a: Address) => void }) {
                         Reject
                       </button>
                     </div>
+                    )}
                   </td>
                 </tr>
               );

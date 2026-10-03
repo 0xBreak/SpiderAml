@@ -51,7 +51,7 @@ export function NetworkStatus() {
             <b className={synced ? "green" : "amber"}>{rc ? ago(rc.lastPollAt, now) : mirroredIn ? ago(mirroredIn, now) : "none yet"}</b>
           </div>
           <div>
-            <span>Active / mirrored</span>
+            <span title="Active flags on this chain / flag updates received from the other chain (a flag that goes pending → confirmed counts twice)">Active / updates in</span>
             <b>
               {s ? `${s.activeFlags} / ${s.mirroredFlags}` : "—"}
             </b>

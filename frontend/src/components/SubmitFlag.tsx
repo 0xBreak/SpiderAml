@@ -61,7 +61,20 @@ export function SubmitFlag({ prefill, draft, onFlagged }: { prefill: Address | n
   const targetAddr = toAddr(target);
   const targetOk = targetAddr !== null;
   const stakeOk = isMember || (value >= minStake && value > 0n);
-  const canSubmit = targetOk && stakeOk && evidence.trim().length > 0 && !busy;
+  // Guard against obvious mistakes: flagging yourself, a committee member or one of ChainGuard's own contracts.
+  const lower = targetAddr?.toLowerCase();
+  const isSelf = !!lower && lower === wallet.address?.toLowerCase();
+  const isCommitteeTarget = !!lower && !!s?.committee.some((m) => m.toLowerCase() === lower);
+  const isOwnContract =
+    !!lower && NETS_READY.some((n) => n.dep && [n.dep.registry, n.dep.guard, n.dep.usdg, n.dep.stock].some((a) => a?.toLowerCase() === lower));
+  const targetWarning = isSelf
+    ? "This is your own wallet. Confirmed, it would block your own transfers."
+    : isOwnContract
+      ? "This is one of ChainGuard's own contracts (registry, guard or demo token)."
+      : isCommitteeTarget
+        ? "This address is a committee member."
+        : null;
+  const canSubmit = targetOk && !isSelf && stakeOk && evidence.trim().length > 0 && !busy;
 
   const submit = async () => {
     if (!wallet.address) {
@@ -148,6 +161,8 @@ export function SubmitFlag({ prefill, draft, onFlagged }: { prefill: Address | n
             spellCheck={false}
           />
         </label>
+
+        {targetWarning && <div className="result warn">⚠ {targetWarning}</div>}
 
         <div className="row-2">
           <label className="field">
