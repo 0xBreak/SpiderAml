@@ -7,6 +7,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, PageTitle, Stat, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
 import { DataError, getCheck, limit } from "@/lib/data";
+import { trackEvent } from "@/lib/metrics";
 import { date, dateTime, pct, short, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
 import { CATEGORY, DISCLAIMER, LEVEL, NOTE, RISK_FACTOR } from "@/lib/texts";
@@ -26,8 +27,10 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
     try {
       await limit("check", 20);
       report = await getCheck(address.trim(), network);
+      trackEvent("check", `${report.kind === "tron" ? "tron" : network}:${report.level}`, "/check");
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
+      trackEvent("check", `error:${error.code}`, "/check");
     }
   }
 
@@ -84,7 +87,7 @@ function Report({ r }: { r: CheckReport }) {
             ))}
           </ul>
           {r.level !== "critical" && r.kind === "evm" && (
-            <Link href={`/send?to=${r.address}`} className="btn-ghost mt-3 h-9 text-[13px]">
+            <Link href={`/send?to=${r.address}`} data-track="check:send" className="btn-ghost mt-3 h-9 text-[13px]">
               <Send className="size-4" /> Отправить USDC с проверкой
             </Link>
           )}
@@ -146,7 +149,7 @@ function Report({ r }: { r: CheckReport }) {
         <p className="max-w-2xl text-xs text-silver-3">
           {DISCLAIMER} Проверено {dateTime(r.checkedAt)}.
         </p>
-        <Link href={`/report?address=${r.address}&network=${r.network}`} className="link text-sm">
+        <Link href={`/report?address=${r.address}&network=${r.network}`} data-track="check:report" className="link text-sm">
           Не согласны с оценкой или знаете больше? Сообщить →
         </Link>
       </div>

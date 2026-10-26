@@ -2,14 +2,14 @@ import createMDX from "@next/mdx";
 
 const dev = process.env.NODE_ENV !== "production";
 
-// Browser may talk only to us, to the testnet RPC for the send page, and load token icons over https.
+// Browser may talk only to us, to the testnet RPC for the send page, to Cloudflare Web Analytics, and load token icons.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self'",
-  `connect-src 'self' https://sepolia-rollup.arbitrum.io${dev ? " ws:" : ""}`,
+  `connect-src 'self' https://sepolia-rollup.arbitrum.io https://cloudflareinsights.com${dev ? " ws:" : ""}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -20,6 +20,8 @@ const csp = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // self-contained server bundle for the Docker image (node server.js)
+  output: "standalone",
   distDir: process.env.NEXT_DIST_DIR || ".next",
   pageExtensions: ["ts", "tsx", "mdx"],
   async redirects() {

@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { ClickTracker } from "@/components/ClickTracker";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://spideraml.com"),
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main className="mx-auto w-full max-w-page flex-1 px-4 py-6 sm:py-8">{children}</main>
         <Footer />
+        <ClickTracker />
       </body>
     </html>
   );

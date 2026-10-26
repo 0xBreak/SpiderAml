@@ -2,6 +2,7 @@
 
 import type { ReportCategory } from "@/lib/api-types";
 import { DataError, limit, sendReport } from "@/lib/data";
+import { trackEvent } from "@/lib/metrics";
 
 export interface ReportState {
   ok: boolean;
@@ -30,6 +31,7 @@ export async function submitReport(_: ReportState | null, form: FormData): Promi
   try {
     await limit("report", 5);
     const r = await sendReport({ address, network, category, description, link });
+    trackEvent("report", category, "/report");
     return { ok: true, id: r.id, token: r.token };
   } catch (e) {
     return { ok: false, error: e instanceof DataError ? e.message : "Не удалось отправить. Попробуйте позже." };

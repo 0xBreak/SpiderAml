@@ -83,3 +83,18 @@ Short log of why things are the way they are. Newest at the bottom of each secti
 - **Network list is duplicated** (`web/src/lib/networks.ts` and the data layer's `src/networks.ts`): the site only needs
   names and explorers. Adding a network = one entry in each plus a `QUICKNODE_RPC_URL_<NAME>` in the data layer.
 - **Wording:** risk and its reason, never "fraudster" about an address; a disclaimer next to every score.
+
+## Metrics and operations
+
+- **Own metrics, no third-party tracker:** page views are counted server-side in middleware (no client script, no
+  cookies); clicks on `data-track` elements and outbound links go through a tiny write-only beacon `/api/e`;
+  product events (check result, token/whales network, report category) are sent from the server. The data layer stores
+  only `hash(daily salt + IP + UA)` — the salt of a past day is deleted — so visitors are countable per day but not
+  traceable. Checked addresses are never stored in metrics. Report: `bun run stats`.
+- **Cloudflare Web Analytics** allowed in the CSP so it can be switched on in the dashboard for countries/browsers.
+- **Deploy = one VPS + Docker Compose + Cloudflare Tunnel** (files in the private repo `deploy/`). No inbound ports
+  except SSH; the data container publishes nothing; logs rotate; SQLite in a named volume; `bun run backup` makes a
+  consistent copy (`VACUUM INTO`), 14 kept. Built and run end-to-end locally before writing this.
+- **Own lists = CSV files in `data/own/`** (bind-mounted), imported like any other source; bad rows are skipped and
+  logged. `bun run export` writes private CSV exports.
+- **Blog drafts** (`draft: true`) show in development and are hidden (404) in production.

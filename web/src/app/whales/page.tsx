@@ -5,6 +5,7 @@ import { Addr } from "@/components/Addr";
 import { SearchForm } from "@/components/SearchForm";
 import { Badge, Card, CardSkeleton, Empty, ErrorBox, PageTitle, Stat, toneOfSeverity } from "@/components/ui";
 import { DataError, getWhales, limit } from "@/lib/data";
+import { trackEvent } from "@/lib/metrics";
 import { dateTime, num, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId, type NetworkId } from "@/lib/networks";
 import { CATEGORY } from "@/lib/texts";
@@ -78,6 +79,7 @@ async function Report({ address, network, threshold, window }: { address: string
   try {
     await limit("whales", 6);
     r = await getWhales(address, network, threshold, window);
+    trackEvent("whales", network, "/whales");
   } catch (e) {
     const err = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
     return <ErrorBox code={err.code} message={err.message} />;

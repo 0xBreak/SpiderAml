@@ -100,7 +100,7 @@ export default async function Home() {
             ["0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2", "Взломщик Bybit"],
             ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "Обычный кошелёк"],
           ].map(([a, l]) => (
-            <Link key={a} href={`/check?address=${a}&network=ethereum`} className="rounded border border-line px-2 py-0.5 text-silver-2 hover:border-silver-3 hover:text-silver-1">
+            <Link key={a} href={`/check?address=${a}&network=ethereum`} data-track={`home:example:${l}`} className="rounded border border-line px-2 py-0.5 text-silver-2 hover:border-silver-3 hover:text-silver-1">
               {l}
             </Link>
           ))}
@@ -128,7 +128,7 @@ export default async function Home() {
         <p className="mt-1 text-sm text-silver-2">Четыре инструмента — каждый отвечает на свой вопрос.</p>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {TOOLS.map(({ href, icon: Icon, title, question, looks, data }) => (
-            <Link key={href} href={href} className="card group flex flex-col p-5 transition hover:border-silver-3">
+            <Link key={href} href={href} data-track={`home:tool:${href}`} className="card group flex flex-col p-5 transition hover:border-silver-3">
               <div className="flex items-center gap-2">
                 <Icon className="size-5 text-accent" aria-hidden />
                 <h3 className="font-semibold">{title}</h3>
@@ -149,7 +149,7 @@ export default async function Home() {
         </div>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           {EXTRA.map(({ href, icon: Icon, title, text }) => (
-            <Link key={href} href={href} className="card group flex flex-col gap-2 p-4 transition hover:border-silver-3">
+            <Link key={href} href={href} data-track={`home:extra:${href}`} className="card group flex flex-col gap-2 p-4 transition hover:border-silver-3">
               <div className="flex items-center gap-2">
                 <Icon className="size-4 text-accent" aria-hidden />
                 <h3 className="text-sm font-semibold">{title}</h3>

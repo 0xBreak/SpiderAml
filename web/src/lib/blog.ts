@@ -25,5 +25,9 @@ export async function loadPost(slug: string) {
 
 export async function allPosts() {
   const posts = await Promise.all(slugs().map(loadPost));
-  return posts.filter((p): p is NonNullable<typeof p> => !!p).sort((a, b) => b.meta.date.localeCompare(a.meta.date));
+  // drafts are visible while developing (npm run dev) and hidden on the live site
+  const showDrafts = process.env.NODE_ENV !== "production";
+  return posts
+    .filter((p): p is NonNullable<typeof p> => !!p && (showDrafts || !p.meta.draft))
+    .sort((a, b) => b.meta.date.localeCompare(a.meta.date));
 }

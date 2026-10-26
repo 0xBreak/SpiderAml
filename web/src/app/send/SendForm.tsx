@@ -215,7 +215,7 @@ export function SendForm({ initialTo, ethUsd }: { initialTo: string; ethUsd: num
             </label>
           )}
 
-          <button onClick={send} disabled={!canSend} className="btn-primary w-full sm:w-auto">
+          <button onClick={send} disabled={!canSend} data-track="send:submit" className="btn-primary w-full sm:w-auto">
             {(step === "approving" || step === "sending") && <Loader2 className="size-4 animate-spin" />}
             {step === "approving" ? "Шаг 1 из 2: разрешаем списание…" : step === "sending" ? (needApprove ? "Шаг 2 из 2: отправляем…" : "Отправляем…") : needApprove ? "Разрешить и отправить" : "Отправить"}
           </button>

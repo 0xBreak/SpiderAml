@@ -5,6 +5,7 @@ import { Addr } from "@/components/Addr";
 import { Card, Empty, ErrorBox, Notice, PageTitle } from "@/components/ui";
 import type { SanctionsPage } from "@/lib/api-types";
 import { DataError, getSanctions } from "@/lib/data";
+import { trackEvent } from "@/lib/metrics";
 import { date, dateTime } from "@/lib/format";
 import { CHAIN_NAME } from "@/lib/texts";
 
@@ -26,6 +27,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
   let error: DataError | null = null;
   try {
     data = await getSanctions({ q: sp.q?.slice(0, 100), chain: sp.chain, list: sp.list, page });
+    if (sp.q || sp.chain || sp.list) trackEvent("sanctions_search", sp.q ? "query" : (sp.list ?? sp.chain ?? null), "/sanctions");
   } catch (e) {
     error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
   }

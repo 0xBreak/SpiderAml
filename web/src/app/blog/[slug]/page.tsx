@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
 
 export default async function PostPage({ params }: { params: P }) {
   const post = await loadPost((await params).slug);
-  if (!post) notFound();
+  if (!post || (post.meta.draft && process.env.NODE_ENV === "production")) notFound();
   const { meta, Content } = post;
   return (
     <article className="mx-auto max-w-3xl">

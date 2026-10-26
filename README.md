@@ -16,6 +16,9 @@ cd ../ArbitrumSingapore/web && npm install && cp .env.example .env.local   # sam
 cd .. && scripts/dev.sh                                      # data on :8787, site on http://localhost:3000
 ```
 
+Production: Docker Compose + Cloudflare Tunnel — see `spideraml-data/deploy/RUNBOOK.md` (private repo).
+Blog posts: `docs/BLOG.md`. Plan: `docs/ROADMAP.md`.
+
 ## Site pages
 
 | Page | |

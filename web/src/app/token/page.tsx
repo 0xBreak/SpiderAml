@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { SearchForm } from "@/components/SearchForm";
 import { CardSkeleton, ErrorBox, PageTitle } from "@/components/ui";
 import { DataError, getMarkets, getSection, limit } from "@/lib/data";
+import { trackEvent } from "@/lib/metrics";
 import type { MarketsData } from "@/lib/api-types";
 import { isNetworkId } from "@/lib/networks";
 import { HoldersSection, LiquiditySection, MarketsSection, OverviewSection, RiskSection, TradingSection } from "./sections";
@@ -35,8 +36,10 @@ export default async function TokenPage({ searchParams }: { searchParams: SP }) 
           .then((r) => r.markets)
           .catch(() => null),
       ]);
+      trackEvent("token", network, "/token");
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
+      trackEvent("token", `error:${error.code}`, "/token");
     }
   }
 
