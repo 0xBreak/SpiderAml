@@ -1,37 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  BaseError,
-  ContractFunctionRevertedError,
-  createPublicClient,
-  createWalletClient,
-  custom,
-  formatUnits,
-  getAddress,
-  http,
-  isAddress,
-  parseUnits,
-  type Address,
-  type EIP1193Provider,
-  type Hash,
-} from "viem";
-import { ExternalLink, Loader2, ShieldAlert, ShieldCheck, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BaseError, ContractFunctionRevertedError, createPublicClient, formatEther, formatUnits, getAddress, http, isAddress, parseUnits, type Address, type Hash } from "viem";
+import { ExternalLink, Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Addr } from "@/components/Addr";
 import { Badge, Card, Notice } from "@/components/ui";
+import { useWallet } from "@/components/Wallet";
 import { REGISTRY, SEND_CHAIN, SEND_RPC, SPIDER_SEND, TOKEN, erc20Abi, registryAbi, sendAbi } from "@/lib/contracts";
 import { ERROR_TEXT } from "@/lib/texts";
 import { screenRecipient, type Screening } from "./actions";
 
-declare global {
-  interface Window {
-    ethereum?: EIP1193Provider;
-  }
-}
-
 const pub = createPublicClient({ chain: SEND_CHAIN, transport: http(SEND_RPC) });
 const ONCHAIN_CATEGORY = ["—", "Санкционный список", "Взлом или кража", "Фишинг", "Подозрительная активность", "Миксер", "Другое"];
 const txUrl = (h: Hash) => `${SEND_CHAIN.blockExplorers.default.url}/tx/${h}`;
+/** Typical gas of each step, used before the wallet is connected (measured on Arbitrum Sepolia, rounded up). */
+const GAS = { approve: 60_000n, send: 90_000n };
 
 type OnChain = { allowed: boolean; worst: Address; category: number; level: number };
 type Step = "idle" | "approving" | "sending" | "done";
@@ -49,11 +32,12 @@ function explain(e: unknown): string {
   return e instanceof Error ? e.message : "Неизвестная ошибка";
 }
 
-export function SendForm({ initialTo }: { initialTo: string }) {
-  const [account, setAccount] = useState<Address | null>(null);
-  const [chainOk, setChainOk] = useState(false);
+export function SendForm({ initialTo, ethUsd }: { initialTo: string; ethUsd: number | null }) {
+  const { available, account, chainId, client, connect, ensureChain, error: walletError } = useWallet();
   const [balance, setBalance] = useState<bigint | null>(null);
+  const [ethBalance, setEthBalance] = useState<bigint | null>(null);
   const [allowance, setAllowance] = useState<bigint>(0n);
+  const [gasPrice, setGasPrice] = useState<bigint | null>(null);
   const [to, setTo] = useState(initialTo);
   const [amount, setAmount] = useState("");
   const [screen, setScreen] = useState<Screening | null>(null);
@@ -64,49 +48,33 @@ export function SendForm({ initialTo }: { initialTo: string }) {
   const [hashes, setHashes] = useState<{ approve?: Hash; send?: Hash }>({});
   const [error, setError] = useState<string | null>(null);
 
-  // null until mounted: the server cannot know whether the browser has a wallet
-  const [hasWallet, setHasWallet] = useState<boolean | null>(null);
-  useEffect(() => setHasWallet(!!window.ethereum), []);
-  const wallet = useMemo(() => (hasWallet ? createWalletClient({ chain: SEND_CHAIN, transport: custom(window.ethereum!) }) : null), [hasWallet]);
-
   const toValid = isAddress(to.trim(), { strict: false });
   const toAddr = toValid ? getAddress(to.trim().toLowerCase()) : null;
   let value: bigint | null = null;
   try {
-    value = amount && Number(amount) > 0 ? parseUnits(amount.replace(",", "."), TOKEN.decimals) : null;
+    value = amount && Number(amount.replace(",", ".")) > 0 ? parseUnits(amount.replace(",", "."), TOKEN.decimals) : null;
   } catch {
     value = null;
   }
 
   async function refresh(a: Address) {
-    const [b, al] = await Promise.all([
+    const [b, al, eb] = await Promise.all([
       pub.readContract({ address: TOKEN.address, abi: erc20Abi, functionName: "balanceOf", args: [a] }),
       pub.readContract({ address: TOKEN.address, abi: erc20Abi, functionName: "allowance", args: [a, SPIDER_SEND] }),
+      pub.getBalance({ address: a }),
     ]);
     setBalance(b);
     setAllowance(al);
+    setEthBalance(eb);
   }
 
-  async function connect() {
-    setError(null);
-    if (!wallet) return;
-    try {
-      const [a] = await wallet.requestAddresses();
-      setAccount(a);
-      const id = await wallet.getChainId();
-      if (id !== SEND_CHAIN.id) {
-        try {
-          await wallet.switchChain({ id: SEND_CHAIN.id });
-        } catch {
-          await wallet.addChain({ chain: SEND_CHAIN });
-        }
-      }
-      setChainOk(true);
-      await refresh(a);
-    } catch (e) {
-      setError(explain(e));
-    }
-  }
+  useEffect(() => {
+    pub.getGasPrice().then(setGasPrice).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (account) refresh(account).catch(() => {});
+  }, [account]);
 
   // Screen the recipient off-chain (our data) and on-chain (what the contract will enforce) after typing stops.
   useEffect(() => {
@@ -128,26 +96,35 @@ export function SendForm({ initialTo }: { initialTo: string }) {
     return () => clearTimeout(t);
   }, [toAddr, account]);
 
+  const needApprove = !!value && allowance < value;
+  const gas = (needApprove ? GAS.approve : 0n) + GAS.send;
+  // L2 gas price is tiny; double it as headroom so the estimate is not optimistic
+  const feeWei = gasPrice != null ? gas * gasPrice * 2n : null;
+  const feeEth = feeWei != null ? Number(formatEther(feeWei)) : null;
+
   const blocked = onchain ? !onchain.allowed : false;
   const offchainRisky = screen?.ok && (screen.level === "high" || screen.level === "critical");
   const selfSend = account && toAddr && account.toLowerCase() === toAddr.toLowerCase();
-  const canSend = !!account && chainOk && !!toAddr && !!value && !blocked && !selfSend && (balance ?? 0n) >= value && (!offchainRisky || confirmRisk) && step !== "approving" && step !== "sending";
+  const noGas = ethBalance != null && feeWei != null && ethBalance < feeWei;
+  const canSend =
+    !!account && !!toAddr && !!value && !blocked && !selfSend && !noGas && (balance ?? 0n) >= value && (!offchainRisky || confirmRisk) && step !== "approving" && step !== "sending";
 
   async function send() {
-    if (!wallet || !account || !toAddr || !value) return;
+    if (!client || !account || !toAddr || !value) return;
     setError(null);
     setHashes({});
     try {
+      await ensureChain();
       if (allowance < value) {
         setStep("approving");
-        const approve = await wallet.writeContract({ account, address: TOKEN.address, abi: erc20Abi, functionName: "approve", args: [SPIDER_SEND, value] });
+        const approve = await client.writeContract({ account, chain: SEND_CHAIN, address: TOKEN.address, abi: erc20Abi, functionName: "approve", args: [SPIDER_SEND, value] });
         setHashes({ approve });
         await pub.waitForTransactionReceipt({ hash: approve });
       }
       setStep("sending");
-      // simulate first: a block shows up as a readable revert instead of a failed transaction
+      // simulate first: a block shows up as a readable reason instead of a failed transaction
       const { request } = await pub.simulateContract({ account, address: SPIDER_SEND, abi: sendAbi, functionName: "send", args: [toAddr, value] });
-      const sendHash = await wallet.writeContract(request);
+      const sendHash = await client.writeContract({ ...request, chain: SEND_CHAIN });
       setHashes((h) => ({ ...h, send: sendHash }));
       const rc = await pub.waitForTransactionReceipt({ hash: sendHash });
       if (rc.status !== "success") throw new Error("Транзакция не прошла.");
@@ -162,26 +139,34 @@ export function SendForm({ initialTo }: { initialTo: string }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <Card className="lg:col-span-2" title="Перевод" hint={`Сеть: ${SEND_CHAIN.name} (тестовая). Монета: ${TOKEN.symbol}.`}>
-        {hasWallet === null ? null : !hasWallet ? (
-          <Notice tone="warn">Нужен браузерный кошелёк (MetaMask, Rabby и т. п.). Установите его и обновите страницу.</Notice>
+      <Card className="lg:col-span-2" title="Перевод" hint={`Сеть: ${SEND_CHAIN.name} (тестовая, деньги не настоящие). Монета: ${TOKEN.symbol}.`}>
+        {available === null ? null : !available ? (
+          <Notice tone="warn">
+            Нужен браузерный кошелёк — например{" "}
+            <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="link">
+              MetaMask
+            </a>{" "}
+            или Rabby. Установите его и обновите страницу.
+          </Notice>
         ) : !account ? (
-          <button onClick={connect} className="btn-primary">
-            <Wallet className="size-4" /> Подключить кошелёк
-          </button>
+          <div className="space-y-2">
+            <button onClick={connect} className="btn-primary">
+              Подключить кошелёк
+            </button>
+            {walletError && <p className="text-sm text-warn">{walletError}</p>}
+          </div>
         ) : (
-          <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-silver-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-silver-2">
             <span>
               Кошелёк: <Addr value={account} />
             </span>
             <span>
-              Баланс: <b className="text-silver-1">{balance == null ? "…" : formatUnits(balance, TOKEN.decimals)}</b> {TOKEN.symbol}
+              {TOKEN.symbol}: <b className="text-silver-1">{balance == null ? "…" : formatUnits(balance, TOKEN.decimals)}</b>
             </span>
-            {balance === 0n && (
-              <a href={TOKEN.faucet} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
-                Получить тестовые USDC <ExternalLink className="size-3" />
-              </a>
-            )}
+            <span>
+              ETH на газ: <b className="text-silver-1">{ethBalance == null ? "…" : Number(formatEther(ethBalance)).toFixed(5)}</b>
+            </span>
+            {chainId != null && chainId !== SEND_CHAIN.id && <span className="text-warn">Кошелёк в другой сети — переключим при отправке.</span>}
           </div>
         )}
 
@@ -197,7 +182,31 @@ export function SendForm({ initialTo }: { initialTo: string }) {
             <span className="label">Сумма, {TOKEN.symbol}</span>
             <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="0.00" className="input mt-1" />
           </label>
-          {value && balance != null && balance < value && <p className="text-sm text-warn">Недостаточно {TOKEN.symbol} на балансе.</p>}
+          {value && balance != null && balance < value && (
+            <p className="text-sm text-warn">
+              Недостаточно {TOKEN.symbol}.{" "}
+              <a href={TOKEN.faucet} target="_blank" rel="noopener noreferrer" className="link">
+                Получить тестовые
+              </a>
+            </p>
+          )}
+
+          <div className="rounded-md border border-line bg-bg/40 p-3 text-sm">
+            <div className="label mb-2">Сколько это стоит</div>
+            <dl className="grid grid-cols-[1fr_auto] gap-y-1">
+              <dt className="text-silver-2">Комиссия SpiderAML</dt>
+              <dd className="text-right text-ok">0 — бесплатно</dd>
+              <dt className="text-silver-2">Комиссия сети (газ){needApprove ? ", 2 транзакции" : ""}</dt>
+              <dd className="text-right tabular-nums">
+                {feeEth == null ? "…" : `≈ ${feeEth < 0.000001 ? "<0.000001" : feeEth.toFixed(6)} ETH`}
+                {feeEth != null && ethUsd != null && <span className="text-silver-3"> (≈ ${(feeEth * ethUsd).toFixed(feeEth * ethUsd < 0.01 ? 4 : 2)})</span>}
+              </dd>
+              <dt className="text-silver-2">Получатель получит</dt>
+              <dd className="text-right tabular-nums">{value ? `${formatUnits(value, TOKEN.decimals)} ${TOKEN.symbol}` : "—"}</dd>
+            </dl>
+            <p className="mt-2 text-xs text-silver-3">Газ платится в ETH сети Arbitrum Sepolia и уходит сети, не нам. В тестовой сети ETH бесплатный — его выдают краны.</p>
+            {noGas && <p className="mt-2 text-sm text-warn">Не хватает ETH на газ — пополните кошелёк через кран Arbitrum Sepolia.</p>}
+          </div>
 
           {offchainRisky && !blocked && (
             <label className="flex items-start gap-2 text-sm text-silver-1">
@@ -208,11 +217,16 @@ export function SendForm({ initialTo }: { initialTo: string }) {
 
           <button onClick={send} disabled={!canSend} className="btn-primary w-full sm:w-auto">
             {(step === "approving" || step === "sending") && <Loader2 className="size-4 animate-spin" />}
-            {step === "approving" ? "Разрешаем списание…" : step === "sending" ? "Отправляем…" : value && allowance < value ? "Разрешить и отправить" : "Отправить"}
+            {step === "approving" ? "Шаг 1 из 2: разрешаем списание…" : step === "sending" ? (needApprove ? "Шаг 2 из 2: отправляем…" : "Отправляем…") : needApprove ? "Разрешить и отправить" : "Отправить"}
           </button>
-          {value && allowance < value && account && <p className="text-xs text-silver-3">Сначала кошелёк попросит разрешить контракту списать эту сумму, затем — подтвердить перевод.</p>}
+          {needApprove && account && <p className="text-xs text-silver-3">Кошелёк попросит подтвердить два раза: разрешение списать именно эту сумму и сам перевод.</p>}
 
           {error && <Notice tone="warn">{error}</Notice>}
+          {hashes.approve && step !== "done" && (
+            <a href={txUrl(hashes.approve)} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1 text-sm">
+              Транзакция разрешения <ExternalLink className="size-3.5" />
+            </a>
+          )}
           {step === "done" && hashes.send && (
             <Notice tone="ok">
               Отправлено.{" "}

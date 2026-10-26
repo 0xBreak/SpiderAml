@@ -2,7 +2,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import type { ApiErrorBody, SectionMap, SectionName, WhaleReport } from "./types";
-import type { CheckReport, LabelMap, MetaInfo, SanctionsPage } from "./api-types";
+import type { CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, SanctionsPage } from "./api-types";
 
 export class DataError extends Error {
   constructor(
@@ -17,25 +17,27 @@ export class DataError extends Error {
 const URL_ = process.env.DATA_URL ?? "http://127.0.0.1:8787";
 const SECRET = process.env.DATA_SECRET ?? "";
 
-async function call<T>(path: string, params: Record<string, string | number | undefined>, timeoutMs = 60_000): Promise<T> {
+async function call<T>(path: string, params: Record<string, string | number | undefined>, timeoutMs = 60_000, body?: unknown): Promise<T> {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") qs.set(k, String(v));
   let res: Response;
   try {
     res = await fetch(`${URL_}${path}?${qs}`, {
-      headers: { "x-spider-key": SECRET },
+      method: body ? "POST" : "GET",
+      body: body ? JSON.stringify(body) : undefined,
+      headers: { "x-spider-key": SECRET, ...(body ? { "content-type": "application/json" } : {}) },
       cache: "no-store",
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
     throw new DataError("UNAVAILABLE", "Сервис данных временно недоступен.", 503);
   }
-  const body = (await res.json().catch(() => null)) as T | ApiErrorBody | null;
-  if (!res.ok || !body) {
-    const e = (body as ApiErrorBody | null)?.error;
+  const out = (await res.json().catch(() => null)) as T | ApiErrorBody | null;
+  if (!res.ok || !out) {
+    const e = (out as ApiErrorBody | null)?.error;
     throw new DataError(e?.code ?? "UPSTREAM", e?.message ?? "Ошибка сервиса данных.", res.status);
   }
-  return body as T;
+  return out as T;
 }
 
 // ---------------------------------------------------------------- per-IP limit for the expensive pages
@@ -68,3 +70,8 @@ export const getWhales = (address: string, network: string, whaleUsd: number, wi
 export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number }) => call<SanctionsPage>("/v1/sanctions", p);
 
 export const getMeta = () => call<MetaInfo>("/v1/meta", {}, 10_000);
+
+export const getMarkets = (address: string, network: string) => call<{ markets: MarketsData | null }>("/v1/markets", { address, network }, 30_000);
+
+export const sendReport = (r: { address: string; network: string; category: ReportCategory; description: string; link: string | null }) =>
+  call<{ ok: boolean; id: number }>("/v1/reports", {}, 10_000, r);

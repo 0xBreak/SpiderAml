@@ -8,6 +8,8 @@ import { num, pct, price, usd } from "@/lib/format";
 import { NETWORKS, type NetworkId } from "@/lib/networks";
 import { CATEGORY, RISK_FACTOR } from "@/lib/texts";
 import type { ContractOverview, HolderKind } from "@/lib/types";
+import type { MarketsData } from "@/lib/api-types";
+import { ExternalLink } from "lucide-react";
 
 const KIND: Record<string, string> = {
   erc20: "Токен ERC-20",
@@ -34,9 +36,11 @@ const explorer = (network: NetworkId, a: string) => `${NETWORKS[network].explore
 
 // ---------------------------------------------------------------- overview
 
-export function OverviewSection({ o }: { o: ContractOverview }) {
+export function OverviewSection({ o, markets }: { o: ContractOverview; markets: MarketsData | null }) {
   const m = o.market;
   const change = m?.change1dPct;
+  // CoinGecko sees centralised exchanges too, so its 24h volume is the honest number when we have it
+  const volume = markets?.volume24hUsd ?? m?.volume1dUsd ?? null;
   return (
     <section className="card p-5">
       <div className="flex flex-wrap items-center gap-3">
@@ -63,9 +67,9 @@ export function OverviewSection({ o }: { o: ContractOverview }) {
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Stat label="Цена" value={price(m?.priceUsd ?? null)} sub={change != null ? `за сутки ${change > 0 ? "+" : ""}${pct(change)}` : undefined} tone={change == null ? undefined : change >= 0 ? "ok" : "crit"} />
-        <Stat label="Капитализация" value={usd(m?.marketCapUsd ?? null)} sub={m?.fdvUsd ? `FDV ${usd(m.fdvUsd)}` : undefined} />
-        <Stat label="Объём за сутки" value={usd(m?.volume1dUsd ?? null)} sub="все площадки, Zerion" />
+        <Stat label="Цена" value={price(m?.priceUsd ?? markets?.priceUsd ?? null)} sub={change != null ? <span className={change >= 0 ? "text-ok" : "text-crit"}>за сутки {change > 0 ? "+" : ""}{pct(change)}</span> : undefined} />
+        <Stat label="Капитализация" value={usd(m?.marketCapUsd ?? markets?.marketCapUsd ?? null)} sub={m?.fdvUsd ? `FDV ${usd(m.fdvUsd)}` : undefined} />
+        <Stat label="Объём торгов за сутки" value={usd(volume)} sub={markets ? "биржи и DEX, CoinGecko" : "по данным Zerion"} />
         <Stat label="Всего токенов" value={num(o.totalSupply)} />
       </div>
       {o.owner && (
@@ -75,6 +79,83 @@ export function OverviewSection({ o }: { o: ContractOverview }) {
         </p>
       )}
     </section>
+  );
+}
+
+// ---------------------------------------------------------------- markets (CEX + DEX)
+
+export function MarketsSection({ m }: { m: MarketsData | null }) {
+  if (!m || m.markets.length === 0)
+    return (
+      <Card title="Где торгуется">
+        <Notice tone="warn">CoinGecko не знает этот токен — у него нет торгов на известных биржах. Ниже только данные из блокчейна.</Notice>
+      </Card>
+    );
+  const cex = m.markets.filter((x) => x.type === "cex").length;
+  return (
+    <Card
+      title="Где торгуется"
+      hint="Биржи (CEX) и обменники в блокчейне (DEX) за последние 24 часа. Глубина ±2% — сколько долларов нужно, чтобы сдвинуть цену на 2%: чем больше, тем легче купить или продать без потерь."
+      right={
+        <a href={m.url} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1 text-sm">
+          CoinGecko <ExternalLink className="size-3.5" />
+        </a>
+      }
+    >
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Stat label="Объём за сутки" value={usd(m.volume24hUsd)} />
+        <Stat label="На биржах (CEX)" value={usd(m.cexVolumeUsd)} sub={`${cex} площад.`} />
+        <Stat label="На DEX" value={usd(m.dexVolumeUsd)} sub={`${m.markets.length - cex} площад.`} />
+        <Stat label="Главная площадка" value={m.markets[0].exchange} sub={`${pct(m.markets[0].volumeSharePct, 0)} объёма`} />
+      </div>
+      <div className="-mx-4 overflow-x-auto sm:mx-0">
+        <table className="table min-w-[860px]">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Площадка</th>
+              <th>Пара</th>
+              <th className="text-right">Цена</th>
+              <th className="text-right">Спред</th>
+              <th className="text-right">Глубина +2%</th>
+              <th className="text-right">Глубина −2%</th>
+              <th className="text-right">Объём 24ч</th>
+              <th className="text-right">Доля</th>
+            </tr>
+          </thead>
+          <tbody>
+            {m.markets.slice(0, 20).map((x, i) => (
+              <tr key={`${x.exchange}-${x.pair}-${i}`}>
+                <td className="text-silver-3">{i + 1}</td>
+                <td className="whitespace-nowrap">
+                  {x.exchange} <Badge tone={x.type === "cex" ? "info" : "muted"}>{x.type.toUpperCase()}</Badge>
+                  {(x.stale || x.anomaly) && (
+                    <Badge tone="warn" className="ml-1">
+                      {x.anomaly ? "аномалия" : "давно не обновлялось"}
+                    </Badge>
+                  )}
+                </td>
+                <td className="whitespace-nowrap">
+                  {x.url ? (
+                    <a href={x.url} target="_blank" rel="noopener noreferrer" className="link">
+                      {x.pair}
+                    </a>
+                  ) : (
+                    x.pair
+                  )}
+                </td>
+                <td className="text-right tabular-nums">{price(x.priceUsd)}</td>
+                <td className="text-right tabular-nums">{x.spreadPct != null ? pct(x.spreadPct, 2) : "—"}</td>
+                <td className="text-right tabular-nums">{usd(x.depthUpUsd)}</td>
+                <td className="text-right tabular-nums">{usd(x.depthDownUsd)}</td>
+                <td className="text-right tabular-nums">{usd(x.volumeUsd)}</td>
+                <td className="text-right tabular-nums">{pct(x.volumeSharePct, 2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }
 
@@ -110,7 +191,7 @@ export async function RiskSection({ address, network }: { address: string; netwo
       </ul>
       <div className="mt-4 text-sm">
         <Link href={`/check?address=${address}&network=${network}`} className="link">
-          Проверить адрес по санкциям и базам рисков →
+          AML-проверка адреса по санкциям и базам рисков →
         </Link>
       </div>
     </Card>
@@ -124,15 +205,17 @@ export async function LiquiditySection({ address, network }: { address: string; 
   if ("error" in r) return <Card title="Ликвидность"><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
   const l = r.data;
   const ratio = l.tvlToMarketCap;
+  const priced = l.pools.filter((p) => p.tvlUsd != null && p.tvlUsd >= 1);
+  const unpriced = l.pools.length - priced.length;
   return (
-    <Card title="Ликвидность" hint="Сколько денег в пулах обмена — от этого зависит, получится ли продать без больших потерь.">
+    <Card title="Ликвидность в пулах DEX" hint="Сколько денег лежит в пулах обмена в блокчейне — от этого зависит, получится ли продать без больших потерь.">
       <div className="mb-3 grid grid-cols-2 gap-2">
         <Stat label="В пулах всего" value={usd(l.totalTvlUsd)} />
         <Stat label="От капитализации" value={ratio != null ? pct(ratio * 100, 2) : "—"} tone={ratio == null ? undefined : ratio < 0.02 ? "crit" : ratio < 0.05 ? "warn" : "ok"} />
       </div>
       {l.pools.length === 0 ? (
         <Notice tone="warn">Пулы обмена не найдены. Продать такой токен может быть невозможно.</Notice>
-      ) : (
+      ) : priced.length === 0 ? null : (
         <div className="-mx-4 overflow-x-auto sm:mx-0">
           <table className="table">
             <thead>
@@ -143,7 +226,7 @@ export async function LiquiditySection({ address, network }: { address: string; 
               </tr>
             </thead>
             <tbody>
-              {l.pools.slice(0, 8).map((p) => (
+              {priced.slice(0, 8).map((p) => (
                 <tr key={p.address}>
                   <td>
                     {p.dex}
@@ -162,7 +245,8 @@ export async function LiquiditySection({ address, network }: { address: string; 
           </table>
         </div>
       )}
-      <p className="mt-2 text-xs text-silver-3">Учитываются пулы Uniswap, Sushi, PancakeSwap и других DEX. Ликвидность на централизованных биржах не видна в блокчейне.</p>
+      {unpriced > 0 && <p className="mt-2 text-xs text-silver-3">Ещё {unpriced} пул(ов) с токенами без цены — их объём нельзя оценить в долларах.</p>}
+      <p className="mt-2 text-xs text-silver-3">Uniswap, Sushi, PancakeSwap и другие DEX. Ликвидность бирж (CEX) — в блоке «Где торгуется», колонки «Глубина».</p>
     </Card>
   );
 }

@@ -44,6 +44,7 @@ export interface SanctionItem {
   list: string;
   program: string | null;
   sourceUrl: string;
+  listedAt: string | null;
   firstSeen: number;
   checkedAt: number;
 }
@@ -65,12 +66,43 @@ export interface SanctionsPage {
   items: SanctionItem[];
   chains: { chain: string; count: number }[];
   lists: { list: string; count: number }[];
-  sources: SourceInfo[];
+  sources: (SourceInfo & { list: string })[];
   updatedAt: number | null;
 }
 
 export interface MetaInfo {
   networks: (NetworkMeta & { configured: boolean })[];
   sources: SourceInfo[];
+  stats: { labeledAddresses: number; riskyAddresses: number; sanctionedAddresses: number; sanctionLists: number };
+  ethUsd: number | null;
   registry: { chainId: number; name: string; address: string } | null;
 }
+
+export interface Market {
+  exchange: string;
+  type: "cex" | "dex";
+  pair: string;
+  priceUsd: number | null;
+  spreadPct: number | null;
+  depthUpUsd: number | null;
+  depthDownUsd: number | null;
+  volumeUsd: number;
+  volumeSharePct: number;
+  stale: boolean;
+  anomaly: boolean;
+  url: string | null;
+}
+
+export interface MarketsData {
+  coingeckoId: string;
+  url: string;
+  priceUsd: number | null;
+  marketCapUsd: number | null;
+  volume24hUsd: number | null;
+  cexVolumeUsd: number;
+  dexVolumeUsd: number;
+  markets: Market[];
+  updatedAt: string;
+}
+
+export type ReportCategory = "sanctioned" | "exploit" | "phishing" | "scam" | "mixer" | "other" | "false_positive";

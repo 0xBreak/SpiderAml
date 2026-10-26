@@ -22,6 +22,9 @@ const nextConfig = {
   poweredByHeader: false,
   distDir: process.env.NEXT_DIST_DIR || ".next",
   pageExtensions: ["ts", "tsx", "mdx"],
+  async redirects() {
+    return [{ source: "/aml", destination: "/token", permanent: true }];
+  },
   async headers() {
     return [
       {

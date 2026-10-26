@@ -4,7 +4,7 @@ import { NETWORK_IDS, NETWORKS } from "@/lib/networks";
 import { cn } from "@/lib/format";
 
 interface Props {
-  action: "/check" | "/aml" | "/whales";
+  action: "/check" | "/token" | "/whales";
   address?: string;
   network?: string;
   placeholder?: string;

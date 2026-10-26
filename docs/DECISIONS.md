@@ -43,7 +43,17 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   (liquidity, trading, holders, whales) almost unchanged; ChainGuard gave the Forta datasets and curated incidents.
 - **Sanctions come from the official OFAC SDN XML**, not a GitHub mirror. Each entry links to its OFAC record page.
   OFAC publishes no per-address listing date, so we store `first_seen` (first time our import saw it) and say so on
-  the page. UK OFSI's old CSV link is dead and the EU/UN lists carry almost no crypto addresses — not added yet.
+  the page.
+- **Three official sanctions lists:** OFAC SDN (structured field), UK Sanctions List (FCDO XML) and the EU Consolidated
+  List — the last two quote addresses in free text, so they are extracted with checksum validation (EIP-55-agnostic
+  EVM, Tron base58check, Bitcoin base58check/bech32/bech32m) to avoid picking up registration numbers. UK and EU give a
+  designation date; UK links to the per-entry page of the official UK search service, EU to the regulation in EUR-Lex.
+  The UN list has no crypto addresses.
+- **CoinGecko for markets** (user decision): on-chain data cannot see centralised exchanges, so 24h volume, CEX/DEX
+  markets, spread and ±2% depth come from CoinGecko tickers. Works keyless; `COINGECKO_API_KEY` (free Demo) raises the
+  limit. Zerion's 1-day volume undercounted (KGST: $4.8k vs $253k real).
+- **Reports are free and off-chain** (user decision "report + show the price"): no payments/accounts per the spec, so
+  a report costs nothing, is stored in the data layer and reviewed by hand (`bun run reports`). Not published.
 - **A failed source never wipes data:** each source replaces its rows only after a successful download; OFAC refuses
   to replace the list if it parses fewer than 100 addresses.
 - **Etherscan tag `blocked` = frozen by a stablecoin issuer**, mapped to "other / low", not "scam" — it hit the USDT
@@ -63,6 +73,12 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   injected wallet only. `npm audit --omit=dev`: 0 vulnerabilities (postcss pinned via `overrides`).
 - **Security headers:** CSP (scripts from self plus inline ones Next needs without nonces; connect only to self + the testnet RPC), HSTS,
   frame-ancestors none, nosniff, referrer policy. Secrets are checked to be absent from client bundles.
+- **Naming:** `/check` is "AML-проверка" (lists and risk databases), the old `/aml` is now `/token` "Анализ токена"
+  (market statistics and contract structure) with a permanent redirect — users read "AML" as the address check.
+- **No search in the header** — it duplicated the page search. The header has the wallet button instead; one wallet
+  connection (viem, injected) is shared by the whole site.
+- **Home page explains the product:** what each tool answers, what it looks at, where the data comes from with live
+  counts, how to read the score.
 - **Russian only for now**, all wording in `src/lib/texts.ts` so another language is one more file.
 - **Network list is duplicated** (`web/src/lib/networks.ts` and the data layer's `src/networks.ts`): the site only needs
   names and explorers. Adding a network = one entry in each plus a `QUICKNODE_RPC_URL_<NAME>` in the data layer.

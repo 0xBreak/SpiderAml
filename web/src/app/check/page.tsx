@@ -11,7 +11,7 @@ import { date, dateTime, pct, short, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
 import { CATEGORY, DISCLAIMER, LEVEL, NOTE, RISK_FACTOR } from "@/lib/texts";
 
-export const metadata: Metadata = { title: "Проверка адреса" };
+export const metadata: Metadata = { title: "AML-проверка адреса" };
 export const dynamic = "force-dynamic";
 
 type SP = Promise<{ address?: string; network?: string }>;
@@ -33,7 +33,10 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
 
   return (
     <div className="space-y-5">
-      <PageTitle title="Проверка адреса" sub="Вставьте адрес, на который собираетесь отправить деньги, или адрес токена. Работает для Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche и Tron." />
+      <PageTitle
+        title="AML-проверка адреса"
+        sub="Вставьте адрес, на который собираетесь отправить деньги. Сверим его с официальными санкционными списками и базами взломов, фишинга и миксеров и посмотрим, с кем он взаимодействовал. Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche и Tron."
+      />
       <SearchForm action="/check" address={address} network={network} />
       {error && <ErrorBox code={error.code} message={error.message} />}
       {report && <Report r={report} />}
@@ -139,9 +142,14 @@ function Report({ r }: { r: CheckReport }) {
           )}
         </div>
       </div>
-      <p className="text-xs text-silver-3">
-        {DISCLAIMER} Проверено {dateTime(r.checkedAt)}.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+        <p className="max-w-2xl text-xs text-silver-3">
+          {DISCLAIMER} Проверено {dateTime(r.checkedAt)}.
+        </p>
+        <Link href={`/report?address=${r.address}&network=${r.network}`} className="link text-sm">
+          Не согласны с оценкой или знаете больше? Сообщить →
+        </Link>
+      </div>
     </div>
   );
 }
@@ -223,8 +231,8 @@ function TokenRisk({ r }: { r: CheckReport }) {
       title={`Риски токена${r.contract?.symbol ? ` ${r.contract.symbol}` : ""}`}
       hint="Автоматические признаки, на которые стоит посмотреть до покупки"
       right={
-        <Link href={`/aml?address=${r.address}&network=${r.network}`} className="link text-sm">
-          Полный AML-анализ →
+        <Link href={`/token?address=${r.address}&network=${r.network}`} className="link text-sm">
+          Полный анализ токена →
         </Link>
       }
     >

@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { WalletProvider } from "@/components/Wallet";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://spideraml.com"),
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body className="flex min-h-screen flex-col">
-        <Header />
-        <main className="mx-auto w-full max-w-page flex-1 px-4 py-6 sm:py-8">{children}</main>
-        <Footer />
+        <WalletProvider>
+          <Header />
+          <main className="mx-auto w-full max-w-page flex-1 px-4 py-6 sm:py-8">{children}</main>
+          <Footer />
+        </WalletProvider>
       </body>
     </html>
   );

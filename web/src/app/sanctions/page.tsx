@@ -44,20 +44,24 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
     <div className="space-y-5">
       <PageTitle
         title="Санкционные адреса"
-        sub="Криптоадреса из официальных санкционных списков. Только то, что опубликовали сами регуляторы, со ссылкой на запись в источнике."
+        sub="Криптоадреса из официальных санкционных списков США, Великобритании и Евросоюза. Только то, что опубликовали сами регуляторы, со ссылкой на запись в источнике. Наши собственные метки здесь не показываются — они учитываются в AML-проверке."
       />
       {error && <ErrorBox code={error.code} message={error.message} />}
       {data && (
         <>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-silver-2">
-            <span>
-              Обновлено: <b className="text-silver-1">{dateTime(data.updatedAt)}</b>
-            </span>
-            {data.sources.map((s) => (
-              <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
-                {s.name} <ExternalLink className="size-3" />
-              </a>
-            ))}
+          <div className="grid gap-2 sm:grid-cols-3">
+            {data.sources.map((src) => {
+              const n = src.count;
+              return (
+                <a key={src.id} href={src.url} target="_blank" rel="noopener noreferrer" className="card flex flex-col gap-1 p-3 transition hover:border-silver-3">
+                  <span className="flex items-center gap-1 text-sm font-medium text-silver-1">
+                    {src.name} <ExternalLink className="size-3 text-silver-3" />
+                  </span>
+                  <span className="text-xl font-semibold tabular-nums">{n.toLocaleString("ru-RU")}</span>
+                  <span className="text-xs text-silver-3">{src.error ? "последнее обновление не удалось" : `обновлено ${dateTime(src.fetchedAt)}`}</span>
+                </a>
+              );
+            })}
           </div>
 
           <form method="get" action="/sanctions" className="flex flex-col gap-2 sm:flex-row" role="search">
@@ -95,7 +99,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                       <th>Сеть</th>
                       <th>Кому принадлежит</th>
                       <th>Список</th>
-                      <th>В нашей базе с</th>
+                      <th>Дата включения</th>
                       <th>Проверено</th>
                     </tr>
                   </thead>
@@ -117,7 +121,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                             {s.list} <ExternalLink className="size-3" />
                           </a>
                         </td>
-                        <td className="whitespace-nowrap text-silver-2">{date(s.firstSeen)}</td>
+                        <td className="whitespace-nowrap text-silver-2">{s.listedAt ? date(s.listedAt) : <span className="text-silver-3">не указана</span>}</td>
                         <td className="whitespace-nowrap text-silver-2">{date(s.checkedAt)}</td>
                       </tr>
                     ))}
@@ -148,7 +152,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
             )}
           </Card>
           <p className="text-xs text-silver-3">
-            OFAC не публикует дату внесения для каждого адреса, поэтому «В нашей базе с» — дата, когда адрес впервые появился в нашей выгрузке списка. Точные даты и подробности — по ссылке на запись в источнике.
+            Великобритания и ЕС публикуют дату включения в список. OFAC (США) её в машиночитаемом списке не даёт — она есть на странице записи по ссылке. «Проверено» — когда мы последний раз сверили адрес с источником.
           </p>
         </>
       )}
