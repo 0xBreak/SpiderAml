@@ -22,7 +22,7 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
         <div className="space-y-4">
           <Card title="Сколько это стоит">
             <p className="text-2xl font-semibold text-ok">Бесплатно</p>
-            <p className="mt-1 text-sm text-silver-2">Не нужен кошелёк, газ, регистрация или залог. Сообщение уходит нам напрямую, не в блокчейн.</p>
+            <p className="mt-1 text-sm text-silver-2">Не нужен кошелёк, газ, регистрация или залог. Заявка сохраняется в базе SpiderAML (не в блокчейне), после отправки вы получите её номер и ссылку на статус.</p>
           </Card>
           <Card title="Что будет дальше">
             <ol className="list-decimal space-y-1.5 pl-5 text-sm text-silver-2">

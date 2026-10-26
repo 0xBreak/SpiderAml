@@ -5,6 +5,8 @@ import { DataError, limit, sendReport } from "@/lib/data";
 
 export interface ReportState {
   ok: boolean;
+  id?: number;
+  token?: string;
   error?: string;
 }
 
@@ -27,8 +29,8 @@ export async function submitReport(_: ReportState | null, form: FormData): Promi
 
   try {
     await limit("report", 5);
-    await sendReport({ address, network, category, description, link });
-    return { ok: true };
+    const r = await sendReport({ address, network, category, description, link });
+    return { ok: true, id: r.id, token: r.token };
   } catch (e) {
     return { ok: false, error: e instanceof DataError ? e.message : "Не удалось отправить. Попробуйте позже." };
   }

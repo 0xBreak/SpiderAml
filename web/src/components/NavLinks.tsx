@@ -9,7 +9,7 @@ export function NavLinks({ items }: { items: { href: string; label: string }[] }
   return (
     <nav className="mx-auto flex max-w-page gap-1 overflow-x-auto px-4 pb-2 text-sm" aria-label="Разделы">
       {items.map((i) => {
-        const active = path === i.href || path.startsWith(`${i.href}/`);
+        const active = i.href === "/" ? path === "/" : path === i.href || path.startsWith(`${i.href}/`);
         return (
           <Link
             key={i.href}

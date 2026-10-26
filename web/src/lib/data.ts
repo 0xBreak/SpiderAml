@@ -74,4 +74,17 @@ export const getMeta = () => call<MetaInfo>("/v1/meta", {}, 10_000);
 export const getMarkets = (address: string, network: string) => call<{ markets: MarketsData | null }>("/v1/markets", { address, network }, 30_000);
 
 export const sendReport = (r: { address: string; network: string; category: ReportCategory; description: string; link: string | null }) =>
-  call<{ ok: boolean; id: number }>("/v1/reports", {}, 10_000, r);
+  call<{ ok: boolean; id: number; token: string }>("/v1/reports", {}, 10_000, r);
+
+export interface ReportStatusInfo {
+  id: number;
+  address: string;
+  network: string;
+  category: string;
+  status: "new" | "reviewing" | "confirmed" | "rejected";
+  reply: string | null;
+  createdAt: number;
+  updatedAt: number | null;
+}
+
+export const getReportStatus = (id: string, t: string) => call<ReportStatusInfo>("/v1/reports/status", { id, t }, 10_000);

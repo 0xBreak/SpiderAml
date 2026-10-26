@@ -19,17 +19,26 @@ const OPTIONS = [
 export function ReportForm({ address, network }: { address: string; network: string }) {
   const [state, action, pending] = useActionState<ReportState | null, FormData>(submitReport, null);
 
-  if (state?.ok)
+  if (state?.ok && state.id) {
+    const statusUrl = `/report/status?id=${state.id}&t=${state.token}`;
     return (
       <div className="flex flex-col items-start gap-3 py-4">
         <CheckCircle2 className="size-8 text-ok" />
-        <h2 className="text-lg font-semibold">Спасибо, сообщение получено</h2>
-        <p className="text-sm text-silver-2">Мы проверим его вручную. Если риск подтвердится, адрес появится в AML-проверке, а для критичных случаев — и в реестре в блокчейне.</p>
-        <a href="/report" className="btn-ghost h-9">
-          Сообщить ещё об одном адресе
-        </a>
+        <h2 className="text-lg font-semibold">Заявка №{state.id} принята</h2>
+        <p className="text-sm text-silver-2">
+          Она сохранена в базе SpiderAML и ждёт проверки. Статус и наш ответ появятся на странице заявки — сохраните ссылку, по-другому её не найти: мы не просим ни почту, ни регистрацию.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <a href={statusUrl} className="btn-primary h-9">
+            Открыть статус заявки
+          </a>
+          <a href="/report" className="btn-ghost h-9">
+            Сообщить ещё об одном адресе
+          </a>
+        </div>
       </div>
     );
+  }
 
   return (
     <form action={action} className="space-y-4">
