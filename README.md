@@ -3,7 +3,30 @@
 Crypto address risk checks: sanctions, exploits, phishing and scams, with an on-chain registry that other contracts can
 read and a "send with a check" contract for users.
 
-Work in progress — the project is being rebuilt from the ChainGuard hackathon prototype. See `docs/DECISIONS.md`.
+Work in progress — rebuilt from the ChainGuard hackathon prototype. Why things are the way they are: `docs/DECISIONS.md`.
+
+## Run locally
+
+Two parts: this repo (site + contracts) and the private data layer `spideraml-data` (sibling directory).
+
+```bash
+cd ../spideraml-data && bun install && cp .env.example .env   # fill keys, set DATA_SECRET
+bun run ingest                                               # first import of all lists (~15 s)
+cd ../ArbitrumSingapore/web && npm install && cp .env.example .env.local   # same DATA_SECRET
+cd .. && scripts/dev.sh                                      # data on :8787, site on http://localhost:3000
+```
+
+## Site pages
+
+| Page | |
+|---|---|
+| `/` | Search and sections |
+| `/check` | Address risk: score, level, possible scam, reasons with sources, official sanctions, counterparties, token risks, on-chain record |
+| `/aml` | Token / contract: price, market cap, liquidity by DEX, buy/sell flow, top holders with labels, risk factors |
+| `/whales` | Transfers of a token above a user-set USD threshold, per wallet, with labels |
+| `/sanctions` | Official sanctions addresses (OFAC SDN), search, network and list filters, source links |
+| `/send` | Send USDC through SpiderSend (Arbitrum Sepolia) with an on-chain and off-chain recipient check |
+| `/blog` | MDX articles in `web/src/content/blog` |
 
 ## Contracts
 

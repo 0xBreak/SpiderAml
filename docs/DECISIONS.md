@@ -34,11 +34,36 @@ Short log of why things are the way they are. Newest at the bottom of each secti
 - **Verification via Sourcify** — Blockscout's API sits behind a Cloudflare challenge for CLI clients.
 - **Deployments in `/deployments/<chainId>.json`** at the repo root, so the data layer and the site read the same file.
 
-## Infrastructure (proposed, waiting for confirmation)
+## Data layer (private repo `spideraml-data`)
 
-- Domain `spideraml.com` is on Cloudflare → Cloudflare in front of everything (DNS, TLS, WAF, cache).
-- Heavy analytics (log scans for whales/holders, ported from Chainscope) need long-running requests and in-memory
-  caches → the data layer runs as a normal Bun service, not as a Worker.
-- Proposed: one small VPS running two containers — `web` (this repo) and `data` (private repo) — plus `cloudflared`.
-  The tunnel exposes only `web`; `data` has no public route at all and is reached from `web` over the private Docker
-  network with a shared secret. No open inbound ports on the server.
+- **Separate repo, separate process.** Bun + SQLite. Holds every list, the scoring, provider keys (QuickNode, Zerion)
+  and the registry writer key. The site never sees raw lists or keys.
+- **Merged from three projects:** Kalkan (TurkProject) gave the source list, OFAC parsing and scoring idea — ported from
+  Python to TypeScript so the whole stack is one language; Chainscope (DashBoardContract) gave the token analytics
+  (liquidity, trading, holders, whales) almost unchanged; ChainGuard gave the Forta datasets and curated incidents.
+- **Sanctions come from the official OFAC SDN XML**, not a GitHub mirror. Each entry links to its OFAC record page.
+  OFAC publishes no per-address listing date, so we store `first_seen` (first time our import saw it) and say so on
+  the page. UK OFSI's old CSV link is dead and the EU/UN lists carry almost no crypto addresses — not added yet.
+- **A failed source never wipes data:** each source replaces its rows only after a successful download; OFAC refuses
+  to replace the list if it parses fewer than 100 addresses.
+- **Etherscan tag `blocked` = frozen by a stablecoin issuer**, mapped to "other / low", not "scam" — it hit the USDT
+  contract itself as a false positive.
+- **On-chain sync pushes only level-3 sanctions/exploit/phishing EVM addresses**, diffed against `registry_state`, in
+  batches of 150. Manual (`bun run sync-registry`), or automatic after each import with `AUTO_SYNC_REGISTRY=1`.
+- **Tron is read-only:** sanctions and GoPlus work for `T…` addresses (base58check validated); no Tron contract.
+
+## Site (`web/`)
+
+- **Next.js 15 (App Router), server-rendered.** Pages call the data layer from the server and send HTML; there are no
+  public JSON endpoints. The only browser-side logic is the wallet on `/send` and one server action that screens a
+  recipient. Heavy blocks stream in with Suspense so the page shows immediately.
+- **Private channel:** `DATA_URL` + `DATA_SECRET` header, data layer bound to 127.0.0.1, constant-time secret check.
+- **Per-IP rate limits** on the expensive pages (check 20/min, aml 12/min, whales 6/min).
+- **No wagmi:** its WalletConnect/Coinbase connectors pulled 29 vulnerable packages. `/send` uses viem with the
+  injected wallet only. `npm audit --omit=dev`: 0 vulnerabilities (postcss pinned via `overrides`).
+- **Security headers:** CSP (scripts from self plus inline ones Next needs without nonces; connect only to self + the testnet RPC), HSTS,
+  frame-ancestors none, nosniff, referrer policy. Secrets are checked to be absent from client bundles.
+- **Russian only for now**, all wording in `src/lib/texts.ts` so another language is one more file.
+- **Network list is duplicated** (`web/src/lib/networks.ts` and the data layer's `src/networks.ts`): the site only needs
+  names and explorers. Adding a network = one entry in each plus a `QUICKNODE_RPC_URL_<NAME>` in the data layer.
+- **Wording:** risk and its reason, never "fraudster" about an address; a disclaimer next to every score.

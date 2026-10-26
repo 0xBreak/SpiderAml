@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-bg font-sans text-silver-1 antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: rgba(79, 179, 255, 0.35);
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/70 ring-offset-2 ring-offset-bg;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-line bg-surface;
+  }
+  .input {
+    @apply h-11 w-full rounded-md border border-line bg-bg px-3 text-sm text-silver-1 placeholder:text-silver-3 focus:border-accent/60 focus:outline-none;
+  }
+  .btn {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-accent-grad text-bg hover:brightness-110;
+  }
+  .btn-ghost {
+    @apply btn border border-line text-silver-1 hover:border-silver-3;
+  }
+  .link {
+    @apply text-accent underline-offset-2 hover:underline;
+  }
+  .grad-text {
+    @apply bg-accent-grad bg-clip-text text-transparent;
+  }
+  .label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-silver-3;
+  }
+  .table {
+    @apply w-full text-left text-sm;
+  }
+  .table th {
+    @apply border-b border-line px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-silver-3;
+  }
+  .table td {
+    @apply border-b border-line/60 px-3 py-2 align-top;
+  }
+  .prose-spider {
+    @apply max-w-none text-[15px] leading-7 text-silver-2;
+  }
+  .prose-spider h2 {
+    @apply mb-3 mt-8 text-xl font-semibold text-silver-1;
+  }
+  .prose-spider h3 {
+    @apply mb-2 mt-6 text-lg font-semibold text-silver-1;
+  }
+  .prose-spider p {
+    @apply my-4;
+  }
+  .prose-spider ul {
+    @apply my-4 list-disc space-y-1 pl-6;
+  }
+  .prose-spider ol {
+    @apply my-4 list-decimal space-y-1 pl-6;
+  }
+  .prose-spider a {
+    @apply link;
+  }
+  .prose-spider strong {
+    @apply text-silver-1;
+  }
+  .prose-spider blockquote {
+    @apply my-4 border-l-2 border-accent/60 pl-4 text-silver-2;
+  }
+  .prose-spider code {
+    @apply rounded bg-surface-2 px-1 py-0.5 font-mono text-[13px];
+  }
+}
