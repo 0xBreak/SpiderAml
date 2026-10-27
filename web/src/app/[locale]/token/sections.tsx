@@ -209,9 +209,16 @@ export async function RiskSection({ address, network }: { address: string; netwo
   if ("error" in r) return <Card title={t("risksTitle")}><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
   const risk = r.data;
   const tone = risk.level === "low" ? "ok" : risk.level === "moderate" ? "warn" : "crit";
+  const stable = !!risk.context?.includes("stablecoin");
   const title = t(({ low: "lvLow", moderate: "lvModerate", high: "lvHigh", critical: "lvCritical" } as const)[risk.level]);
   return (
-    <Card title={t("risksTitle")} right={<Badge tone={tone}>{title} · {risk.score}/100</Badge>}>
+    <Card
+      title={t("risksTitle")}
+      right={
+        // a stablecoin's main risk (the issuer's reserves) cannot be read from the chain: a bare "Low · 0/100" would overstate it
+        stable ? <Badge tone="info">{t("partialBadge", { score: risk.score })}</Badge> : <Badge tone={tone}>{title} · {risk.score}/100</Badge>
+      }
+    >
       <ul className="space-y-4">
         {risk.factors.map((f) => {
           const known = tRisk.has(f.key);

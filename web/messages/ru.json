@@ -292,7 +292,8 @@
     "elsewhere": "Токен {symbol} известен в сети {networks}. В сети {here} по этому адресу другой контракт — оценка ниже относится к нему, а не к {symbol}.",
     "checkOn": "Проверить в {network} →",
     "sourceWord": "источник",
-    "tokenTotal": "Сумма: {points} из {max} баллов → {score}/100"
+    "tokenTotal": "Сумма: {points} из {max} баллов → {score}/100",
+    "tokenPartial": "частичная оценка: резервы эмитента по блокчейну не проверить"
   },
   "Blog": {
     "title": "Блог",
@@ -488,7 +489,8 @@
     "colWho": "Кто это",
     "colHolderShare": "Доля",
     "colValue": "Стоимость",
-    "holdersFoot": "По переводам за последние недели."
+    "holdersFoot": "По переводам за последние недели.",
+    "partialBadge": "Частичная оценка · {score}/100"
   },
   "Send": {
     "title": "Безопасная отправка",

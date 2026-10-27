@@ -274,7 +274,7 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
       result: !cp ? t("cpSkipped") : cp.flagged.length ? t("cpSummaryFound", { flagged: cp.flagged.length, checked: cp.checked }) : t("cpSummaryNone", { checked: cp.checked }),
       points: parts.counterparties,
     });
-  if (r.contract?.risk) rows.push({ name: t("partToken"), result: t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
+  if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
 
   const groups = new Map<string, Finding[]>();
   for (const f of findings) groups.set(f.category, [...(groups.get(f.category) ?? []), f]);

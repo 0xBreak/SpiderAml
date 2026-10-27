@@ -292,7 +292,8 @@
     "elsewhere": "The {symbol} token is known on {networks}. On {here} this address holds a different contract — the score below is about that contract, not about {symbol}.",
     "checkOn": "Check on {network} →",
     "sourceWord": "source",
-    "tokenTotal": "Total: {points} of {max} points → {score}/100"
+    "tokenTotal": "Total: {points} of {max} points → {score}/100",
+    "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain"
   },
   "Blog": {
     "title": "Blog",
@@ -488,7 +489,8 @@
     "colWho": "Who",
     "colHolderShare": "Share",
     "colValue": "Value",
-    "holdersFoot": "From transfers over recent weeks."
+    "holdersFoot": "From transfers over recent weeks.",
+    "partialBadge": "Partial score · {score}/100"
   },
   "Send": {
     "title": "Safe send",
