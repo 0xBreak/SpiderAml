@@ -3,6 +3,7 @@ import "server-only";
 import { headers } from "next/headers";
 import type { ApiErrorBody, SectionMap, SectionName, WhaleReport } from "./types";
 import type { CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, SanctionsPage } from "./api-types";
+import { demoCall, demoEnabled } from "./demo";
 
 export class DataError extends Error {
   constructor(
@@ -17,7 +18,9 @@ export class DataError extends Error {
 const URL_ = process.env.DATA_URL ?? "http://127.0.0.1:8787";
 const SECRET = process.env.DATA_SECRET ?? "";
 
-async function call<T>(path: string, params: Record<string, string | number | undefined>, timeoutMs = 60_000, body?: unknown): Promise<T> {
+async function call<T>(path: string, params: Record<string, string | number | undefined>, timeoutMs = 60_000, body?: unknown, revalidate?: number): Promise<T> {
+  // No data layer in local dev (or DATA_DEMO=1): render the real pages with generated data.
+  if (demoEnabled()) return demoCall(path, params, body) as T;
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") qs.set(k, String(v));
   let res: Response;
@@ -26,7 +29,9 @@ async function call<T>(path: string, params: Record<string, string | number | un
       method: body ? "POST" : "GET",
       body: body ? JSON.stringify(body) : undefined,
       headers: { "x-spider-key": SECRET, ...(body ? { "content-type": "application/json" } : {}) },
-      cache: "no-store",
+      // Site stats change when the data layer refreshes its lists (every 6h),
+      // so the homepage may cache them; everything else stays per-request.
+      ...(revalidate != null ? { next: { revalidate } } : { cache: "no-store" }),
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
@@ -46,6 +51,7 @@ const hits = new Map<string, number[]>();
 
 /** Sliding one-minute window per client IP. Throws a DataError the page renders like any other error. */
 export async function limit(bucket: string, perMinute: number) {
+  if (demoEnabled()) return;
   const h = await headers();
   const ip = h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
   const key = `${bucket}:${ip}`;
@@ -67,9 +73,9 @@ export const getSection = <K extends SectionName>(name: K, address: string, netw
 export const getWhales = (address: string, network: string, whaleUsd: number, window: string) =>
   call<WhaleReport & { labels: LabelMap }>("/v1/whales", { address, network, whaleUsd, window }, 90_000);
 
-export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number }) => call<SanctionsPage>("/v1/sanctions", p);
+export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number; pageSize?: number }) => call<SanctionsPage>("/v1/sanctions", p);
 
-export const getMeta = () => call<MetaInfo>("/v1/meta", {}, 10_000);
+export const getMeta = (revalidate?: number) => call<MetaInfo>("/v1/meta", {}, 10_000, undefined, revalidate);
 
 export const getMarkets = (address: string, network: string) => call<{ markets: MarketsData | null }>("/v1/markets", { address, network }, 30_000);
 

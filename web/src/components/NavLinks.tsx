@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/format";
+import { Link, usePathname } from "@/i18n/navigation";
 
 /** Section links. `vertical` is the mobile menu: a tap closes the surrounding <details>. */
 export function NavLinks({ items, vertical = false }: { items: { href: string; label: string }[]; vertical?: boolean }) {
+  // next-intl's pathname has no locale prefix, so active detection is unchanged.
   const path = usePathname();
   return (
-    <nav className={cn(vertical ? "flex flex-col gap-0.5" : "flex items-center gap-0.5")} aria-label="Разделы">
+    <nav className={cn(vertical ? "flex flex-col gap-0.5" : "flex items-center gap-0.5")} aria-label="Sections">
       {items.map((i) => {
         const active = i.href === "/" ? path === "/" : path === i.href || path.startsWith(`${i.href}/`);
         return (
