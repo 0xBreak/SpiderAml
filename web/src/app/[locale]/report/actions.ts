@@ -37,7 +37,7 @@ export async function submitReport(_prev: ReportState | null, form: FormData): P
   if (limited) return limited;
   try {
     const r = await sendReport({ address, network, category, description, link });
-    trackEvent("report", category, "/report");
+    trackEvent("report", category, "/report", { target: address, network });
     return ok({ id: r.id, token: r.token });
   } catch (e) {
     return failFrom(e);

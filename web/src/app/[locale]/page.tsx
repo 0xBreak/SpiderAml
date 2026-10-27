@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 
-// Stats and source lists refresh every 6h on the data layer side,
-// so the homepage prerenders statically and revalidates on the same cadence.
-export const revalidate = 21600;
+// Stats and source lists refresh every 6h on the data layer side; getMeta(21600) caches them for the same time.
+// The page itself is rendered per request: the Docker build has no data layer to read the stats from, and a page
+// prerendered without them would show an empty home for hours.
+export const dynamic = "force-dynamic";
 
 interface Tool {
   href: string;
@@ -26,6 +27,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const t = await getTranslations({ locale, namespace: "Home" });
   const tNav = await getTranslations({ locale, namespace: "Nav" });
   const tSrc = await getTranslations({ locale, namespace: "Source" });
+  const tSrcName = await getTranslations({ locale, namespace: "SourceName" });
 
   const TOOLS: Tool[] = [
     { href: "/check", icon: ShieldCheck, tile: "bg-ok/10 text-ok", title: t("toolCheckTitle"), question: t("toolCheckQuestion") },
@@ -163,8 +165,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     <td>
                       {src.url ? (
                         <a href={src.url} target="_blank" rel="noopener noreferrer" className="link">
-                          {src.name}
+                          {tSrcName.has(src.id) ? tSrcName(src.id) : src.name}
                         </a>
+                      ) : tSrcName.has(src.id) ? (
+                        tSrcName(src.id)
                       ) : (
                         src.name
                       )}

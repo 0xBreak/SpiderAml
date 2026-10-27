@@ -4,6 +4,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { createWalletClient, custom, type Address, type EIP1193Provider, type WalletClient } from "viem";
 import { LogOut, Wallet as WalletIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SEND_CHAIN } from "@/lib/contracts";
 import { short } from "@/lib/format";
 
@@ -29,6 +30,7 @@ const Ctx = createContext<WalletState | null>(null);
 const KEY = "spideraml:wallet-connected";
 
 export function WalletProvider({ children }: { children: ReactNode }) {
+  const t = useTranslations("Ui");
   const [available, setAvailable] = useState<boolean | null>(null);
   const [account, setAccount] = useState<Address | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
@@ -78,9 +80,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         /* storage blocked */
       }
     } catch (e) {
-      setError(/reject|denied/i.test(String(e)) ? "Подключение отменено в кошельке." : "Не удалось подключить кошелёк.");
+      setError(/reject|denied/i.test(String(e)) ? t("walletRejected") : t("walletFailed"));
     }
-  }, [client]);
+  }, [client, t]);
 
   const disconnect = useCallback(() => {
     setAccount(null);
@@ -113,18 +115,19 @@ export function useWallet() {
 }
 
 export function WalletButton() {
+  const t = useTranslations("Ui");
   const { available, account, connect, disconnect } = useWallet();
   if (available === null) return <div className="h-9 w-40" />;
   if (!available)
     return (
       <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="btn-ghost h-9 px-3 text-[13px]">
-        <WalletIcon className="size-4" /> Установить кошелёк
+        <WalletIcon className="size-4" /> {t("installWallet")}
       </a>
     );
   if (!account)
     return (
       <button onClick={connect} className="btn-primary h-9 px-3 text-[13px]">
-        <WalletIcon className="size-4" /> Подключить кошелёк
+        <WalletIcon className="size-4" /> {t("connectWallet")}
       </button>
     );
   return (
@@ -133,7 +136,7 @@ export function WalletButton() {
         <span className="size-2 rounded-full bg-ok" aria-hidden />
         {short(account)}
       </span>
-      <button onClick={disconnect} className="flex h-9 w-9 items-center justify-center rounded-md border border-line text-silver-3 hover:text-silver-1" aria-label="Отключить кошелёк" title="Отключить">
+      <button onClick={disconnect} className="flex h-9 w-9 items-center justify-center rounded-md border border-line text-silver-3 hover:text-silver-1" aria-label={t("disconnect")} title={t("disconnectShort")}>
         <LogOut className="size-4" />
       </button>
     </div>

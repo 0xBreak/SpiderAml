@@ -2,6 +2,10 @@
 import { Link } from "@/i18n/navigation";
 import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
+import { RiskContext } from "@/components/RiskContext";
+import type { Locale } from "@/i18n/routing";
 import { Addr } from "@/components/Addr";
 import { Badge, Bar, Card, Empty, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import { VenueIcon } from "@/components/VenueIcon";
@@ -9,22 +13,8 @@ import { FlowChart } from "@/components/FlowChart";
 import { DataError, getSection } from "@/lib/data";
 import { cn, num, pct, price, usd } from "@/lib/format";
 import { NETWORKS, type NetworkId } from "@/lib/networks";
-import { CATEGORY, RISK_FACTOR } from "@/lib/texts";
-import type { ContractOverview, HolderKind } from "@/lib/types";
+import type { ContractOverview } from "@/lib/types";
 import type { MarketsData } from "@/lib/api-types";
-
-const KIND: Record<string, string> = {
-  erc20: "ERC-20",
-  "lp-v2": "Пул V2",
-  "lp-v3": "Пул V3",
-  "vault-4626": "Хранилище",
-  staking: "Стейкинг",
-  erc721: "NFT ERC-721",
-  erc1155: "NFT ERC-1155",
-  other: "Контракт",
-};
-
-const HOLDER_KIND: Record<HolderKind, string> = { eoa: "Кошелёк", multisig: "Мультисиг", contract: "Контракт", pool: "Пул DEX", burn: "Сожжено", token: "Сам токен" };
 
 async function load<T>(fn: () => Promise<T>): Promise<{ data: T } | { error: DataError }> {
   try {
@@ -50,6 +40,8 @@ function Metric({ label, value, sub, tone, className }: { label: string; value: 
 // ---------------------------------------------------------------- overview
 
 export function OverviewSection({ o, markets }: { o: ContractOverview; markets: MarketsData | null }) {
+  const t = useTranslations("Token");
+  const locale = useLocale() as Locale;
   const m = o.market;
   const change = m?.change1dPct;
   const volume = markets?.volume24hUsd ?? m?.volume1dUsd ?? null;
@@ -67,38 +59,38 @@ export function OverviewSection({ o, markets }: { o: ContractOverview; markets: 
           )}
           <div className="min-w-0">
             <h2 className="text-2xl font-semibold tracking-tight">
-              {o.name ?? "Без названия"}
+              {o.name ?? t("noName")}
               {o.symbol && <span className="ml-2 text-silver-2">{o.symbol}</span>}
             </h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-silver-2">
               <Addr value={o.address} href={explorer(o.network, o.address)} />
               <span>{NETWORKS[o.network].label}</span>
-              <span>{KIND[o.kind] ?? o.kindLabel}</span>
+              <span>{t.has(`kind.${o.kind}`) ? t(`kind.${o.kind}`) : o.kindLabel}</span>
             </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {o.verification.sourceVerified === true && <Badge tone="ok">Код открыт</Badge>}
-          {o.verification.sourceVerified === false && <Badge tone="crit">Код закрыт</Badge>}
-          {o.proxy.isProxy && <Badge tone="warn">Правила можно менять</Badge>}
-          {o.owner && <Badge tone={o.ownerIsContract ? "muted" : "warn"}>{o.ownerIsContract ? "Владелец — контракт" : "Есть владелец"}</Badge>}
+          {o.verification.sourceVerified === true && <Badge tone="ok">{t("codeOpen")}</Badge>}
+          {o.verification.sourceVerified === false && <Badge tone="crit">{t("codeClosed")}</Badge>}
+          {o.proxy.isProxy && <Badge tone="warn">{t("upgradeable")}</Badge>}
+          {o.owner && <Badge tone={o.ownerIsContract ? "muted" : "warn"}>{o.ownerIsContract ? t("ownerContract") : t("hasOwner")}</Badge>}
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4">
         <Metric
-          label="Цена"
-          value={price(m?.priceUsd ?? markets?.priceUsd ?? null)}
-          sub={change != null ? <span className={change >= 0 ? "text-ok" : "text-crit"}>{change > 0 ? "+" : ""}{pct(change)} за сутки</span> : undefined}
+          label={t("price")}
+          value={price(m?.priceUsd ?? markets?.priceUsd ?? null, locale)}
+          sub={change != null ? <span className={change >= 0 ? "text-ok" : "text-crit"}>{t("perDay", { value: `${change > 0 ? "+" : ""}${pct(change)}` })}</span> : undefined}
         />
-        <Metric label="Капитализация" value={usd(m?.marketCapUsd ?? markets?.marketCapUsd ?? null)} />
-        <Metric label="Объём 24ч" value={usd(volume)} />
-        <Metric label="Всего токенов" value={num(o.totalSupply)} />
+        <Metric label={t("mcap")} value={usd(m?.marketCapUsd ?? markets?.marketCapUsd ?? null, true, locale)} />
+        <Metric label={t("vol24")} value={usd(volume, true, locale)} />
+        <Metric label={t("supply")} value={num(o.totalSupply, locale)} />
       </div>
 
       {o.owner && (
         <p className="mt-5 flex flex-wrap items-center gap-2 border-t border-line/60 pt-4 text-sm text-silver-2">
-          Владелец: <Addr value={o.owner} href={explorer(o.network, o.owner)} /> {o.ownerIsContract ? "контракт" : "обычный кошелёк"}
+          {t("owner")}: <Addr value={o.owner} href={explorer(o.network, o.owner)} /> {o.ownerIsContract ? t("ownerIsContract") : t("ownerIsWallet")}
         </p>
       )}
     </section>
@@ -107,11 +99,14 @@ export function OverviewSection({ o, markets }: { o: ContractOverview; markets: 
 
 // ---------------------------------------------------------------- markets (CEX + DEX)
 
-export function MarketsSection({ m }: { m: MarketsData | null }) {
+export function MarketsSection({ m, failed = false }: { m: MarketsData | null; failed?: boolean }) {
+  const t = useTranslations("Token");
+  const locale = useLocale() as Locale;
+  const $ = (v: number | null | undefined) => usd(v, true, locale);
   if (!m || m.markets.length === 0)
     return (
-      <Card title="Где торгуется">
-        <Notice tone="warn">Торгов на известных площадках нет.</Notice>
+      <Card title={t("whereTitle")}>
+        <Notice tone="warn">{failed ? t("cgFailed") : t("noMarkets")}</Notice>
       </Card>
     );
   const cex = m.markets.filter((x) => x.type === "cex").length;
@@ -119,7 +114,7 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
   const top = m.markets[0];
   return (
     <Card
-      title="Где торгуется"
+      title={t("whereTitle")}
       right={
         <a href={m.url} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1 text-sm">
           CoinGecko <ExternalLink className="size-3.5" aria-hidden />
@@ -127,18 +122,18 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
       }
     >
       <div className="grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4">
-        <Metric label="Объём 24ч" value={usd(m.volume24hUsd)} />
-        <Metric label="Биржи" value={pct((m.cexVolumeUsd / total) * 100, 0)} sub={`${cex} площадок`} />
-        <Metric label="DEX" value={pct((m.dexVolumeUsd / total) * 100, 0)} sub={`${m.markets.length - cex} площадок`} />
+        <Metric label={t("vol24")} value={$(m.volume24hUsd)} />
+        <Metric label={t("cex")} value={pct((m.cexVolumeUsd / total) * 100, 0)} sub={t("venues", { count: cex })} />
+        <Metric label={t("dex")} value={pct((m.dexVolumeUsd / total) * 100, 0)} sub={t("venues", { count: m.markets.length - cex })} />
         <Metric
-          label="Главная площадка"
+          label={t("topVenue")}
           value={
             <span className="inline-flex items-center gap-1.5">
               <VenueIcon name={top.exchange} size="sm" />
               <span className="truncate">{top.exchange}</span>
             </span>
           }
-          sub={`${pct(top.volumeSharePct, 0)} объёма`}
+          sub={t("ofVolume", { pct: pct(top.volumeSharePct, 0) })}
         />
       </div>
 
@@ -150,16 +145,16 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
                 <VenueIcon name={x.exchange} size="xs" />
                 <span className="truncate text-silver-1">{x.exchange}</span>
               </span>
-              <span className="shrink-0 tabular-nums text-silver-1">{usd(x.volumeUsd)}</span>
+              <span className="shrink-0 tabular-nums text-silver-1">{$(x.volumeUsd)}</span>
             </div>
             <div className="mt-1 flex items-center justify-between gap-3 text-sm text-silver-2">
               <span>{x.pair}</span>
               <span className="flex shrink-0 gap-3 tabular-nums">
-                <span>{price(x.priceUsd)}</span>
+                <span>{price(x.priceUsd, locale)}</span>
                 <span>{pct(x.volumeSharePct, 1)}</span>
               </span>
             </div>
-            {(x.stale || x.anomaly) && <div className="mt-1 text-sm text-warn">{x.anomaly ? "аномалия" : "старые данные"}</div>}
+            {(x.stale || x.anomaly) && <div className="mt-1 text-sm text-warn">{x.anomaly ? t("anomaly") : t("stale")}</div>}
           </li>
         ))}
       </ul>
@@ -167,11 +162,11 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
         <table className="table">
           <thead>
             <tr>
-              <th>Площадка</th>
-              <th>Пара</th>
-              <th className="hidden text-right sm:table-cell">Цена</th>
-              <th className="text-right">Объём 24ч</th>
-              <th className="hidden text-right sm:table-cell">Доля</th>
+              <th>{t("colVenue")}</th>
+              <th>{t("colPair")}</th>
+              <th className="hidden text-right sm:table-cell">{t("colPrice")}</th>
+              <th className="text-right">{t("colVol")}</th>
+              <th className="hidden text-right sm:table-cell">{t("colShare")}</th>
             </tr>
           </thead>
           <tbody>
@@ -182,7 +177,7 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
                     <VenueIcon name={x.exchange} size="xs" />
                     {x.exchange}
                   </span>
-                  {(x.stale || x.anomaly) && <Badge tone="warn" className="ml-2">{x.anomaly ? "аномалия" : "старые данные"}</Badge>}
+                  {(x.stale || x.anomaly) && <Badge tone="warn" className="ml-2">{x.anomaly ? t("anomaly") : t("stale")}</Badge>}
                 </td>
                 <td className="whitespace-nowrap">
                   {x.url ? (
@@ -193,8 +188,8 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
                     x.pair
                   )}
                 </td>
-                <td className="hidden text-right tabular-nums sm:table-cell">{price(x.priceUsd)}</td>
-                <td className="text-right tabular-nums">{usd(x.volumeUsd)}</td>
+                <td className="hidden text-right tabular-nums sm:table-cell">{price(x.priceUsd, locale)}</td>
+                <td className="text-right tabular-nums">{$(x.volumeUsd)}</td>
                 <td className="hidden text-right tabular-nums sm:table-cell">{pct(x.volumeSharePct, 2)}</td>
               </tr>
             ))}
@@ -208,33 +203,36 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
 // ---------------------------------------------------------------- risk
 
 export async function RiskSection({ address, network }: { address: string; network: NetworkId }) {
+  const t = await getTranslations("Token");
+  const tRisk = await getTranslations("RiskFactor");
   const r = await load(() => getSection("risk", address, network));
-  if ("error" in r) return <Card title="Риски"><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
+  if ("error" in r) return <Card title={t("risksTitle")}><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
   const risk = r.data;
   const tone = risk.level === "low" ? "ok" : risk.level === "moderate" ? "warn" : "crit";
-  const title = { low: "Низкий", moderate: "Умеренный", high: "Высокий", critical: "Критический" }[risk.level];
+  const title = t(({ low: "lvLow", moderate: "lvModerate", high: "lvHigh", critical: "lvCritical" } as const)[risk.level]);
   return (
-    <Card title="Риски" right={<Badge tone={tone}>{title} · {risk.score}/100</Badge>}>
+    <Card title={t("risksTitle")} right={<Badge tone={tone}>{title} · {risk.score}/100</Badge>}>
       <ul className="space-y-4">
         {risk.factors.map((f) => {
-          const t = RISK_FACTOR[f.key];
+          const known = tRisk.has(f.key);
           const share = f.max ? f.points / f.max : 0;
           return (
             <li key={f.key}>
               <div className="flex items-baseline justify-between gap-3 text-base">
-                <span className="text-silver-1">{t?.name ?? f.label}</span>
+                <span className="text-silver-1">{known ? tRisk(`${f.key}.name`) : f.label}</span>
                 <span className="tabular-nums text-silver-2">{f.points}/{f.max}</span>
               </div>
               <div className="mt-2">
                 <Bar value={f.points} max={f.max} tone={share >= 0.6 ? "crit" : share >= 0.3 ? "warn" : "ok"} />
               </div>
-              {t && f.points > 0 && <p className="mt-1.5 text-sm leading-relaxed text-silver-2">{t.about}</p>}
+              {known && f.points > 0 && <p className="mt-1.5 text-sm leading-relaxed text-silver-2">{tRisk(`${f.key}.about`)}</p>}
             </li>
           );
         })}
       </ul>
+      <RiskContext codes={risk.context} />
       <Link href={`/check?address=${address}&network=${network}`} className="link mt-5 inline-block text-sm">
-        Проверить адрес по санкциям
+        {t("checkAddr")}
       </Link>
     </Card>
   );
@@ -243,19 +241,21 @@ export async function RiskSection({ address, network }: { address: string; netwo
 // ---------------------------------------------------------------- liquidity
 
 export async function LiquiditySection({ address, network }: { address: string; network: NetworkId }) {
+  const t = await getTranslations("Token");
+  const locale = (await getLocale()) as Locale;
   const r = await load(() => getSection("liquidity", address, network));
-  if ("error" in r) return <Card title="Деньги в пулах"><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
+  if ("error" in r) return <Card title={t("poolsTitle")}><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
   const l = r.data;
   const ratio = l.tvlToMarketCap;
   const priced = l.pools.filter((p) => p.tvlUsd != null && p.tvlUsd >= 1);
   return (
-    <Card title="Деньги в пулах">
+    <Card title={t("poolsTitle")}>
       <div className="grid grid-cols-2 gap-5">
-        <Metric label="В пулах всего" value={usd(l.totalTvlUsd)} />
-        <Metric label="Запас для продажи" value={ratio != null ? pct(ratio * 100, 2) : "—"} tone={ratio == null ? undefined : ratio < 0.02 ? "crit" : ratio < 0.05 ? "warn" : "ok"} />
+        <Metric label={t("inPools")} value={usd(l.totalTvlUsd, true, locale)} />
+        <Metric label={t("sellBuffer")} value={ratio != null ? pct(ratio * 100, 2) : "—"} tone={ratio == null ? undefined : ratio < 0.02 ? "crit" : ratio < 0.05 ? "warn" : "ok"} />
       </div>
       {l.pools.length === 0 ? (
-        <Notice tone="warn">Обменных пулов нет. Продать будет сложно.</Notice>
+        <Notice tone="warn">{t("noPools")}</Notice>
       ) : priced.length === 0 ? null : (
         <>
           <ul className="mt-5 space-y-2 sm:hidden">
@@ -266,7 +266,7 @@ export async function LiquiditySection({ address, network }: { address: string; 
                     <VenueIcon name={p.dex} size="xs" />
                     <span className="truncate text-silver-1">{p.dex}</span>
                   </span>
-                  <span className="shrink-0 tabular-nums text-silver-1">{usd(p.tvlUsd)}</span>
+                  <span className="shrink-0 tabular-nums text-silver-1">{usd(p.tvlUsd, true, locale)}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between gap-3 text-sm text-silver-2">
                   <span>{p.token0.symbol}/{p.token1.symbol}</span>
@@ -279,9 +279,9 @@ export async function LiquiditySection({ address, network }: { address: string; 
           <table className="table">
             <thead>
               <tr>
-                <th>Площадка</th>
-                <th>Пара</th>
-                <th className="text-right">Объём</th>
+                <th>{t("colVenue")}</th>
+                <th>{t("colPair")}</th>
+                <th className="text-right">{t("colPoolSize")}</th>
               </tr>
             </thead>
             <tbody>
@@ -298,7 +298,7 @@ export async function LiquiditySection({ address, network }: { address: string; 
                     {p.token0.symbol}/{p.token1.symbol}
                   </td>
                   <td className="text-right tabular-nums">
-                    {usd(p.tvlUsd)}
+                    {usd(p.tvlUsd, true, locale)}
                     {p.tvlEstimated && <span className="text-silver-3">*</span>}
                   </td>
                 </tr>
@@ -315,24 +315,26 @@ export async function LiquiditySection({ address, network }: { address: string; 
 // ---------------------------------------------------------------- trading
 
 export async function TradingSection({ address, network }: { address: string; network: NetworkId }) {
+  const t = await getTranslations("Token");
+  const locale = (await getLocale()) as Locale;
   const r = await load(() => getSection("trading", address, network, { window: "24h" }));
-  if ("error" in r) return <Card title="Покупки и продажи"><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
-  const t = r.data;
-  const s = t.summary;
+  if ("error" in r) return <Card title={t("tradingTitle")}><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
+  const tr = r.data;
+  const s = tr.summary;
   const bp = s.buyPressurePct;
   return (
-    <Card title="Покупки и продажи за 24 часа">
+    <Card title={t("tradingTitle")}>
       <div className="grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4">
-        <Metric label="Купили" value={usd(s.buyUsd)} tone="ok" sub={`${s.buyCount} сделок`} />
-        <Metric label="Продали" value={usd(s.sellUsd)} tone="crit" sub={`${s.sellCount} сделок`} />
-        <Metric label="Доля покупок" value={bp != null ? pct(bp, 0) : "—"} sub={bp == null ? undefined : bp >= 55 ? "покупают больше" : bp <= 45 ? "продают больше" : "примерно поровну"} />
-        <Metric label="Переводов" value={num(s.transferCount)} sub={`на ${usd(s.transferVolumeUsd)}`} />
+        <Metric label={t("bought")} value={usd(s.buyUsd, true, locale)} tone="ok" sub={t("trades", { count: s.buyCount })} />
+        <Metric label={t("sold")} value={usd(s.sellUsd, true, locale)} tone="crit" sub={t("trades", { count: s.sellCount })} />
+        <Metric label={t("buyShare")} value={bp != null ? pct(bp, 0) : "—"} sub={bp == null ? undefined : bp >= 55 ? t("moreBuy") : bp <= 45 ? t("moreSell") : t("even")} />
+        <Metric label={t("transfers")} value={num(s.transferCount, locale)} sub={t("worth", { value: usd(s.transferVolumeUsd, true, locale) })} />
       </div>
       <div className="mt-6">
-        {t.buckets.length > 0 ? <FlowChart buckets={t.buckets} /> : <Empty>За сутки сделок не было.</Empty>}
+        {tr.buckets.length > 0 ? <FlowChart buckets={tr.buckets} /> : <Empty>{t("noTrades")}</Empty>}
       </div>
-      {t.coverage.coveredSec < t.coverage.requestedWindowSec * 0.95 && (
-        <p className="mt-3 text-sm text-silver-2">Период: {Math.round(t.coverage.coveredSec / 3600)} ч из 24.</p>
+      {tr.coverage.coveredSec < tr.coverage.requestedWindowSec * 0.95 && (
+        <p className="mt-3 text-sm text-silver-2">{t("period", { hours: Math.round(tr.coverage.coveredSec / 3600) })}</p>
       )}
     </Card>
   );
@@ -341,18 +343,22 @@ export async function TradingSection({ address, network }: { address: string; ne
 // ---------------------------------------------------------------- holders
 
 export async function HoldersSection({ address, network }: { address: string; network: NetworkId }) {
+  const t = await getTranslations("Token");
+  const tKind = await getTranslations("Holder");
+  const tCat = await getTranslations("Category");
+  const locale = (await getLocale()) as Locale;
   const r = await load(() => getSection("holders", address, network, { topN: 25 }));
-  if ("error" in r) return <Card title="Крупные держатели"><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
+  if ("error" in r) return <Card title={t("holdersTitle")}><ErrorBox code={r.error.code} message={r.error.message} /></Card>;
   const h = r.data;
   const c = h.concentration;
   const labels = h.labels ?? {};
   return (
-    <Card title="Крупные держатели">
+    <Card title={t("holdersTitle")}>
       <div className="grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4">
-        <Metric label="Топ-1" value={pct(c.top1Pct)} />
-        <Metric label="Топ-10" value={pct(c.top10Pct)} />
-        <Metric label="Топ-10 без пулов" value={pct(c.top10AdjustedPct)} tone={c.top10AdjustedPct > 50 ? "crit" : c.top10AdjustedPct > 25 ? "warn" : "ok"} />
-        <Metric label="Контроль 50%" value={c.nakamoto != null ? `${c.nakamoto} адреса` : ">25"} sub="держат половину" />
+        <Metric label={t("top1")} value={pct(c.top1Pct)} />
+        <Metric label={t("top10")} value={pct(c.top10Pct)} />
+        <Metric label={t("top10adj")} value={pct(c.top10AdjustedPct)} tone={c.top10AdjustedPct > 50 ? "crit" : c.top10AdjustedPct > 25 ? "warn" : "ok"} />
+        <Metric label={t("control")} value={c.nakamoto != null ? t("addrs", { count: c.nakamoto }) : ">25"} sub={t("half")} />
       </div>
 
       <ul className="mt-5 space-y-2 sm:hidden">
@@ -365,8 +371,8 @@ export async function HoldersSection({ address, network }: { address: string; ne
                 <span className="shrink-0 tabular-nums text-silver-1">{pct(x.pctSupply, 2)}</span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-silver-2">
-                <span>{x.label ?? (tag?.severity === 0 ? tag.label : HOLDER_KIND[x.kind])}</span>
-                {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{CATEGORY[tag.category].name}</Badge>}
+                <span>{x.label ?? (tag?.severity === 0 ? tag.label : tKind(x.kind))}</span>
+                {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{tCat.has(tag.category) ? tCat(`${tag.category}.name`) : tag.category}</Badge>}
               </div>
             </li>
           );
@@ -376,10 +382,10 @@ export async function HoldersSection({ address, network }: { address: string; ne
         <table className="table">
           <thead>
             <tr>
-              <th>Адрес</th>
-              <th>Кто это</th>
-              <th className="text-right">Доля</th>
-              <th className="hidden text-right sm:table-cell">Стоимость</th>
+              <th>{t("colAddress")}</th>
+              <th>{t("colWho")}</th>
+              <th className="text-right">{t("colHolderShare")}</th>
+              <th className="hidden text-right sm:table-cell">{t("colValue")}</th>
             </tr>
           </thead>
           <tbody>
@@ -392,19 +398,19 @@ export async function HoldersSection({ address, network }: { address: string; ne
                   </td>
                   <td>
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      <span className="text-silver-2">{x.label ?? (tag?.severity === 0 ? tag.label : HOLDER_KIND[x.kind])}</span>
-                      {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{CATEGORY[tag.category].name}</Badge>}
+                      <span className="text-silver-2">{x.label ?? (tag?.severity === 0 ? tag.label : tKind(x.kind))}</span>
+                      {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{tCat.has(tag.category) ? tCat(`${tag.category}.name`) : tag.category}</Badge>}
                     </span>
                   </td>
                   <td className="text-right tabular-nums">{pct(x.pctSupply, 2)}</td>
-                  <td className="hidden text-right tabular-nums sm:table-cell">{usd(x.valueUsd)}</td>
+                  <td className="hidden text-right tabular-nums sm:table-cell">{usd(x.valueUsd, true, locale)}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
-      <p className="mt-4 text-sm text-silver-2">По переводам за последние недели.</p>
+      <p className="mt-4 text-sm text-silver-2">{t("holdersFoot")}</p>
     </Card>
   );
 }

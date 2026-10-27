@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { Coins, Droplets, KeyRound, Users } from "lucide-react";
 import { SearchForm } from "@/components/SearchForm";
-import { CardSkeleton, ErrorBox, PageTitle } from "@/components/ui";
+import { CardSkeleton, ErrorBox, Notice, PageTitle } from "@/components/ui";
+import { Link } from "@/i18n/navigation";
 import { DataError, getMarkets, getSection, limit } from "@/lib/data";
 import { trackEvent } from "@/lib/metrics";
 import type { MarketsData } from "@/lib/api-types";
-import { isNetworkId } from "@/lib/networks";
+import { NETWORKS, isNetworkId } from "@/lib/networks";
 import { HoldersSection, LiquiditySection, MarketsSection, OverviewSection, RiskSection, TradingSection } from "./sections";
 
-export const metadata: Metadata = { title: "Анализ токена" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Token");
+  return { title: t("title") };
+}
 export const dynamic = "force-dynamic";
 
 type SP = Promise<{ address?: string; network?: string }>;
@@ -23,50 +28,54 @@ const EXAMPLES = [
 export default async function TokenPage({ searchParams }: { searchParams: SP }) {
   const { address, network: raw } = await searchParams;
   const network = raw && isNetworkId(raw) ? raw : "ethereum";
+  const t = await getTranslations("Token");
+  const tCheck = await getTranslations("Check");
 
   // Validate once up front: a wrong address or "not a contract" should be one clear message, not five broken cards.
   let error: DataError | null = null;
   let overview: Awaited<ReturnType<typeof getSection<"overview">>> | null = null;
   let markets: MarketsData | null = null;
+  let listed: { network: string; symbol: string }[] = [];
+  let marketsFailed = false;
   if (address) {
     try {
       await limit("token", 12);
       [overview, markets] = await Promise.all([
         getSection("overview", address.trim(), network),
         getMarkets(address.trim(), network)
-          .then((r) => r.markets)
-          .catch(() => null),
+          .then((r) => ((listed = r.listed ?? []), r.markets))
+          .catch(() => ((marketsFailed = true), null)),
       ]);
-      trackEvent("token", network, "/token");
+      trackEvent("token", overview?.symbol ?? network, "/token", { target: address.trim(), network });
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
-      trackEvent("token", `error:${error.code}`, "/token");
+      trackEvent("token", `error:${error.code}`, "/token", { target: address.trim(), network });
     }
   }
 
   return (
     <div className="space-y-5">
-      <PageTitle title="Анализ токена" sub="Цена, пулы, держатели и права владельца." />
-      <SearchForm action="/token" address={address} network={network} placeholder="Адрес токена: 0x…" button="Разобрать" />
+      <PageTitle title={t("title")} sub={t("sub")} />
+      <SearchForm action="/token" address={address} network={network} placeholder={t("placeholder")} button={t("button")} />
       {!address && (
         <>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             {EXAMPLES.map((e) => (
-              <a key={e.address} href={`/token?address=${e.address}&network=${e.network}`} className="border border-line px-2 py-0.5 text-silver-2 hover:text-silver-1">
+              <Link key={e.address} href={`/token?address=${e.address}&network=${e.network}`} className="border border-line px-2 py-0.5 text-silver-2 hover:text-silver-1">
                 {e.label}
-              </a>
+              </Link>
             ))}
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Coins, title: "Цена и объёмы" },
-              { icon: Droplets, title: "Пулы" },
-              { icon: Users, title: "Держатели" },
-              { icon: KeyRound, title: "Права владельца" },
-            ].map(({ icon: Icon, title }) => (
-              <div key={title} className="card flex items-center gap-3 p-4">
+              { icon: Coins, key: "featPrice" },
+              { icon: Droplets, key: "featPools" },
+              { icon: Users, key: "featHolders" },
+              { icon: KeyRound, key: "featOwner" },
+            ].map(({ icon: Icon, key }) => (
+              <div key={key} className="card flex items-center gap-3 p-4">
                 <Icon className="size-4 text-accent" aria-hidden />
-                <span className="text-sm text-silver-2">{title}</span>
+                <span className="text-sm text-silver-2">{t(key)}</span>
               </div>
             ))}
           </div>
@@ -75,22 +84,38 @@ export default async function TokenPage({ searchParams }: { searchParams: SP }) 
       {error && <ErrorBox code={error.code} message={error.message} />}
       {overview && address && (
         <div className="space-y-4">
+          {(() => {
+            // the same address can hold an unrelated contract on another network: say which network the real token is on
+            const other = listed.filter((x) => x.network !== network && isNetworkId(x.network));
+            if (listed.some((x) => x.network === network) || other.length === 0) return null;
+            const label = (n: string) => NETWORKS[n as keyof typeof NETWORKS].label;
+            return (
+              <Notice tone="warn">
+                {tCheck("elsewhere", { symbol: other[0].symbol, networks: other.map((x) => label(x.network)).join(", "), here: NETWORKS[network].label })}{" "}
+                {other.map((x) => (
+                  <Link key={x.network} href={`/token?address=${overview!.address}&network=${x.network}`} className="link mr-3 whitespace-nowrap">
+                    {tCheck("checkOn", { network: label(x.network) })}
+                  </Link>
+                ))}
+              </Notice>
+            );
+          })()}
           <OverviewSection o={overview} markets={markets} />
-          {overview.isToken && <MarketsSection m={markets} />}
+          {overview.isToken && <MarketsSection m={markets} failed={marketsFailed} />}
           <div className="grid items-start gap-4 lg:grid-cols-2">
-            <Suspense fallback={<CardSkeleton title="Риски" lines={6} />}>
+            <Suspense fallback={<CardSkeleton title={t("skRisks")} lines={6} />}>
               <RiskSection address={overview.address} network={network} />
             </Suspense>
-            <Suspense fallback={<CardSkeleton title="Деньги в пулах" lines={6} />}>
+            <Suspense fallback={<CardSkeleton title={t("skPools")} lines={6} />}>
               <LiquiditySection address={overview.address} network={network} />
             </Suspense>
           </div>
           {overview.isToken && (
             <>
-              <Suspense fallback={<CardSkeleton title="Покупки и продажи за сутки" lines={8} />}>
+              <Suspense fallback={<CardSkeleton title={t("skTrading")} lines={8} />}>
                 <TradingSection address={overview.address} network={network} />
               </Suspense>
-              <Suspense fallback={<CardSkeleton title="Крупные держатели" lines={10} />}>
+              <Suspense fallback={<CardSkeleton title={t("skHolders")} lines={10} />}>
                 <HoldersSection address={overview.address} network={network} />
               </Suspense>
             </>

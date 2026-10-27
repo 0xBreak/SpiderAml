@@ -19,7 +19,8 @@ export default async function Blog({ params }: { params: Promise<{ locale: strin
   const posts = await allPosts();
   return (
     <div className="space-y-5">
-      <PageTitle eyebrow="Материалы" title={t("title")} sub={t("sub")} />
+      <PageTitle eyebrow={t("eyebrow")} title={t("title")} sub={t("sub")} />
+      {locale === "en" && posts.length > 0 && <p className="text-sm text-silver-2">{t("russianOnly")}</p>}
       {posts.length === 0 && <p className="card p-5 text-sm text-silver-2">{t("empty")}</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         {posts.map((p) => (

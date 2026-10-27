@@ -21,13 +21,15 @@
     "reportBug": "Report a site bug",
     "reportBugSubject": "SpiderAML: site bug",
     "reportAddress": "Report a scam address",
-    "tagline": "Crypto address screening from open and official data"
+    "tagline": "Crypto address screening from open and official data",
+    "terms": "Terms of use",
+    "privacy": "Privacy"
   },
   "Common": {
-    "disclaimer": "Scores are automatic. Not legal advice and not an accusation.",
+    "disclaimer": "The score is produced automatically from public data. It is not legal advice and not an accusation: addresses can be listed by mistake.",
     "addressSr": "Address",
     "networkSr": "Network",
-    "searchPlaceholder": "Wallet or token address: 0x… or T…",
+    "searchPlaceholder": "Wallet or token address: 0x…, T… or name.eth",
     "searchButton": "Check"
   },
   "Lang": {
@@ -68,34 +70,33 @@
   "Level": {
     "low": {
       "title": "Low risk",
-      "summary": "This address is not on any risk lists we know.",
+      "summary": "The address is not on sanctions lists or in risk databases.",
       "advice": [
-        "Not a guarantee: new schemes appear daily.",
-        "For a large amount, send a test transfer."
+        "Compare the address with the one you were given, character by character.",
+        "For a large amount, send a small test payment first."
       ]
     },
     "medium": {
       "title": "Some risk signals",
-      "summary": "There are isolated warning signs. That is not a verdict yet — look into what explains them.",
+      "summary": "Some risk signs were found. Details are in “What the score is made of”.",
       "advice": [
-        "Check the reasons below.",
-        "In doubt — do not send."
+        "Check the reasons below before sending.",
+        "For a large amount, send a small test payment first."
       ]
     },
     "high": {
       "title": "High risk",
-      "summary": "Serious flags in open databases. We advise against sending money.",
+      "summary": "Public databases link the address to serious risks.",
       "advice": [
-        "Do not send money.",
-        "Being rushed? Stop."
+        "Sending funds to this address is not recommended."
       ]
     },
     "critical": {
       "title": "Critical risk",
-      "summary": "The address is on a sanctions list. Or it is linked to a hack, theft or phishing.",
+      "summary": "The address is sanctioned or linked to a hack, theft or phishing.",
       "advice": [
-        "Do not send money.",
-        "Already sent? Save the hash and contact support."
+        "Do not send funds to this address.",
+        "If you already did, keep the transaction hash and contact your exchange or wallet support."
       ]
     }
   },
@@ -125,7 +126,8 @@
     "tron_limited": "Tron: lists and open databases only, no transfers.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
-    "contract_unavailable": "Contract could not be analyzed."
+    "contract_unavailable": "Contract could not be analyzed.",
+    "reviewed_clear": "The SpiderAML team reviewed this address and removed wrong flags from public databases. Official sanctions lists still apply."
   },
   "Chain": {
     "evm": "EVM chains",
@@ -145,14 +147,22 @@
     "bnb-beacon": "BNB Beacon"
   },
   "Errors": {
-    "INVALID_ADDRESS": "This does not look like an address. Use a 0x… address (Ethereum, BNB and others) or T… (Tron).",
+    "INVALID_ADDRESS": "This does not look like an address. Use 0x… (Ethereum, BNB Chain and others), T… (Tron) or an ENS name like name.eth.",
     "INVALID_NETWORK": "This network is not supported.",
     "NOT_A_CONTRACT": "There is no contract at this address on the selected network. Check the network or paste a token address.",
     "UNSUPPORTED": "This contract does not look like a token — this analysis is unavailable for it.",
     "RATE_LIMITED": "Too many requests. Wait a minute.",
     "CONFIG_MISSING": "This network is not connected yet.",
     "UNAVAILABLE": "The data service is temporarily unavailable. Try again later.",
-    "fallback": "Something went wrong. Try again."
+    "fallback": "Something went wrong. Please try again.",
+    "ENS_NOT_FOUND": "This ENS name does not point to any address. Check the spelling.",
+    "BAD_CHECKSUM": "The address fails its checksum: it has a typo or was copied only partly. Copy it again from the wallet or explorer. Funds cannot be sent to such an address.",
+    "TRON_EXPECTED": "Tron is selected, but this is not a Tron address. A Tron address starts with T and has 34 characters.",
+    "INVALID_CATEGORY": "Choose what happened.",
+    "DESCRIPTION_SHORT": "Describe what happened in a couple of sentences at least.",
+    "DESCRIPTION_LONG": "The description is too long (2000 characters max).",
+    "INVALID_LINK": "The link must start with https://",
+    "UPSTREAM": "The data service is temporarily unavailable. Please try again later."
   },
   "Home": {
     "heroTitle": "Check an address before you send",
@@ -221,7 +231,7 @@
     "sub": "Paste the recipient address. We'll show the risk and why.",
     "whatToDo": "What to do",
     "sanctionedBadge": "On a sanctions list",
-    "scamBadge": "Possible scam",
+    "scamBadge": "Fraud signals in databases",
     "contractBadge": "Contract",
     "recordedAs": "Registry: <b>{category}</b>, level {level}/3.",
     "blockedNote": " SpiderSend will block transfers here.",
@@ -254,8 +264,8 @@
     "fullAnalysis": "Full token analysis",
     "cpTitle": "Connections",
     "cpHint": "Addresses: {count}",
-    "cpEmpty": "No risk labels.",
-    "cpFound": "Some addresses carry risk labels. That does not make this address risky.",
+    "cpEmpty": "None of the recent counterparties carries a risk label.",
+    "cpFound": "Some counterparties are in risk databases. This counts in the score but does not by itself make the address risky.",
     "explorerLabel": "Explorer",
     "stepLabel": "Step {n}",
     "howSanctionsTitle": "Sanctions",
@@ -265,14 +275,32 @@
     "howCpTitle": "Address connections",
     "howCpText": "Who it moved money with.",
     "howTokensTitle": "Tokens",
-    "howTokensText": "Holders, liquidity, owner rights."
+    "howTokensText": "Holders, liquidity, owner rights.",
+    "whyTitle": "What the score is made of",
+    "whyHint": "The final score is the largest of the parts",
+    "partSources": "Sanctions lists and risk databases",
+    "partCps": "Counterparties",
+    "partToken": "Token design",
+    "srcNone": "not found",
+    "srcFound": "{count} signal(s) found",
+    "cpSummaryNone": "{checked} checked, none in risk databases",
+    "cpSummaryFound": "{flagged} of {checked} are in risk databases",
+    "cpSkipped": "not checked",
+    "tokenScore": "automatic contract score {score}/100",
+    "points": "{n} pts",
+    "detailsTitle": "Signals found",
+    "elsewhere": "The {symbol} token is known on {networks}. On {here} this address holds a different contract — the score below is about that contract, not about {symbol}.",
+    "checkOn": "Check on {network} →",
+    "sourceWord": "source"
   },
   "Blog": {
     "title": "Blog",
     "sub": "How to spot a scam or a pyramid.",
     "empty": "First articles are on the way and will appear here soon.",
     "draft": "Draft",
-    "back": "All articles"
+    "back": "All articles",
+    "eyebrow": "Materials",
+    "russianOnly": "The articles are in Russian for now. Your browser can translate the page."
   },
   "NotFound": {
     "title": "Page not found",
@@ -283,5 +311,421 @@
     "title": "Something went wrong",
     "sub": "Try again in a minute.",
     "retry": "Retry"
+  },
+  "RiskContext": {
+    "stablecoin": "This is a stablecoin. Its issuer usually holds most of the supply and can mint and freeze coins — that is how it works, so concentration and owner powers are not counted here. The main risk of a stablecoin is the issuer's reserves, which cannot be checked on-chain.",
+    "cex_liquidity": "Liquidity on centralised exchanges (order books, from CoinGecko) is counted, not only DEX pools.",
+    "exchange_holders": "Exchange wallets are not counted as large holders: they hold coins for many customers."
+  },
+  "SourceName": {
+    "reports": "Confirmed user reports",
+    "manual": "Manual incidents",
+    "admin": "SpiderAML labels",
+    "own": "SpiderAML lists"
+  },
+  "Holder": {
+    "eoa": "Wallet",
+    "multisig": "Multisig",
+    "contract": "Contract",
+    "pool": "DEX pool",
+    "burn": "Burned",
+    "token": "Token itself"
+  },
+  "Whales": {
+    "title": "Whales",
+    "sub": "Large transfers of a token above the amount you choose: who is buying, who is selling and how much.",
+    "placeholder": "Token address 0x…",
+    "button": "Show",
+    "threshold": "Threshold",
+    "period": "Period",
+    "from": "from",
+    "loading": "Looking for large transfers",
+    "w1h": "1 hour",
+    "w6h": "6 hours",
+    "w24h": "24 hours",
+    "w7d": "7 days",
+    "featTransfers": "Large transfers",
+    "featBuys": "Buys",
+    "featSells": "Sells",
+    "featLabels": "Labels",
+    "typeBuy": "Buy",
+    "typeSell": "Sell",
+    "typeTransfer": "Transfer",
+    "typeMint": "Mint",
+    "typeBurn": "Burn",
+    "bigTransfers": "Large transfers",
+    "wallets": "Wallets",
+    "dexBuy": "Bought on DEX",
+    "dexSell": "Sold on DEX",
+    "noPrice": "The token has no price, so a transfer counts as large above 0.1% of the total supply.",
+    "partial": "Scanned {hours} h of the chosen period: this token has a lot of transfers. Repeat the request to look deeper.",
+    "walletsTitle": "Whale wallets",
+    "none": "No transfers above {value}. Try a lower threshold or a longer period.",
+    "topTransfers": "Largest transfers",
+    "tx": "Transaction",
+    "colWallet": "Wallet",
+    "colWho": "Who",
+    "colIn": "Received",
+    "colOut": "Sent",
+    "colNet": "Net",
+    "sortBy": "Sort by {column}"
+  },
+  "Sanctions": {
+    "title": "Sanctioned addresses",
+    "sub": "Crypto addresses from the official US, UK and EU lists — only what regulators published, with a link to the record.",
+    "updateFailed": "update failed",
+    "updated": "updated {date}",
+    "found": "Found: {count}",
+    "nothing": "Nothing found. Try another query or filters.",
+    "since": "since {date}",
+    "colAddress": "Address",
+    "colNetwork": "Network",
+    "colOwner": "Owner",
+    "colList": "List",
+    "colListed": "Listed on",
+    "notGiven": "not given",
+    "pagesLabel": "Pages",
+    "pageOf": "Page {page} of {pages}",
+    "prev": "Previous page",
+    "next": "Next page",
+    "evmNote": "An EVM address (Ethereum, BNB Chain, Arbitrum and others) is the same on all these networks, so they are shown together.",
+    "foot": "The UK and EU publish the listing date. OFAC (US) does not include it in the machine-readable list — it is on the record page behind the link.",
+    "searchPlaceholder": "Address or name from the list",
+    "search": "Search",
+    "network": "Network",
+    "allNetworks": "All networks",
+    "list": "List",
+    "allLists": "All lists",
+    "perPage": "Results per page",
+    "per10": "10 per page",
+    "per20": "20 per page",
+    "per50": "50 per page"
+  },
+  "Token": {
+    "title": "Token analysis",
+    "sub": "Price, pools, holders and owner powers.",
+    "placeholder": "Token address: 0x…",
+    "button": "Analyse",
+    "featPrice": "Price and volume",
+    "featPools": "Pools",
+    "featHolders": "Holders",
+    "featOwner": "Owner powers",
+    "skRisks": "Risks",
+    "skPools": "Money in pools",
+    "skTrading": "Buys and sells, 24h",
+    "skHolders": "Top holders",
+    "cgFailed": "CoinGecko did not respond just now, so exchange data is missing and the volume is DEX-only. Reload in a minute.",
+    "noName": "Unnamed",
+    "kind": {
+      "erc20": "ERC-20",
+      "lp-v2": "Pool V2",
+      "lp-v3": "Pool V3",
+      "vault-4626": "Vault",
+      "staking": "Staking",
+      "erc721": "NFT ERC-721",
+      "erc1155": "NFT ERC-1155",
+      "other": "Contract"
+    },
+    "codeOpen": "Code published",
+    "codeClosed": "Code not published",
+    "upgradeable": "Rules can be changed",
+    "ownerContract": "Owner is a contract",
+    "hasOwner": "Has an owner",
+    "price": "Price",
+    "perDay": "{value} 24h",
+    "mcap": "Market cap",
+    "vol24": "24h volume",
+    "supply": "Total supply",
+    "owner": "Owner",
+    "ownerIsContract": "contract",
+    "ownerIsWallet": "ordinary wallet",
+    "whereTitle": "Where it trades",
+    "noMarkets": "Not traded on known venues.",
+    "cex": "Exchanges",
+    "dex": "DEX",
+    "venues": "{count} venues",
+    "topVenue": "Top venue",
+    "ofVolume": "{pct} of volume",
+    "anomaly": "anomaly",
+    "stale": "stale data",
+    "colVenue": "Venue",
+    "colPair": "Pair",
+    "colPrice": "Price",
+    "colVol": "24h volume",
+    "colShare": "Share",
+    "risksTitle": "Risks",
+    "lvLow": "Low",
+    "lvModerate": "Moderate",
+    "lvHigh": "High",
+    "lvCritical": "Critical",
+    "checkAddr": "Check the address against sanctions",
+    "poolsTitle": "Money in pools",
+    "inPools": "Total in pools",
+    "sellBuffer": "Room to sell",
+    "noPools": "No exchange pools. Selling will be hard.",
+    "colPoolSize": "Size",
+    "tradingTitle": "Buys and sells, last 24h",
+    "bought": "Bought",
+    "sold": "Sold",
+    "trades": "{count} trades",
+    "buyShare": "Buy share",
+    "moreBuy": "more buying",
+    "moreSell": "more selling",
+    "even": "about even",
+    "transfers": "Transfers",
+    "worth": "worth {value}",
+    "noTrades": "No trades in the last 24 hours.",
+    "period": "Period: {hours} h of 24.",
+    "holdersTitle": "Top holders",
+    "top1": "Top 1",
+    "top10": "Top 10",
+    "top10adj": "Top 10 excl. pools",
+    "control": "50% control",
+    "addrs": "{count} addr.",
+    "half": "hold half",
+    "colAddress": "Address",
+    "colWho": "Who",
+    "colHolderShare": "Share",
+    "colValue": "Value",
+    "holdersFoot": "From transfers over recent weeks."
+  },
+  "Send": {
+    "title": "Safe send",
+    "sub": "Send USDC through the SpiderSend contract: it checks the sender and the recipient against an on-chain registry and refuses to pay a sanctioned address or a known hacker.",
+    "transfer": "Transfer",
+    "hint": "{network}. Not real money.",
+    "needWallet": "You need a browser wallet, for example",
+    "needWalletTail": "or Rabby. Install it and reload the page.",
+    "connect": "Connect wallet",
+    "wallet": "Wallet",
+    "ethGas": "ETH for gas",
+    "otherChain": "Your wallet is on another network. We will switch it when sending.",
+    "recipient": "Recipient",
+    "self": "This is your own address. There is no need to send to yourself.",
+    "amount": "Amount, {symbol}",
+    "notEnough": "Not enough {symbol}.",
+    "faucet": "Get test tokens",
+    "youGet": "Recipient gets",
+    "ourFee": "Our fee",
+    "free": "0 — free",
+    "networkFee": "Network fee",
+    "twoTx": ", 2 transactions",
+    "noGas": "Not enough ETH for gas.",
+    "confirmRisk": "I understand the risk and still want to send.",
+    "step1": "Step 1 of 2: approving…",
+    "step2": "Step 2 of 2: sending…",
+    "sending": "Sending…",
+    "approveSend": "Approve and send",
+    "send": "Send",
+    "approveTx": "Approval transaction",
+    "sent": "Sent.",
+    "sentTx": "Transaction in explorer",
+    "screenTitle": "Recipient check",
+    "checking": "Checking…",
+    "registry": "On-chain registry",
+    "registryFail": "Could not read the registry.",
+    "willBlock": "The transfer will be blocked: “{category}”.",
+    "willPass": "The contract will let the transfer through",
+    "hasMark": " — the registry has a level {level} record",
+    "ours": "Our check",
+    "more": "Full check details",
+    "how": "How it works",
+    "steps": [
+      "You allow the contract to take the USDC amount.",
+      "The contract checks the addresses against the registry.",
+      "Critical risk — the transfer is cancelled and the money stays with you."
+    ],
+    "code": "Contract code",
+    "rejected": "You cancelled the operation in your wallet.",
+    "blockedBy": "The contract blocked the transfer: the address is in the registry as “{category}”.",
+    "unknown": "Unknown error",
+    "failed": "The transaction failed.",
+    "categories": [
+      "—",
+      "Sanctions list",
+      "Hack or theft",
+      "Phishing",
+      "Suspicious activity",
+      "Mixer",
+      "Other"
+    ],
+    "risk": "risk"
+  },
+  "Report": {
+    "title": "Report an address",
+    "sub": "Ran into phishing, a scam or theft — or think we flagged an address by mistake? Tell us and we will check.",
+    "cost": "What it costs",
+    "free": "Free",
+    "freeNote": "No wallet, sign-up or deposit. The report is stored in the SpiderAML database, not on-chain.",
+    "next": "What happens next",
+    "steps": [
+      "We review it by hand.",
+      "We confirm it and add the address to our database.",
+      "Theft or phishing: written to the on-chain registry.",
+      "A mistake: we remove the label. We cannot change official sanctions lists."
+    ],
+    "privacy": "We do not publish your report or reveal who sent it. Do not include personal data.",
+    "accepted": "Report #{id} received",
+    "saveLink": "Save the status link — there is no other way to find it: we ask for no email and no sign-up.",
+    "openStatus": "Open report status",
+    "another": "Report another address",
+    "stepAddress": "Address",
+    "stepCategory": "What happened",
+    "stepDetails": "Details",
+    "addressLabel": "Address",
+    "addressPh": "0x… or T…",
+    "networkLabel": "Network",
+    "whatHappened": "What happened",
+    "whatPh": "When, how much, the transaction hash.",
+    "evidence": "Evidence",
+    "back": "Back",
+    "nextStep": "Next",
+    "submit": "Send report",
+    "optPhishing": "Phishing or drainer",
+    "optScam": "Scam or scheme",
+    "optExploit": "Hack or theft",
+    "optMixer": "Mixer",
+    "optSanctioned": "Sanctions",
+    "optOther": "Other",
+    "optFalsePositive": "This is a mistake",
+    "vAddressRequired": "Paste an address.",
+    "vAddressBad": "This does not look like an address. Use 0x… or T…",
+    "vCategory": "Choose what happened.",
+    "vDescShort": "Describe what happened in a couple of sentences at least.",
+    "vDescLong": "The description is too long (2000 characters max).",
+    "vLink": "The link must start with https://"
+  },
+  "ReportStatus": {
+    "title": "Report status",
+    "report": "Report #{id}",
+    "notFound": "Report not found. The link is shown once, right after you send a report.",
+    "new": "Received",
+    "newText": "Waiting for review.",
+    "reviewing": "Under review",
+    "reviewingText": "We are looking into the evidence.",
+    "confirmed": "Confirmed",
+    "confirmedText": "The address was added to our database.",
+    "rejected": "Rejected",
+    "rejectedText": "Not enough evidence.",
+    "fixed": "Corrected",
+    "fixedText": "We reviewed the address and removed the SpiderAML flag. We cannot change entries in official sanctions lists.",
+    "cat_phishing": "Phishing or drainer",
+    "cat_scam": "Scam or scheme",
+    "cat_exploit": "Hack or theft",
+    "cat_mixer": "Laundering through a mixer",
+    "cat_sanctioned": "Linked to sanctions",
+    "cat_other": "Other",
+    "cat_false_positive": "Flagged by mistake",
+    "reply": "SpiderAML reply",
+    "address": "Address",
+    "network": "Network",
+    "what": "What happened",
+    "sent": "Sent",
+    "updated": "Updated",
+    "privateNote": "This link is private. Save it.",
+    "another": "Report another address"
+  },
+  "Ui": {
+    "gaugeLabel": "Risk score {score} of 100",
+    "of100": "of 100",
+    "copy": "Copy address",
+    "openExplorer": "Open in explorer",
+    "buys": "Buys",
+    "sells": "Sells",
+    "flowLabel": "Buys and sells by hour",
+    "flowTip": "{time}: buys {buy}, sells {sell}",
+    "walletRejected": "Connection cancelled in the wallet.",
+    "walletFailed": "Could not connect the wallet.",
+    "installWallet": "Install a wallet",
+    "connectWallet": "Connect wallet",
+    "disconnect": "Disconnect wallet",
+    "disconnectShort": "Disconnect"
+  },
+  "Terms": {
+    "title": "Terms of use",
+    "updated": "Updated",
+    "sources": "Data sources",
+    "contact": "Contact",
+    "contactText": "Questions and corrections:",
+    "privacy": "How we handle data — see the privacy policy →",
+    "sections": [
+      [
+        "What SpiderAML is",
+        "SpiderAML is a free information service. It collects what official sanctions lists and public databases say about crypto addresses and presents it in plain language. By using the site you agree to these terms."
+      ],
+      [
+        "Not a verdict and not an accusation",
+        "The risk score is produced automatically. It is not legal, tax or financial advice and not a statement that the owner of an address did anything unlawful. Addresses end up in databases by mistake, and new schemes may not be in any database yet. Low risk does not guarantee safety."
+      ],
+      [
+        "Data “as is”",
+        "We show third-party data as it was published and name the source next to every signal. We are not responsible for its completeness, accuracy or freshness, or for decisions made on the basis of the score. The sources and their terms are listed below."
+      ],
+      [
+        "Sanctions",
+        "A “sanctions list” mark only means the address appears in a list published by a regulator. Whether sanctions apply to you and how to comply is your responsibility; ask a lawyer if in doubt."
+      ],
+      [
+        "If an address is flagged by mistake",
+        "Tell us through the Report form (“This is a mistake”) or by email. We will review it and remove SpiderAML's own label if it is wrong. We cannot change official sanctions lists or other parties' databases, but we will tell you whom to contact."
+      ],
+      [
+        "Safe send",
+        "The Safe send section runs on the Arbitrum Sepolia testnet; the money there is not real. The SpiderSend contract never holds funds; your wallet makes the transfers and you confirm them yourself."
+      ],
+      [
+        "What is not allowed",
+        "Do not scrape the site automatically, work around rate limits, disrupt the service, or present a SpiderAML score as an official decision of a regulator."
+      ],
+      [
+        "Changes",
+        "We may update the service and these terms; the date of the last change is shown at the top."
+      ]
+    ],
+    "src_ofac": "official US government publication",
+    "src_uk": "Contains public sector information licensed under the Open Government Licence v3.0",
+    "src_eu": "© European Union, reuse authorised with acknowledgement of the source",
+    "src_mit": "MIT licence",
+    "src_gpl": "GPL-3.0 licence",
+    "src_labels": "open set of explorer labels (MIT)",
+    "src_goplus": "checked live through the public API",
+    "src_cg": "market data: Data provided by CoinGecko",
+    "src_zerion": "balances, prices and transaction history"
+  },
+  "Privacy": {
+    "title": "Privacy",
+    "updated": "Updated",
+    "contactText": "Email:",
+    "terms": "Terms of use →",
+    "sections": [
+      [
+        "In short",
+        "There is no sign-up. We do not ask for your name, email or phone, do not store IP addresses and use no advertising or tracking cookies."
+      ],
+      [
+        "Visit statistics",
+        "To see what is used, we record: which page was opened and what was clicked; the site you came from (domain only) or a link tag such as ?src=telegram; the device type (phone or computer); the country, as reported by Cloudflare. A visitor is identified for one day by a hash of a random “salt”, the IP address and the browser; the salt is deleted the next day, so visits on different days cannot be linked and the record cannot identify a person. Records older than 13 months are deleted automatically."
+      ],
+      [
+        "Checked addresses",
+        "When you check an address or a token we store the address, the network and the result, to see what people look for most. Crypto addresses are public; the record is not tied to your identity. To run the check our server sends the address (not your data) to external services: GoPlus, Zerion, CoinGecko, Etherscan and a blockchain node provider."
+      ],
+      [
+        "Address reports",
+        "The Report form stores the address, network, category, your description and the link. We do not ask for contact details — please do not put personal data in the description. Only the SpiderAML team sees the report; its status opens through a secret link that only you receive."
+      ],
+      [
+        "Cookies and browser storage",
+        "The site remembers your chosen language in one cookie (NEXT_LOCALE) for a year. In Safe send your browser remembers that a wallet was connected; this stays on your device. We never receive your wallet, keys or signatures."
+      ],
+      [
+        "Who else handles traffic",
+        "The site runs behind Cloudflare (protection and delivery) on a Hetzner server in the European Union. Cloudflare sees technical request data under its own privacy policy."
+      ],
+      [
+        "Your rights",
+        "You can ask us to delete a report you sent or ask about your data — write to us. Since we do not know who you are, include the report's status link."
+      ]
+    ]
   }
 }

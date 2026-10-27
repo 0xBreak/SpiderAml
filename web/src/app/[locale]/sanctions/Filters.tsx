@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { CHAIN_NAME } from "@/lib/texts";
 
 /** Live filters for the sanctions list. Typing updates ?q= (debounced),
  * selects update ?chain= / ?list= immediately; changing any filter resets ?page=. */
@@ -16,6 +16,8 @@ export function SanctionsFilters({
   chains: { chain: string; count: number }[];
   lists: { list: string; count: number }[];
 }) {
+  const t = useTranslations("Sanctions");
+  const tChain = useTranslations("Chain");
   const [q, setQ] = useState(initial.q ?? "");
   const [, setParamQ] = useQueryState("q", parseAsString.withOptions({ history: "replace", shallow: false }));
   const [, setChain] = useQueryState("chain", parseAsString.withOptions({ history: "replace", shallow: false }));
@@ -39,9 +41,9 @@ export function SanctionsFilters({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         maxLength={100}
-        placeholder="Адрес или имя из списка"
+        placeholder={t("searchPlaceholder")}
         className="input font-mono sm:flex-1"
-        aria-label="Поиск"
+        aria-label={t("search")}
       />
       <select
         defaultValue={initial.chain ?? ""}
@@ -50,12 +52,12 @@ export function SanctionsFilters({
           void setPage(null);
         }}
         className="input sm:w-48"
-        aria-label="Сеть"
+        aria-label={t("network")}
       >
-        <option value="">Все сети</option>
+        <option value="">{t("allNetworks")}</option>
         {chains.map((c) => (
           <option key={c.chain} value={c.chain}>
-            {CHAIN_NAME[c.chain] ?? c.chain} ({c.count})
+            {tChain.has(c.chain) ? tChain(c.chain) : c.chain} ({c.count})
           </option>
         ))}
       </select>
@@ -66,9 +68,9 @@ export function SanctionsFilters({
           void setPage(null);
         }}
         className="input sm:w-48"
-        aria-label="Список"
+        aria-label={t("list")}
       >
-        <option value="">Все списки</option>
+        <option value="">{t("allLists")}</option>
         {lists.map((l) => (
           <option key={l.list} value={l.list}>
             {l.list} ({l.count})
@@ -83,11 +85,11 @@ export function SanctionsFilters({
           void setPage(null);
         }}
         className="input sm:w-36"
-        aria-label="Сколько на страницу"
+        aria-label={t("perPage")}
       >
-        <option value="10">по 10</option>
-        <option value="20">по 20</option>
-        <option value="50">по 50</option>
+        <option value="10">{t("per10")}</option>
+        <option value="20">{t("per20")}</option>
+        <option value="50">{t("per50")}</option>
       </select>
     </div>
   );

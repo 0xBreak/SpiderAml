@@ -50,6 +50,8 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
               {NETWORKS[id].label}
             </option>
           ))}
+          {/* Tron is screened by the AML check only (lists and databases, no token analytics) */}
+          {action === "/check" && <option value="tron">Tron</option>}
         </select>
       </label>
       {children}

@@ -18,6 +18,10 @@ export interface Finding {
 
 export interface CheckReport {
   address: string;
+  ensName?: string | null;
+  scoreParts?: { sources: number; counterparties: number; token: number };
+  /** the address is a known token on these networks but not on the checked one */
+  listedElsewhere?: { network: string; symbol: string }[];
   kind: "evm" | "tron";
   network: string;
   score: number;
@@ -95,6 +99,7 @@ export interface Market {
 
 export interface MarketsData {
   coingeckoId: string;
+  stablecoin?: boolean;
   url: string;
   priceUsd: number | null;
   marketCapUsd: number | null;
