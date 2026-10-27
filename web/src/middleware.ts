@@ -25,7 +25,9 @@ export function middleware(req: NextRequest, ev: NextFetchEvent) {
   }
 
   const isPrefetch = h.get("next-router-prefetch") === "1" || h.get("purpose") === "prefetch" || h.get("sec-purpose")?.includes("prefetch");
-  if (req.method === "GET" && !isPrefetch && process.env.DATA_SECRET) {
+  // the Docker healthcheck and anything else from inside the server is not a visitor
+  const fromInside = /^(localhost|127\.0\.0\.1|web)(:\d+)?$/.test(h.get("host") ?? "");
+  if (req.method === "GET" && !isPrefetch && !fromInside && process.env.DATA_SECRET) {
     const body = {
       ip: h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local",
       ua: h.get("user-agent") ?? "",
