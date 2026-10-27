@@ -7,8 +7,23 @@ export const config = {
   matcher: ["/((?!_next/|api/|brand/|favicon.ico|apple-icon|opengraph-image|robots.txt|sitemap.xml).*)"],
 };
 
+/** spideraml.com in production (set in docker-compose); empty locally, so dev on localhost is untouched. */
+const CANONICAL_HOST = process.env.CANONICAL_HOST ?? "";
+
 export function middleware(req: NextRequest, ev: NextFetchEvent) {
   const h = req.headers;
+
+  // One address only: plain http, Cloudflare's alternative ports (8080, 8443…) and www all go to https://spideraml.com.
+  if (CANONICAL_HOST) {
+    const scheme = /"scheme":"(\w+)"/.exec(h.get("cf-visitor") ?? "")?.[1] ?? h.get("x-forwarded-proto") ?? "https";
+    const host = h.get("host") ?? "";
+    // requests from inside the server (Docker healthcheck, curl 127.0.0.1:3000) are left alone
+    const internal = /^(localhost|127\.0\.0\.1|web)(:\d+)?$/.test(host);
+    if (!internal && (scheme !== "https" || host !== CANONICAL_HOST)) {
+      return NextResponse.redirect(`https://${CANONICAL_HOST}${req.nextUrl.pathname}${req.nextUrl.search}`, 301);
+    }
+  }
+
   const isPrefetch = h.get("next-router-prefetch") === "1" || h.get("purpose") === "prefetch" || h.get("sec-purpose")?.includes("prefetch");
   if (req.method === "GET" && !isPrefetch && process.env.DATA_SECRET) {
     const body = {
