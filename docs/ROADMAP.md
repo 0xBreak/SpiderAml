@@ -5,7 +5,7 @@
 ## 1. Запуск (ближайшее)
 - [ ] VPS + Cloudflare Tunnel по `spideraml-data/deploy/RUNBOOK.md`; домен spideraml.com.
 - [ ] Почта report@spideraml.com через Cloudflare Email Routing (бесплатно, пересылка на личный ящик).
-- [ ] Приватный репозиторий для `spideraml-data`, публичный переименовать в SpiderAML.
+- [x] Репозиторий сайта: github.com/0xBreak/SpiderAml. Приватный — `spideraml-data`.
 - [ ] Бесплатный ключ CoinGecko Demo (лимит запросов для блока «Где торгуется»).
 - [ ] Ежедневный бэкап по cron + еженедельная копия к себе.
 - [ ] Включить Cloudflare Web Analytics и rate limiting на тяжёлые страницы.

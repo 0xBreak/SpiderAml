@@ -1,46 +1,78 @@
-# SpiderAML
+<p align="center">
+  <img src="assets/brand/v3-icon.png" width="96" alt="SpiderAML">
+</p>
 
-Crypto address risk checks: sanctions, exploits, phishing and scams, with an on-chain registry that other contracts can
-read and a "send with a check" contract for users.
+<h1 align="center">SpiderAML</h1>
 
-Work in progress — rebuilt from the ChainGuard hackathon prototype. Why things are the way they are: `docs/DECISIONS.md`.
+<p align="center">
+  <b>Проверьте криптоадрес до того, как отправить деньги.</b><br>
+  Бесплатная AML-проверка адресов и токенов — понятным языком, для обычных людей.
+</p>
 
-## Run locally
+<p align="center">
+  <a href="https://spideraml.com"><b>spideraml.com</b></a>
+</p>
 
-Two parts: this repo (site + contracts) and the private data layer `spideraml-data` (sibling directory).
+---
 
-```bash
-cd ../spideraml-data && bun install && cp .env.example .env   # fill keys, set DATA_SECRET
-bun run ingest                                               # first import of all lists (~15 s)
-cd ../ArbitrumSingapore/web && npm install && cp .env.example .env.local   # same DATA_SECRET
-cd .. && scripts/dev.sh                                      # data on :8787, site on http://localhost:3000
-```
+![AML-проверка адреса](docs/img/check.jpg)
 
-Production: Docker Compose + Cloudflare Tunnel — see `spideraml-data/deploy/RUNBOOK.md` (private repo).
-Blog posts: `docs/BLOG.md`. Plan: `docs/ROADMAP.md`.
+## Зачем
 
-## Site pages
+Криптовалютой в Кыргызстане и регионе пользуется всё больше людей: обменники, P2P, оплата от зарубежных заказчиков,
+вложения в новые токены. Вместе с этим растут потери — пирамиды вроде MCN Coin, фишинг, дрейнеры кошельков, и новый риск:
+получить средства с адреса, связанного с санкционной структурой, и потерять доступ к бирже или банку.
 
-| Page | |
+Профессиональные AML-инструменты продаются компаниям по дорогим контрактам. SpiderAML даёт ту же базовую проверку любому
+человеку: вставил адрес — за секунды получил оценку риска, причины с источниками и совет, что делать.
+
+## Что умеет
+
+| Раздел | Что показывает |
 |---|---|
-| `/` | Search and sections |
-| `/check` | Address risk: score, level, possible scam, reasons with sources, official sanctions, counterparties, token risks, on-chain record |
-| `/aml` | Token / contract: price, market cap, liquidity by DEX, buy/sell flow, top holders with labels, risk factors |
-| `/whales` | Transfers of a token above a user-set USD threshold, per wallet, with labels |
-| `/sanctions` | Official sanctions addresses (OFAC SDN), search, network and list filters, source links |
-| `/send` | Send USDC through SpiderSend (Arbitrum Sepolia) with an on-chain and off-chain recipient check |
-| `/blog` | MDX articles in `web/src/content/blog` |
+| **AML-проверка адреса** | Оценка риска 0–100 и вердикт: есть ли адрес в официальных санкционных списках, связан ли со взломами, фишингом, миксерами, с какими рискованными адресами взаимодействовал. Для контрактов — риски токена |
+| **Анализ токена** | Цена, капитализация, торги на биржах (CEX) и DEX со спредом и глубиной ±2%, ликвидность в пулах, крупные держатели с метками, права владельца контракта |
+| **Киты** | Крупные переводы токена дороже заданной суммы: кто покупает, кто продаёт, по каждому кошельку |
+| **Санкционные адреса** | Криптоадреса из официальных списков США, Великобритании и ЕС: кому принадлежит, программа, дата включения, ссылка на запись в источнике |
+| **Безопасная отправка** | Перевод USDC через смарт-контракт SpiderSend, который сам отказывается отправлять на санкционный адрес или адрес взломщика |
+| **Сообщить об адресе** | Пострадавшие сообщают о мошеннических адресах; заявки проверяются вручную и пополняют базу, отправитель видит статус |
+| **Блог** | Разборы exit-скамов и пирамид: как распознать заранее |
 
-## Contracts
+![Анализ токена](docs/img/token.jpg)
 
-| Contract | What it does |
+## Данные
+
+Только открытые и официальные источники, обновление автоматически каждые 6 часов.
+
+- **Санкции:** OFAC SDN (США), UK Sanctions List (Великобритания), EU Consolidated List (ЕС).
+- **Взломы, фишинг, мошенничество:** ScamSniffer, MyEtherWallet darklist, публичные метки обозревателей Etherscan
+  (6 сетей), датасеты Forta, проверка GoPlus в момент запроса, подтверждённые заявки пользователей.
+- **Рынки:** CoinGecko (биржи и DEX), Zerion, данные блокчейна.
+
+Сети: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche и Tron (для Tron — санкции и базы рисков).
+
+> Оценка строится автоматически по открытым данным. Это не юридическое заключение и не обвинение: адреса могут
+> попадать в списки по ошибке.
+
+## Смарт-контракты
+
+| Контракт | Назначение |
 |---|---|
-| `SpiderRegistry` | `address -> (category, level)`; writers push batches from the data layer; `checkTransfer(from, to)` for integrators |
-| `SpiderSend` | Sends one token with a registry check in front; refuses level-3 (critical) parties |
-| `examples/SpiderGuardedERC20` | Example: an ERC-20 that screens every transfer |
+| `SpiderRegistry` | Реестр рисков в блокчейне: `address → (category, level)`. Другие контракты вызывают `checkTransfer(from, to)` |
+| `SpiderSend` | Перевод одного токена с проверкой по реестру; адреса с критическим уровнем (3) блокируются |
+| `examples/SpiderGuardedERC20` | Пример токена, который сам проверяет каждый перевод |
 
-Levels: 0 none · 1 low · 2 elevated · 3 critical (blocked).
-Categories: SANCTIONED, EXPLOIT, PHISHING, SCAM, MIXER, OTHER.
+Уровни: 0 — нет записи · 1 — низкий · 2 — повышенный · 3 — критический (перевод блокируется).
+Категории: SANCTIONED, EXPLOIT, PHISHING, SCAM, MIXER, OTHER.
+
+**Тестовая сеть Arbitrum Sepolia (421614):**
+
+| | Адрес |
+|---|---|
+| SpiderRegistry | [`0xB7E00e6f9bD10E50F17E12847a83E9dCaA0429E2`](https://sepolia.arbiscan.io/address/0xB7E00e6f9bD10E50F17E12847a83E9dCaA0429E2) |
+| SpiderSend (Circle test USDC) | [`0xAAd92220c7b1896efDcDc59D73552E7D97A34484`](https://sepolia.arbiscan.io/address/0xAAd92220c7b1896efDcDc59D73552E7D97A34484) |
+
+Исходники верифицированы через Sourcify. Тесты Foundry (unit + fuzz), покрытие `src/` — 100%:
 
 ```bash
 cd contracts
@@ -48,15 +80,47 @@ forge test
 forge coverage --ir-minimum
 ```
 
-Deploy (keys and RPCs in `.env`, see `.env.example`):
+## Как устроено
 
-```bash
-SEND_TOKEN=0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d scripts/deploy.sh arbitrum_sepolia
-scripts/verify.sh 421614
+```
+Браузер ──HTTPS──> сайт (Next.js, рендер на сервере) ──закрытый канал──> слой данных (списки, оценка, аналитика)
+                                                                              │
+                                                       SpiderRegistry <───────┘ критичные адреса
 ```
 
-### Testnet deployments
+- **Сайт** (`web/`) — Next.js 15, страницы рендерятся на сервере, публичного API нет. Браузер получает готовый HTML;
+  JavaScript нужен только для кошелька на странице отправки.
+- **Слой данных** — отдельный закрытый сервис: собирает списки, считает оценку, хранит ключи провайдеров. Сайт
+  обращается к нему по закрытому каналу с секретом.
+- **Приватность:** без регистрации и cookies, проверяемые адреса не сохраняются, статистика посещений обезличена.
 
-| Network | Registry | SpiderSend (token) |
-|---|---|---|
-| Arbitrum Sepolia (421614) | [`0xB7E00e6f9bD10E50F17E12847a83E9dCaA0429E2`](https://sepolia.arbiscan.io/address/0xB7E00e6f9bD10E50F17E12847a83E9dCaA0429E2) | [`0xAAd92220c7b1896efDcDc59D73552E7D97A34484`](https://sepolia.arbiscan.io/address/0xAAd92220c7b1896efDcDc59D73552E7D97A34484) (Circle test USDC) |
+## Структура репозитория
+
+```
+web/           сайт (Next.js 15, TypeScript, Tailwind)
+contracts/     смарт-контракты (Foundry)
+deployments/   адреса развёрнутых контрактов
+scripts/       деплой и верификация контрактов, локальный запуск
+assets/brand/  логотипы
+docs/          решения, план, как публиковать посты в блог
+```
+
+## Локальный запуск
+
+Для работы сайту нужен слой данных (закрытый репозиторий). Контракты можно собрать и протестировать без него.
+
+```bash
+cd web && npm install && cp .env.example .env.local   # DATA_URL и DATA_SECRET слоя данных
+npm run dev                                           # http://localhost:3000
+```
+
+## Документы
+
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — почему сделано именно так
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — план развития
+- [`docs/BLOG.md`](docs/BLOG.md) — как опубликовать статью в блоге
+
+## Контакты
+
+Ошибка на сайте или предложение: [workzero02@gmail.com](mailto:workzero02@gmail.com).
+Мошеннический адрес: [spideraml.com/report](https://spideraml.com/report).

@@ -4,8 +4,8 @@ Short log of why things are the way they are. Newest at the bottom of each secti
 
 ## Product
 
-- **ChainGuard → SpiderAML, no backward compatibility.** The hackathon contracts, relayer, frontend and threat DB are
-  removed; their history stays in git.
+- **Rebuilt from the hackathon prototype, no backward compatibility.** Its contracts, relayer, frontend and threat DB
+  are removed; their history stays in git.
 - **The product is the data and the site; contracts are one feature.** They let other contracts read our risk data
   on-chain and let a user send funds with a check in front. Everything else lives off-chain.
 - **Robinhood Chain dropped.** Networks: Arbitrum, Ethereum, BNB Chain, plus Tron read-only (see Networks).
@@ -40,7 +40,7 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   and the registry writer key. The site never sees raw lists or keys.
 - **Merged from three projects:** Kalkan (TurkProject) gave the source list, OFAC parsing and scoring idea — ported from
   Python to TypeScript so the whole stack is one language; Chainscope (DashBoardContract) gave the token analytics
-  (liquidity, trading, holders, whales) almost unchanged; ChainGuard gave the Forta datasets and curated incidents.
+  (liquidity, trading, holders, whales) almost unchanged; the hackathon prototype gave the Forta datasets and curated incidents.
 - **Sanctions come from the official OFAC SDN XML**, not a GitHub mirror. Each entry links to its OFAC record page.
   OFAC publishes no per-address listing date, so we store `first_seen` (first time our import saw it) and say so on
   the page.
