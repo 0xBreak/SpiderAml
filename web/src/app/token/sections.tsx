@@ -104,8 +104,9 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
     >
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat label="Объём за сутки" value={usd(m.volume24hUsd)} />
-        <Stat label="На биржах (CEX)" value={usd(m.cexVolumeUsd)} sub={`${cex} площад.`} />
-        <Stat label="На DEX" value={usd(m.dexVolumeUsd)} sub={`${m.markets.length - cex} площад.`} />
+        {/* CoinGecko's total and the sum over individual markets are computed differently, so the split is shown as shares */}
+        <Stat label="На биржах (CEX)" value={pct((m.cexVolumeUsd / (m.cexVolumeUsd + m.dexVolumeUsd || 1)) * 100, 0)} sub={`объёма · ${cex} площад.`} />
+        <Stat label="На DEX" value={pct((m.dexVolumeUsd / (m.cexVolumeUsd + m.dexVolumeUsd || 1)) * 100, 0)} sub={`объёма · ${m.markets.length - cex} площад.`} />
         <Stat label="Главная площадка" value={m.markets[0].exchange} sub={`${pct(m.markets[0].volumeSharePct, 0)} объёма`} />
       </div>
       <div className="-mx-4 overflow-x-auto sm:mx-0">
