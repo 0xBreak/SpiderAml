@@ -11,6 +11,7 @@ export default async function Blog() {
   return (
     <div className="space-y-5">
       <PageTitle title="Блог" sub="Разборы exit-скамов и пирамид: как они устроены, как распознать и на какие признаки смотреть в первую очередь." />
+      {posts.length === 0 && <p className="card p-5 text-sm text-silver-2">Первые статьи готовятся и скоро появятся здесь.</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         {posts.map((p) => (
           <Link key={p.slug} href={`/blog/${p.slug}`} className="card flex flex-col gap-2 p-5 transition hover:border-silver-3">
