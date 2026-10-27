@@ -1,38 +1,113 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/*
+ * SpiderAML theme: Tailwind v4, CSS-first, single dark theme.
+ * Perpetuity preset (b1t55u9vU) as the base: muted teal on cool mist
+ * neutrals, JetBrains Mono everywhere, square corners (Lyra style).
+ * Legacy brand names (bg, surface, silver, accent, warn, crit, ok) are kept
+ * as aliases so every page follows the same theme from one place.
+ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-bg: oklch(0.148 0.004 228.8);
+  --color-surface: oklch(0.218 0.008 223.9);
+  --color-surface-2: oklch(0.275 0.011 216.9);
+  --color-line: oklch(1 0 0 / 10%);
+  --color-silver-1: oklch(0.987 0.002 197.1);
+  --color-silver-2: oklch(0.723 0.014 214.4);
+  --color-silver-3: oklch(0.56 0.021 213.5);
+  --color-accent: oklch(0.437 0.078 188.216);
+  --color-accent-from: oklch(0.6 0.118 184.704);
+  --color-accent-to: oklch(0.437 0.078 188.216);
+  --color-accent-foreground: oklch(0.984 0.014 180.72);
+  --color-warn: #ffb04a;
+  --color-crit: oklch(0.704 0.191 22.216);
+  --color-ok: oklch(0.6 0.118 184.704);
+
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-silver-1);
+  --color-card: var(--color-surface);
+  --color-card-foreground: var(--color-silver-1);
+  --color-popover: var(--color-surface-2);
+  --color-popover-foreground: var(--color-silver-1);
+  --color-primary: var(--color-accent);
+  --color-primary-foreground: var(--color-accent-foreground);
+  --color-secondary: var(--color-surface-2);
+  --color-secondary-foreground: var(--color-silver-1);
+  --color-muted: var(--color-surface-2);
+  --color-muted-foreground: var(--color-silver-2);
+  --color-destructive: var(--color-crit);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--color-line);
+  --color-input: oklch(1 0 0 / 15%);
+  --color-ring: oklch(0.56 0.021 213.5);
+  --color-chart-1: oklch(0.865 0.127 207.078);
+  --color-chart-2: oklch(0.715 0.143 215.221);
+  --color-chart-3: oklch(0.609 0.126 221.723);
+  --color-chart-4: oklch(0.52 0.105 223.128);
+  --color-chart-5: oklch(0.45 0.085 224.283);
+  --color-sidebar: var(--color-surface);
+  --color-sidebar-foreground: var(--color-silver-1);
+  --color-sidebar-primary: oklch(0.704 0.14 182.503);
+  --color-sidebar-primary-foreground: oklch(0.277 0.046 192.524);
+  --color-sidebar-accent: var(--color-surface-2);
+  --color-sidebar-accent-foreground: var(--color-silver-1);
+  --color-sidebar-border: var(--color-line);
+  --color-sidebar-ring: var(--color-ring);
+
+  --font-sans: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --background-image-accent-grad: linear-gradient(90deg, oklch(0.6 0.118 184.704) 0%, oklch(0.437 0.078 188.216) 100%);
+
+  --max-width-page: 1200px;
+
+  --radius-lg: 0;
+  --radius-md: 0;
+  --radius-sm: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+}
 
 @layer base {
   html {
     color-scheme: dark;
   }
   body {
-    @apply bg-bg font-sans text-silver-1 antialiased;
-    font-feature-settings: "cv11", "ss01";
+    @apply bg-background font-sans text-foreground antialiased;
   }
   ::selection {
-    background: rgba(79, 179, 255, 0.35);
+    background: oklch(0.437 0.078 188.216 / 35%);
   }
   :focus-visible {
-    @apply outline-none ring-2 ring-accent/70 ring-offset-2 ring-offset-bg;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  * {
+    @apply border-border;
   }
 }
 
 @layer components {
+  /* Legacy bridge: pages use these until they migrate to ui/* primitives. */
   .card {
-    @apply rounded-lg border border-line bg-surface;
+    @apply border border-line bg-surface;
   }
   .input {
-    @apply h-11 w-full rounded-md border border-line bg-bg px-3 text-sm text-silver-1 placeholder:text-silver-3 focus:border-accent/60 focus:outline-none;
+    @apply h-11 w-full border border-line bg-bg px-3 text-sm text-silver-1 placeholder:text-silver-3 focus:border-accent/60 focus:outline-none;
   }
   .btn {
-    @apply inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex h-11 items-center justify-center gap-2 px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-accent-grad text-bg hover:brightness-110;
+    @apply inline-flex h-11 items-center justify-center gap-2 bg-accent-grad px-5 text-sm font-semibold text-bg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-ghost {
-    @apply btn border border-line text-silver-1 hover:border-silver-3;
+    @apply inline-flex h-11 items-center justify-center gap-2 border border-line px-5 text-sm font-semibold text-silver-1 transition hover:border-silver-3 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .link {
     @apply text-accent underline-offset-2 hover:underline;
@@ -71,7 +146,7 @@
     @apply my-4 list-decimal space-y-1 pl-6;
   }
   .prose-spider a {
-    @apply link;
+    @apply text-accent underline-offset-2 hover:underline;
   }
   .prose-spider strong {
     @apply text-silver-1;
@@ -80,6 +155,6 @@
     @apply my-4 border-l-2 border-accent/60 pl-4 text-silver-2;
   }
   .prose-spider code {
-    @apply rounded bg-surface-2 px-1 py-0.5 font-mono text-[13px];
+    @apply bg-surface-2 px-1 py-0.5 font-mono text-[13px];
   }
 }

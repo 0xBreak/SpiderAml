@@ -1,0 +1,287 @@
+{
+  "Metadata": {
+    "title": "SpiderAML — crypto address screening",
+    "description": "Check a crypto address before sending: sanctions lists, hacks, phishing, suspicious activity. Token analysis and large transfers."
+  },
+  "Nav": {
+    "home": "Home",
+    "check": "AML check",
+    "token": "Token analysis",
+    "whales": "Whales",
+    "sanctions": "Sanctions",
+    "send": "Send",
+    "report": "Report",
+    "blog": "Blog",
+    "checkCta": "Check an address",
+    "menu": "Menu",
+    "sections": "Sections"
+  },
+  "Footer": {
+    "contact": "Contact",
+    "reportBug": "Report a site bug",
+    "reportBugSubject": "SpiderAML: site bug",
+    "reportAddress": "Report a scam address",
+    "tagline": "Crypto address screening from open and official data"
+  },
+  "Common": {
+    "disclaimer": "Scores are automatic. Not legal advice and not an accusation.",
+    "addressSr": "Address",
+    "networkSr": "Network",
+    "searchPlaceholder": "Wallet or token address: 0x… or T…",
+    "searchButton": "Check"
+  },
+  "Lang": {
+    "label": "Language",
+    "ru": "Русский",
+    "en": "English"
+  },
+  "Category": {
+    "sanctioned": {
+      "name": "Sanctions list",
+      "about": "Official sanctions list. Sending may break the law."
+    },
+    "exploit": {
+      "name": "Hack or theft",
+      "about": "Linked to a hack or theft."
+    },
+    "phishing": {
+      "name": "Phishing",
+      "about": "Stole money: fake site, one signature — wallet empty."
+    },
+    "scam": {
+      "name": "Suspicious activity",
+      "about": "User complaints or a flag in open databases."
+    },
+    "mixer": {
+      "name": "Mixer",
+      "about": "Hides where the money came from. Exchanges freeze such coins."
+    },
+    "other": {
+      "name": "Other signals",
+      "about": "Flags in open databases."
+    },
+    "info": {
+      "name": "Label",
+      "about": "Who owns it, per blockchain explorers."
+    }
+  },
+  "Level": {
+    "low": {
+      "title": "Low risk",
+      "summary": "This address is not on any risk lists we know.",
+      "advice": [
+        "Not a guarantee: new schemes appear daily.",
+        "For a large amount, send a test transfer."
+      ]
+    },
+    "medium": {
+      "title": "Some risk signals",
+      "summary": "There are isolated warning signs. That is not a verdict yet — look into what explains them.",
+      "advice": [
+        "Check the reasons below.",
+        "In doubt — do not send."
+      ]
+    },
+    "high": {
+      "title": "High risk",
+      "summary": "Serious flags in open databases. We advise against sending money.",
+      "advice": [
+        "Do not send money.",
+        "Being rushed? Stop."
+      ]
+    },
+    "critical": {
+      "title": "Critical risk",
+      "summary": "The address is on a sanctions list. Or it is linked to a hack, theft or phishing.",
+      "advice": [
+        "Do not send money.",
+        "Already sent? Save the hash and contact support."
+      ]
+    }
+  },
+  "RiskFactor": {
+    "concentration": {
+      "name": "Held by a few",
+      "about": "One large sale can crash the price."
+    },
+    "liquidity": {
+      "name": "Liquidity",
+      "about": "Little money in pools — hard to sell without losses."
+    },
+    "verified": {
+      "name": "Open contract code",
+      "about": "Code not published — nothing to review."
+    },
+    "admin": {
+      "name": "Owner privileges",
+      "about": "The owner can change the token rules."
+    },
+    "listing": {
+      "name": "Market presence",
+      "about": "Whether it trades and has data."
+    }
+  },
+  "Note": {
+    "tron_limited": "Tron: lists and open databases only, no transfers.",
+    "goplus_unavailable": "One source did not respond.",
+    "counterparties_unavailable": "Transfer history unavailable.",
+    "contract_unavailable": "Contract could not be analyzed."
+  },
+  "Chain": {
+    "evm": "EVM chains",
+    "tron": "Tron",
+    "bitcoin": "Bitcoin",
+    "litecoin": "Litecoin",
+    "monero": "Monero",
+    "bitcoin-cash": "Bitcoin Cash",
+    "dash": "Dash",
+    "zcash": "Zcash",
+    "solana": "Solana",
+    "dogecoin": "Dogecoin",
+    "ripple": "XRP Ledger",
+    "verge": "Verge",
+    "bitcoin-gold": "Bitcoin Gold",
+    "bitcoin-sv": "Bitcoin SV",
+    "bnb-beacon": "BNB Beacon"
+  },
+  "Errors": {
+    "INVALID_ADDRESS": "This does not look like an address. Use a 0x… address (Ethereum, BNB and others) or T… (Tron).",
+    "INVALID_NETWORK": "This network is not supported.",
+    "NOT_A_CONTRACT": "There is no contract at this address on the selected network. Check the network or paste a token address.",
+    "UNSUPPORTED": "This contract does not look like a token — this analysis is unavailable for it.",
+    "RATE_LIMITED": "Too many requests. Wait a minute.",
+    "CONFIG_MISSING": "This network is not connected yet.",
+    "UNAVAILABLE": "The data service is temporarily unavailable. Try again later.",
+    "fallback": "Something went wrong. Try again."
+  },
+  "Home": {
+    "heroTitle": "Check an address before you send",
+    "heroSub": "Paste an address — we'll show the risk and why.",
+    "heroBadge": "Free, no sign-up",
+    "tryLabel": "Examples:",
+    "exampleSanctioned": "Sanctioned",
+    "exampleExploit": "Bybit hacker",
+    "exampleClean": "Clean wallet",
+    "statsAria": "Statistics",
+    "statsRiskLabel": "addresses with risk",
+    "statsSanctionsLabel": "sanctioned addresses",
+    "statsLabelsLabel": "labeled addresses",
+    "statsNetworksValue": "7 + Tron",
+    "statsNetworksLabelShort": "networks",
+    "toolsEyebrow": "Tools",
+    "toolsTitle": "What SpiderAML does",
+    "toolsSub": "One question — one tool.",
+    "toolCheckTitle": "Address check",
+    "toolCheckQuestion": "Can I send money here?",
+    "toolTokenTitle": "Token analysis",
+    "toolTokenQuestion": "Can it be trusted?",
+    "toolWhalesTitle": "Whales",
+    "toolWhalesQuestion": "Who is buying and selling?",
+    "toolSanctionsTitle": "Sanctions",
+    "toolSanctionsQuestion": "Who is officially sanctioned?",
+    "extraSendTitle": "Safe sending",
+    "extraReportTitle": "Report an address",
+    "extraBlogTitle": "Blog",
+    "levelsEyebrow": "Scale",
+    "levelsTitle": "How to read the score",
+    "levelsNote": "Scores are automatic. Not an accusation.",
+    "levelLow": "Low",
+    "levelMedium": "Medium",
+    "levelHigh": "High",
+    "levelCritical": "Critical",
+    "sourcesEyebrow": "Data",
+    "sourcesTitle": "Where the data comes from",
+    "sourcesSub": "Updated every 6 hours.",
+    "colSource": "Source",
+    "colAbout": "What it covers",
+    "colAddresses": "Addresses",
+    "colUpdated": "Updated",
+    "officialBadge": "official",
+    "goplusName": "GoPlus Security",
+    "goplusAbout": "Checked live at request time",
+    "online": "live",
+    "ctaTitle": "Screen the address before you send",
+    "ctaNote": "Free. No sign-up or wallet."
+  },
+  "Source": {
+    "ofac-sdn": "US Treasury sanctions list",
+    "uk-fcdo": "UK sanctions list",
+    "eu-fsf": "EU consolidated sanctions list",
+    "scamsniffer": "Drainers and phishing addresses",
+    "mew-darklist": "Phishing and scam addresses",
+    "etherscan-labels": "Explorer labels: exchanges, protocols, hackers — 6 chains",
+    "forta": "Hacks, phishing and malicious contracts",
+    "manual": "Recent incidents, verified by hand",
+    "reports": "User reports confirmed after review",
+    "admin": "SpiderAML team labels",
+    "own": "SpiderAML team lists"
+  },
+  "Check": {
+    "title": "Address AML check",
+    "sub": "Paste the recipient address. We'll show the risk and why.",
+    "whatToDo": "What to do",
+    "sanctionedBadge": "On a sanctions list",
+    "scamBadge": "Possible scam",
+    "contractBadge": "Contract",
+    "recordedAs": "Registry: <b>{category}</b>, level {level}/3.",
+    "blockedNote": " SpiderSend will block transfers here.",
+    "noRecord": "No registry record.",
+    "registryLink": "Registry contract (Arbitrum Sepolia)",
+    "sendCta": "Send USDC",
+    "checkedAt": "Checked {date}.",
+    "disagree": "Wrong score? Tell us",
+    "shortTitle": "At a glance",
+    "riskScore": "Risk score",
+    "riskSignals": "Risk signals",
+    "balance": "Balance (all chains)",
+    "balanceDay": "past day {pct}",
+    "counterpartiesChecked": "Addresses screened",
+    "flaggedSub": "flagged: {count}",
+    "ownerTitle": "Who owns it",
+    "ownerHint": "Who it is",
+    "registryTitle": "On-chain registry",
+    "registryHint": "Readable by any contract",
+    "reasonsTitle": "Why this score",
+    "reasonsHint": "Signals: {count}",
+    "noReasonsTitle": "Reasons",
+    "noReasons": "No risk signals.",
+    "sourceLabel": "source:",
+    "sanctionsTitle": "Official sanctions lists",
+    "inBaseSince": "In our database since {first}, verified {checked}",
+    "sourceRecord": "source record",
+    "tokenRiskTitle": "Token risks",
+    "tokenRiskHint": "Risk signals",
+    "fullAnalysis": "Full token analysis",
+    "cpTitle": "Connections",
+    "cpHint": "Addresses: {count}",
+    "cpEmpty": "No risk labels.",
+    "cpFound": "Some addresses carry risk labels. That does not make this address risky.",
+    "explorerLabel": "Explorer",
+    "stepLabel": "Step {n}",
+    "howSanctionsTitle": "Sanctions",
+    "howSanctionsText": "US, UK and EU lists.",
+    "howExploitTitle": "Hacks and phishing",
+    "howExploitText": "ScamSniffer, Etherscan, Forta, GoPlus.",
+    "howCpTitle": "Address connections",
+    "howCpText": "Who it moved money with.",
+    "howTokensTitle": "Tokens",
+    "howTokensText": "Holders, liquidity, owner rights."
+  },
+  "Blog": {
+    "title": "Blog",
+    "sub": "How to spot a scam or a pyramid.",
+    "empty": "First articles are on the way and will appear here soon.",
+    "draft": "Draft",
+    "back": "All articles"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "sub": "The link may be outdated.",
+    "home": "Back home"
+  },
+  "ErrorPage": {
+    "title": "Something went wrong",
+    "sub": "Try again in a minute.",
+    "retry": "Retry"
+  }
+}

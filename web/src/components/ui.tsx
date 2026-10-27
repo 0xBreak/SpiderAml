@@ -1,8 +1,20 @@
-// Small presentational building blocks shared by every page. Server-safe (no hooks).
+// Shared presentational primitives. Server-safe (no hooks).
+// New code should compose shadcn primitives from ./ui/* directly; this module
+// keeps the site-wide API (Tone, Card, Stat, Notice, ...) on top of them so
+// every page shares one style from a single place.
 import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/format";
 import { ERROR_TEXT } from "@/lib/texts";
+import { Alert } from "./ui/alert";
+import { Badge as BadgePrimitive } from "./ui/badge";
+import { Card as CardPrimitive, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Empty as EmptyPrimitive, EmptyDescription } from "./ui/empty";
+import { Skeleton as SkeletonPrimitive } from "./ui/skeleton";
+
+export { Button, buttonVariants } from "./ui/button";
+export { Input } from "./ui/input";
+export { Separator } from "./ui/separator";
 
 export type Tone = "ok" | "warn" | "crit" | "info" | "muted";
 
@@ -17,23 +29,27 @@ const TONE: Record<Tone, string> = {
 export const toneOfSeverity = (s: number): Tone => (s >= 3 ? "crit" : s === 2 ? "warn" : s === 1 ? "info" : "muted");
 
 export function Badge({ tone = "muted", children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
-  return <span className={cn("inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium", TONE[tone], className)}>{children}</span>;
+  return (
+    <BadgePrimitive variant="outline" className={cn(TONE[tone], className)}>
+      {children}
+    </BadgePrimitive>
+  );
 }
 
 export function Card({ title, hint, right, children, className }: { title?: ReactNode; hint?: ReactNode; right?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("card p-4 sm:p-5", className)}>
+    <CardPrimitive className={cn("gap-0 py-4 sm:py-5", className)}>
       {(title || right) && (
-        <header className="mb-3 flex flex-wrap items-start justify-between gap-2">
+        <CardHeader className="px-4 pb-3 sm:px-5">
           <div>
-            {title && <h2 className="text-base font-semibold text-silver-1">{title}</h2>}
-            {hint && <p className="mt-0.5 text-sm text-silver-3">{hint}</p>}
+            {title && <CardTitle className="text-base font-semibold text-silver-1">{title}</CardTitle>}
+            {hint && <CardDescription className="mt-0.5 text-sm text-silver-3">{hint}</CardDescription>}
           </div>
           {right}
-        </header>
+        </CardHeader>
       )}
-      {children}
-    </section>
+      <CardContent className="px-4 sm:px-5">{children}</CardContent>
+    </CardPrimitive>
   );
 }
 
@@ -57,11 +73,12 @@ export function Bar({ value, max = 100, tone = "info" }: { value: number; max?: 
   );
 }
 
-export function PageTitle({ title, sub }: { title: string; sub?: ReactNode }) {
+export function PageTitle({ eyebrow, title, sub }: { eyebrow?: string; title: string; sub?: ReactNode }) {
   return (
     <div className="mb-5">
-      <h1 className="text-2xl font-semibold tracking-tight text-silver-1 sm:text-3xl">{title}</h1>
-      {sub && <p className="mt-1.5 max-w-2xl text-[15px] text-silver-2">{sub}</p>}
+      {eyebrow && <div className="label mb-1.5">{eyebrow}</div>}
+      <h1 className="text-balance text-2xl font-semibold tracking-tight text-silver-1 sm:text-3xl">{title}</h1>
+      {sub && <p className="mt-1.5 max-w-2xl text-[15px] leading-relaxed text-silver-2">{sub}</p>}
     </div>
   );
 }
@@ -69,25 +86,25 @@ export function PageTitle({ title, sub }: { title: string; sub?: ReactNode }) {
 export function Notice({ tone = "info", children }: { tone?: Tone; children: ReactNode }) {
   const Icon = tone === "crit" ? ShieldAlert : tone === "warn" ? AlertTriangle : tone === "ok" ? CheckCircle2 : Info;
   return (
-    <div className={cn("flex gap-2.5 rounded-md border px-3 py-2.5 text-sm", TONE[tone])}>
-      <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
+    <Alert className={cn("flex items-center gap-2.5 text-sm", TONE[tone])}>
+      <Icon className="size-4 shrink-0" aria-hidden />
       <div className="text-silver-1">{children}</div>
-    </div>
+    </Alert>
   );
 }
 
 export function ErrorBox({ code, message }: { code?: string; message?: string }) {
-  return <Notice tone="warn">{(code && ERROR_TEXT[code]) || message || "Что-то пошло не так. Попробуйте ещё раз."}</Notice>;
+  return <Notice tone="warn">{(code && ERROR_TEXT[code]) || message || "Что-то пошло не так. Попробуйте ещё."}</Notice>;
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-line/40", className)} />;
+  return <SkeletonPrimitive className={cn("bg-line/40", className)} />;
 }
 
 export function CardSkeleton({ title, lines = 4 }: { title: string; lines?: number }) {
   return (
     <Card title={title}>
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         {Array.from({ length: lines }, (_, i) => (
           <Skeleton key={i} className="h-5" />
         ))}
@@ -97,5 +114,9 @@ export function CardSkeleton({ title, lines = 4 }: { title: string; lines?: numb
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <p className="py-4 text-center text-sm text-silver-3">{children}</p>;
+  return (
+    <EmptyPrimitive>
+      <EmptyDescription>{children}</EmptyDescription>
+    </EmptyPrimitive>
+  );
 }

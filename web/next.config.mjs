@@ -1,4 +1,7 @@
 import createMDX from "@next/mdx";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -24,6 +27,10 @@ const nextConfig = {
   output: "standalone",
   distDir: process.env.NEXT_DIST_DIR || ".next",
   pageExtensions: ["ts", "tsx", "mdx"],
+  experimental: {
+    // trim barrel imports: lucide icons and recharts charts used across pages
+    optimizePackageImports: ["lucide-react", "recharts"],
+  },
   async redirects() {
     return [{ source: "/aml", destination: "/token", permanent: true }];
   },
@@ -44,4 +51,4 @@ const nextConfig = {
   },
 };
 
-export default createMDX({})(nextConfig);
+export default withNextIntl(createMDX({})(nextConfig));
