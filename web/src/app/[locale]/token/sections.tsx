@@ -214,6 +214,7 @@ export async function RiskSection({ address, network }: { address: string; netwo
   return (
     <Card
       title={t("risksTitle")}
+      hint={t("risksHint")}
       right={
         // a stablecoin's main risk (the issuer's reserves) cannot be read from the chain: a bare "Low · 0/100" would overstate it
         stable ? <Badge tone="info">{t("partialBadge", { score: risk.score })}</Badge> : <Badge tone={tone}>{title} · {risk.score}/100</Badge>

@@ -317,7 +317,8 @@
   "RiskContext": {
     "stablecoin": "This is a stablecoin. Its issuer usually holds most of the supply and can mint and freeze coins — that is how it works, so concentration and owner powers are not counted here. The main risk of a stablecoin is the issuer's reserves, which cannot be checked on-chain.",
     "cex_liquidity": "Liquidity on centralised exchanges (order books, from CoinGecko) is counted, not only DEX pools.",
-    "exchange_holders": "Exchange wallets are not counted as large holders: they hold coins for many customers."
+    "exchange_holders": "Exchange wallets are not counted as large holders: they hold coins for many customers.",
+    "skip_concentration": "Holder concentration could not be assessed: recent transfers show only a small part of the supply, the rest sits in wallets that have not moved. This factor is not part of the score."
   },
   "SourceName": {
     "reports": "Confirmed user reports",
@@ -490,7 +491,8 @@
     "colHolderShare": "Share",
     "colValue": "Value",
     "holdersFoot": "From transfers over recent weeks.",
-    "partialBadge": "Partial score · {score}/100"
+    "partialBadge": "Partial score · {score}/100",
+    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast and not an audit."
   },
   "Send": {
     "title": "Safe send",
