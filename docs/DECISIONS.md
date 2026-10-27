@@ -133,3 +133,7 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   (set by the switcher). Replaces next-intl's own detection, which sent e.g. German browsers to the Russian site.
 - **Home page is rendered per request** (was prerendered every 6 h): the Docker build has no data layer, so a
   prerendered page shipped without stats and sources.
+- **CI/CD for the site** (2026-10-28). GitHub Actions: `ci.yml` (types, tests, audit, build) on every pull request;
+  `deploy.yml` on merge to `main` builds the image on an ARM runner and ships it to the server over SSH. The server
+  never compiles the site (that build is what made it heavy). The SSH key is restricted by a forced command to one
+  script that swaps the `web` container and rolls back if it is not healthy. No registry, no public image.

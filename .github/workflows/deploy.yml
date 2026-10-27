@@ -1,0 +1,74 @@
+# Builds the site image on GitHub (ARM, like the server) and ships it to the server over SSH.
+# The server never compiles anything: it only loads the image and swaps the web container (rolls back if unhealthy).
+# The SSH key can run one thing on the server: /srv/spideraml/bin/load-web.sh (see deploy/RUNBOOK.md in the private repo).
+#
+# Repository secrets: DEPLOY_SSH_KEY (private key), DEPLOY_HOST, DEPLOY_USER, DEPLOY_KNOWN_HOSTS (pinned host key line).
+# Repository variables (optional): CONTACT_EMAIL, TELEGRAM (public contacts baked into the footer at build time).
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# one deployment at a time; a newer push waits instead of cancelling a running swap
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_CONTACT_EMAIL="${{ vars.CONTACT_EMAIL || 'workzero02@gmail.com' }}" \
+            --build-arg NEXT_PUBLIC_TELEGRAM="${{ vars.TELEGRAM }}" \
+            -t spideraml-web:latest web
+          docker save spideraml-web:latest | gzip -1 > web.tar.gz
+          ls -lh web.tar.gz
+
+      - name: Ship to the server
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # the forced command on the server reads the image from stdin, swaps the container and checks its health
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" < web.tar.gz
+          rm -f ~/.ssh/deploy_key web.tar.gz
