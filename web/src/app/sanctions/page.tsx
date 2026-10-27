@@ -67,7 +67,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
           </div>
 
           <form method="get" action="/sanctions" className="flex flex-col gap-2 sm:flex-row" role="search">
-            <input name="q" defaultValue={sp.q} maxLength={100} placeholder="Адрес или имя из списка" className="input flex-1 font-mono" aria-label="Поиск" />
+            <input name="q" defaultValue={sp.q} maxLength={100} placeholder="Адрес или имя из списка" className="input font-mono sm:flex-1" aria-label="Поиск" />
             <select name="chain" defaultValue={sp.chain ?? ""} className="input sm:w-48" aria-label="Сеть">
               <option value="">Все сети</option>
               {data.chains.map((c) => (
@@ -93,7 +93,23 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
             {data.items.length === 0 ? (
               <Empty>Ничего не найдено. Попробуйте изменить запрос или фильтры.</Empty>
             ) : (
-              <div className="-mx-4 overflow-x-auto sm:mx-0">
+              <>
+              <ul className="divide-y divide-line/60 md:hidden">
+                {data.items.map((s) => (
+                  <li key={s.address + s.list} className="space-y-1 py-3 text-sm">
+                    <div className="font-medium text-silver-1">{s.name}</div>
+                    <Addr value={s.address} href={EXPLORER[s.chain]?.(s.address)} />
+                    <div className="text-silver-3">
+                      {CHAIN_NAME[s.chain] ?? s.chain} · {s.asset} ·{" "}
+                      <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="link">
+                        {s.list}
+                      </a>
+                      {s.listedAt && <> · с {date(s.listedAt)}</>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden md:block">
                 <table className="table min-w-[760px]">
                   <thead>
                     <tr>
@@ -130,6 +146,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                   </tbody>
                 </table>
               </div>
+              </>
             )}
             {pages > 1 && (
               <nav className="mt-4 flex items-center justify-between text-sm" aria-label="Страницы">

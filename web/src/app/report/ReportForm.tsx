@@ -16,7 +16,7 @@ const OPTIONS = [
   ["false_positive", "Это ошибка", "адрес помечен как рискованный, но это не так"],
 ] as const;
 
-export function ReportForm({ address, network }: { address: string; network: string }) {
+export function ReportForm({ address, network, category }: { address: string; network: string; category: string }) {
   const [state, action, pending] = useActionState<ReportState | null, FormData>(submitReport, null);
 
   if (state?.ok && state.id) {
@@ -65,7 +65,7 @@ export function ReportForm({ address, network }: { address: string; network: str
         <div className="grid gap-2 sm:grid-cols-2">
           {OPTIONS.map(([value, title, hint]) => (
             <label key={value} className="flex cursor-pointer items-start gap-2.5 rounded-md border border-line p-3 text-sm has-[:checked]:border-accent/70 has-[:checked]:bg-accent/5">
-              <input type="radio" name="category" value={value} required className="mt-0.5 accent-[#4FB3FF]" />
+              <input type="radio" name="category" value={value} defaultChecked={value === category} required className="mt-0.5 accent-[#4FB3FF]" />
               <span>
                 <span className="text-silver-1">{title}</span>
                 {hint && <span className="block text-xs text-silver-3">{hint}</span>}

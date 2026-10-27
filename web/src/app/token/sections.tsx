@@ -110,16 +110,16 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
         <Stat label="Главная площадка" value={m.markets[0].exchange} sub={`${pct(m.markets[0].volumeSharePct, 0)} объёма`} />
       </div>
       <div className="-mx-4 overflow-x-auto sm:mx-0">
-        <table className="table min-w-[860px]">
+        <table className="table md:min-w-[860px]">
           <thead>
             <tr>
-              <th>#</th>
+              <th className="hidden md:table-cell">#</th>
               <th>Площадка</th>
               <th>Пара</th>
-              <th className="text-right">Цена</th>
-              <th className="text-right">Спред</th>
-              <th className="text-right">Глубина +2%</th>
-              <th className="text-right">Глубина −2%</th>
+              <th className="hidden text-right md:table-cell">Цена</th>
+              <th className="hidden text-right md:table-cell">Спред</th>
+              <th className="hidden text-right md:table-cell">Глубина +2%</th>
+              <th className="hidden text-right md:table-cell">Глубина −2%</th>
               <th className="text-right">Объём 24ч</th>
               <th className="text-right">Доля</th>
             </tr>
@@ -127,8 +127,8 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
           <tbody>
             {m.markets.slice(0, 20).map((x, i) => (
               <tr key={`${x.exchange}-${x.pair}-${i}`}>
-                <td className="text-silver-3">{i + 1}</td>
-                <td className="whitespace-nowrap">
+                <td className="hidden text-silver-3 md:table-cell">{i + 1}</td>
+                <td className="md:whitespace-nowrap">
                   {x.exchange} <Badge tone={x.type === "cex" ? "info" : "muted"}>{x.type.toUpperCase()}</Badge>
                   {(x.stale || x.anomaly) && (
                     <Badge tone="warn" className="ml-1">
@@ -145,10 +145,10 @@ export function MarketsSection({ m }: { m: MarketsData | null }) {
                     x.pair
                   )}
                 </td>
-                <td className="text-right tabular-nums">{price(x.priceUsd)}</td>
-                <td className="text-right tabular-nums">{x.spreadPct != null ? pct(x.spreadPct, 2) : "—"}</td>
-                <td className="text-right tabular-nums">{usd(x.depthUpUsd)}</td>
-                <td className="text-right tabular-nums">{usd(x.depthDownUsd)}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">{price(x.priceUsd)}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">{x.spreadPct != null ? pct(x.spreadPct, 2) : "—"}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">{usd(x.depthUpUsd)}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">{usd(x.depthDownUsd)}</td>
                 <td className="text-right tabular-nums">{usd(x.volumeUsd)}</td>
                 <td className="text-right tabular-nums">{pct(x.volumeSharePct, 2)}</td>
               </tr>
@@ -293,14 +293,14 @@ export async function HoldersSection({ address, network }: { address: string; ne
         <Stat label="Контроль 50%" value={c.nakamoto != null ? `${c.nakamoto} адр.` : ">25"} sub="столько кошельков держат половину" />
       </div>
       <div className="-mx-4 overflow-x-auto sm:mx-0">
-        <table className="table min-w-[640px]">
+        <table className="table md:min-w-[640px]">
           <thead>
             <tr>
-              <th>#</th>
+              <th className="hidden md:table-cell">#</th>
               <th>Адрес</th>
               <th>Кто это</th>
               <th className="text-right">Доля</th>
-              <th className="text-right">Стоимость</th>
+              <th className="hidden text-right md:table-cell">Стоимость</th>
             </tr>
           </thead>
           <tbody>
@@ -308,7 +308,7 @@ export async function HoldersSection({ address, network }: { address: string; ne
               const tag = labels[x.address.toLowerCase()];
               return (
                 <tr key={x.address}>
-                  <td className="text-silver-3">{x.rank}</td>
+                  <td className="hidden text-silver-3 md:table-cell">{x.rank}</td>
                   <td>
                     <Addr value={x.address} href={explorer(network, x.address)} />
                   </td>
@@ -317,7 +317,7 @@ export async function HoldersSection({ address, network }: { address: string; ne
                     {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{CATEGORY[tag.category].name}</Badge>}
                   </td>
                   <td className="text-right tabular-nums">{pct(x.pctSupply, 2)}</td>
-                  <td className="text-right tabular-nums">{usd(x.valueUsd)}</td>
+                  <td className="hidden text-right tabular-nums md:table-cell">{usd(x.valueUsd)}</td>
                 </tr>
               );
             })}

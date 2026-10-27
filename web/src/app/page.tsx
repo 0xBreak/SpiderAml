@@ -73,6 +73,9 @@ const SOURCE_TEXT: Record<string, string> = {
   "etherscan-labels": "Метки обозревателей: биржи, протоколы, взломщики — 6 сетей",
   forta: "Взломы, фишинг и вредоносные контракты",
   manual: "Свежие инциденты, проверенные вручную",
+  reports: "Заявки пользователей, подтверждённые после проверки",
+  admin: "Метки команды SpiderAML",
+  own: "Списки команды SpiderAML",
 };
 
 const fmt = (n: number) => n.toLocaleString("ru-RU");
@@ -182,13 +185,13 @@ export default async function Home() {
           <h2 className="text-xl font-semibold">Откуда данные</h2>
           <p className="mt-1 text-sm text-silver-2">Только открытые и официальные источники. Списки обновляются автоматически каждые 6 часов.</p>
           <div className="card mt-4 -mx-4 overflow-x-auto sm:mx-0">
-            <table className="table min-w-[640px]">
+            <table className="table md:min-w-[640px]">
               <thead>
                 <tr>
                   <th>Источник</th>
-                  <th>Что в нём</th>
+                  <th className="hidden md:table-cell">Что в нём</th>
                   <th className="text-right">Адресов</th>
-                  <th className="text-right">Обновлено</th>
+                  <th className="hidden text-right md:table-cell">Обновлено</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,16 +207,16 @@ export default async function Home() {
                       )}
                       {src.kind === "sanctions" && <span className="ml-2 rounded border border-line px-1.5 text-[11px] text-silver-3">официальный</span>}
                     </td>
-                    <td className="text-silver-2">{SOURCE_TEXT[src.id] ?? ""}</td>
+                    <td className="hidden text-silver-2 md:table-cell">{SOURCE_TEXT[src.id] ?? ""}</td>
                     <td className="text-right tabular-nums">{fmt(src.count)}</td>
-                    <td className="whitespace-nowrap text-right text-silver-3">{dateTime(src.fetchedAt)}</td>
+                    <td className="hidden whitespace-nowrap text-right text-silver-3 md:table-cell">{dateTime(src.fetchedAt)}</td>
                   </tr>
                 ))}
                 <tr>
                   <td>GoPlus Security</td>
-                  <td className="text-silver-2">Проверка в момент запроса (SlowMist, BlockSec и др.)</td>
+                  <td className="hidden text-silver-2 md:table-cell">Проверка в момент запроса (SlowMist, BlockSec и др.)</td>
                   <td className="text-right text-silver-3">онлайн</td>
-                  <td className="text-right text-silver-3">—</td>
+                  <td className="hidden text-right text-silver-3 md:table-cell">—</td>
                 </tr>
               </tbody>
             </table>

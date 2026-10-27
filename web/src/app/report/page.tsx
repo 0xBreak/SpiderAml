@@ -5,10 +5,10 @@ import { ReportForm } from "./ReportForm";
 
 export const metadata: Metadata = { title: "Сообщить об адресе" };
 
-type SP = Promise<{ address?: string; network?: string }>;
+type SP = Promise<{ address?: string; network?: string; category?: string }>;
 
 export default async function ReportPage({ searchParams }: { searchParams: SP }) {
-  const { address, network } = await searchParams;
+  const { address, network, category } = await searchParams;
   return (
     <div className="space-y-5">
       <PageTitle
@@ -17,7 +17,7 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
       />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <ReportForm address={address?.slice(0, 100) ?? ""} network={network && (isNetworkId(network) || network === "tron") ? network : "ethereum"} />
+          <ReportForm category={category ?? ""} address={address?.slice(0, 100) ?? ""} network={network && (isNetworkId(network) || network === "tron") ? network : "ethereum"} />
         </Card>
         <div className="space-y-4">
           <Card title="Сколько это стоит">

@@ -108,13 +108,13 @@ async function Report({ address, network, threshold, window }: { address: string
           <Empty>За этот период переводов дороже {usd(r.thresholdUsd)} не найдено. Попробуйте уменьшить порог или увеличить период.</Empty>
         ) : (
           <div className="-mx-4 overflow-x-auto sm:mx-0">
-            <table className="table min-w-[720px]">
+            <table className="table md:min-w-[720px]">
               <thead>
                 <tr>
                   <th>Кошелёк</th>
                   <th>Кто это</th>
-                  <th className="text-right">Получил</th>
-                  <th className="text-right">Отправил</th>
+                  <th className="hidden text-right md:table-cell">Получил</th>
+                  <th className="hidden text-right md:table-cell">Отправил</th>
                   <th className="text-right">Итог</th>
                 </tr>
               </thead>
@@ -130,8 +130,8 @@ async function Report({ address, network, threshold, window }: { address: string
                         <span className="text-silver-2">{w.label ?? (tag?.severity === 0 ? tag.label : KIND[w.kind])}</span>
                         {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{CATEGORY[tag.category].name}</Badge>}
                       </td>
-                      <td className="text-right tabular-nums text-ok">{usd(w.inUsd)}</td>
-                      <td className="text-right tabular-nums text-crit">{usd(w.outUsd)}</td>
+                      <td className="hidden text-right tabular-nums text-ok md:table-cell">{usd(w.inUsd)}</td>
+                      <td className="hidden text-right tabular-nums text-crit md:table-cell">{usd(w.outUsd)}</td>
                       <td className={`text-right tabular-nums ${(w.netUsd ?? 0) >= 0 ? "text-ok" : "text-crit"}`}>{usd(w.netUsd)}</td>
                     </tr>
                   );

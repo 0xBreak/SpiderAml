@@ -193,7 +193,7 @@ export function SendForm({ initialTo, ethUsd }: { initialTo: string; ethUsd: num
 
           <div className="rounded-md border border-line bg-bg/40 p-3 text-sm">
             <div className="label mb-2">Сколько это стоит</div>
-            <dl className="grid grid-cols-[1fr_auto] gap-y-1">
+            <dl className="grid grid-cols-1 gap-y-1 sm:grid-cols-[1fr_auto] [&_dd]:mb-1.5 [&_dd]:text-left sm:[&_dd]:mb-0 sm:[&_dd]:text-right">
               <dt className="text-silver-2">Комиссия SpiderAML</dt>
               <dd className="text-right text-ok">0 — бесплатно</dd>
               <dt className="text-silver-2">Комиссия сети (газ){needApprove ? ", 2 транзакции" : ""}</dt>
