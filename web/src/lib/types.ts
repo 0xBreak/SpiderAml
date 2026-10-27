@@ -400,6 +400,8 @@ export interface RiskData {
   factors: RiskFactor[];
   /** factors that could not be evaluated (missing data) */
   skipped: string[];
+  /** adjustments explained on the page: stablecoin, cex_liquidity, exchange_holders */
+  context?: string[];
   meta: Meta;
 }
 

@@ -77,7 +77,7 @@ export const getSanctions = (p: { q?: string; chain?: string; list?: string; pag
 
 export const getMeta = (revalidate?: number) => call<MetaInfo>("/v1/meta", {}, 10_000, undefined, revalidate);
 
-export const getMarkets = (address: string, network: string) => call<{ markets: MarketsData | null }>("/v1/markets", { address, network }, 30_000);
+export const getMarkets = (address: string, network: string) => call<{ markets: MarketsData | null; listed?: { network: string; symbol: string }[] }>("/v1/markets", { address, network }, 30_000);
 
 export const sendReport = (r: { address: string; network: string; category: ReportCategory; description: string; link: string | null }) =>
   call<{ ok: boolean; id: number; token: string }>("/v1/reports", {}, 10_000, r);

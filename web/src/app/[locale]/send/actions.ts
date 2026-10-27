@@ -4,15 +4,14 @@
 // Query-action shape: validate → checkLimit → data call → trackEvent → ok/fail (see @/lib/action templates).
 import { getCheck } from "@/lib/data";
 import { trackEvent } from "@/lib/metrics";
-import { CATEGORY, LEVEL } from "@/lib/texts";
 import { failCode, isEvmAddress, ok, type ActionResult } from "@/lib/action";
 import { checkLimit, failFrom } from "@/lib/action-server";
 
 export interface ScreeningData {
-  level: keyof typeof LEVEL;
+  level: "low" | "medium" | "high" | "critical";
   score: number;
-  title: string;
-  reasons: string[];
+  /** risk categories found (translated by the client) */
+  categories: string[];
   sanctioned: boolean;
 }
 
@@ -24,9 +23,9 @@ export async function screenRecipient(address: string): Promise<Screening> {
   if (limited) return limited;
   try {
     const r = await getCheck(address.trim(), "arbitrum");
-    trackEvent("send_screen", r.level, "/send");
-    const reasons = [...new Set(r.findings.map((f) => CATEGORY[f.category]?.name ?? f.category))];
-    return ok({ level: r.level, score: r.score, title: LEVEL[r.level].title, reasons, sanctioned: r.sanctions.length > 0 });
+    trackEvent("send_screen", `${r.level} · ${r.score}`, "/send", { target: address.trim(), network: "arbitrum" });
+    const categories = [...new Set(r.findings.map((f) => f.category))];
+    return ok({ level: r.level, score: r.score, categories, sanctioned: r.sanctions.length > 0 });
   } catch (e) {
     return failFrom(e);
   }

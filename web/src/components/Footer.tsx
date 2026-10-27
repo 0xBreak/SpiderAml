@@ -70,7 +70,15 @@ export async function Footer({ locale }: { locale: Locale }) {
       </div>
       <div className="border-t border-line/60">
         <div className="mx-auto flex max-w-page flex-wrap justify-between gap-2 px-4 py-4 text-xs text-silver-3">
-          <span>© {new Date().getFullYear()} SpiderAML</span>
+          <span className="flex flex-wrap gap-x-4 gap-y-1">
+            <span>© {new Date().getFullYear()} SpiderAML</span>
+            <Link href="/terms" className="hover:text-silver-1">
+              {tF("terms")}
+            </Link>
+            <Link href="/privacy" className="hover:text-silver-1">
+              {tF("privacy")}
+            </Link>
+          </span>
           <span>{tF("tagline")}</span>
         </div>
       </div>

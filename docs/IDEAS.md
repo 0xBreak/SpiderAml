@@ -6,7 +6,7 @@
 - Tron registry via TronBox once there is a Tron integrator who would read it.
 - Telegram alerts for reserve drops (from Kalkan) — the spec excludes bots for now.
 - EU / UK / UN sanctions lists once they publish crypto addresses in a machine-readable form.
-- English (and Turkish, as in Kalkan) interface.
+- Turkish interface (as in Kalkan); English versions of blog posts; `hreflang` / separate `/en` URLs for search engines.
 - Etherscan page scrape and Chainabuse (needs a key) as extra live sources.
 - Whale report CSV / Markdown export (the code exists in the data layer, the site does not expose it).
 - Litestream backup of the SQLite file to R2/B2 when deployed.

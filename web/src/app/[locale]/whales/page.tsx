@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { ArrowDownUp, ArrowRight, Coins, Droplets, ExternalLink, Tag } from "lucide-react";
 import { Addr } from "@/components/Addr";
@@ -9,70 +10,77 @@ import { DataError, getWhales, limit } from "@/lib/data";
 import { trackEvent } from "@/lib/metrics";
 import { dateTime, num, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId, type NetworkId } from "@/lib/networks";
+import type { Locale } from "@/i18n/routing";
 import type { WhaleTransferKind } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Киты" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Whales");
+  return { title: t("title") };
+}
 export const dynamic = "force-dynamic";
 
 type SP = Promise<{ address?: string; network?: string; usd?: string; window?: string }>;
 
-const WINDOWS = { "1h": "1 час", "6h": "6 часов", "24h": "24 часа", "7d": "7 дней" } as const;
+const WINDOWS = ["1h", "6h", "24h", "7d"] as const;
+type Window = (typeof WINDOWS)[number];
 const PRESETS = [10_000, 50_000, 100_000, 500_000, 1_000_000];
 const FEATURES = [
-  { icon: ArrowDownUp, title: "Крупные переводы" },
-  { icon: Coins, title: "Покупки" },
-  { icon: Droplets, title: "Продажи" },
-  { icon: Tag, title: "Метки" },
-];
-const TYPE: Record<WhaleTransferKind, { label: string; tone: "ok" | "crit" | "muted" | "info" }> = {
-  buy: { label: "Покупка", tone: "ok" },
-  sell: { label: "Продажа", tone: "crit" },
-  transfer: { label: "Перевод", tone: "muted" },
-  mint: { label: "Выпуск", tone: "info" },
-  burn: { label: "Сжигание", tone: "muted" },
+  { icon: ArrowDownUp, key: "featTransfers" },
+  { icon: Coins, key: "featBuys" },
+  { icon: Droplets, key: "featSells" },
+  { icon: Tag, key: "featLabels" },
+] as const;
+const TYPE: Record<WhaleTransferKind, { key: "typeBuy" | "typeSell" | "typeTransfer" | "typeMint" | "typeBurn"; tone: "ok" | "crit" | "muted" | "info" }> = {
+  buy: { key: "typeBuy", tone: "ok" },
+  sell: { key: "typeSell", tone: "crit" },
+  transfer: { key: "typeTransfer", tone: "muted" },
+  mint: { key: "typeMint", tone: "info" },
+  burn: { key: "typeBurn", tone: "muted" },
 };
 
 export default async function WhalesPage({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const network = sp.network && isNetworkId(sp.network) ? sp.network : "ethereum";
   const threshold = Math.min(1e9, Math.max(100, Number(sp.usd) || 50_000));
-  const window = (sp.window && sp.window in WINDOWS ? sp.window : "24h") as keyof typeof WINDOWS;
+  const window: Window = (WINDOWS as readonly string[]).includes(sp.window ?? "") ? (sp.window as Window) : "24h";
+  const t = await getTranslations("Whales");
+  const locale = (await getLocale()) as Locale;
 
   return (
     <div className="space-y-5">
-      <PageTitle title="Киты" sub="Кто покупает и продаёт." />
-      <SearchForm action="/whales" address={sp.address} network={network} placeholder="Адрес токена 0x…" button="Показать">
+      <PageTitle title={t("title")} sub={t("sub")} />
+      <SearchForm action="/whales" address={sp.address} network={network} placeholder={t("placeholder")} button={t("button")}>
         <label className="sm:w-36">
-          <span className="sr-only">Порог</span>
+          <span className="sr-only">{t("threshold")}</span>
           <select name="usd" defaultValue={String(threshold)} className="input">
             {[...new Set([...PRESETS, threshold])].sort((a, b) => a - b).map((p) => (
               <option key={p} value={p}>
-                от {usd(p)}
+                {t("from")} {usd(p, true, locale)}
               </option>
             ))}
           </select>
         </label>
         <label className="sm:w-32">
-          <span className="sr-only">Период</span>
+          <span className="sr-only">{t("period")}</span>
           <select name="window" defaultValue={window} className="input">
-            {Object.entries(WINDOWS).map(([k, v]) => (
+            {WINDOWS.map((k) => (
               <option key={k} value={k}>
-                {v}
+                {t(`w${k}`)}
               </option>
             ))}
           </select>
         </label>
       </SearchForm>
       {sp.address ? (
-        <Suspense key={`${sp.address}-${network}-${threshold}-${window}`} fallback={<CardSkeleton title="Ищем крупные переводы" lines={10} />}>
+        <Suspense key={`${sp.address}-${network}-${threshold}-${window}`} fallback={<CardSkeleton title={t("loading")} lines={10} />}>
           <Report address={sp.address.trim()} network={network} threshold={threshold} window={window} />
         </Suspense>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {FEATURES.map(({ icon: Icon, title }) => (
-            <div key={title} className="card flex min-h-20 items-center gap-3 border-line/60 bg-surface/60 p-4">
+          {FEATURES.map(({ icon: Icon, key }) => (
+            <div key={key} className="card flex min-h-20 items-center gap-3 border-line/60 bg-surface/60 p-4">
               <Icon className="size-5 shrink-0 text-silver-2" aria-hidden />
-              <span className="text-base leading-snug text-silver-1">{title}</span>
+              <span className="text-base leading-snug text-silver-1">{t(key)}</span>
             </div>
           ))}
         </div>
@@ -81,12 +89,15 @@ export default async function WhalesPage({ searchParams }: { searchParams: SP })
   );
 }
 
-async function Report({ address, network, threshold, window }: { address: string; network: NetworkId; threshold: number; window: keyof typeof WINDOWS }) {
+async function Report({ address, network, threshold, window }: { address: string; network: NetworkId; threshold: number; window: Window }) {
+  const t = await getTranslations("Whales");
+  const locale = (await getLocale()) as Locale;
+  const $ = (v: number | null | undefined, compact = true) => usd(v, compact, locale);
   let r: Awaited<ReturnType<typeof getWhales>>;
   try {
     await limit("whales", 6);
     r = await getWhales(address, network, threshold, window);
-    trackEvent("whales", network, "/whales");
+    trackEvent("whales", `${r.token.symbol ?? "?"} > $${threshold}`, "/whales", { target: address, network });
   } catch (e) {
     const err = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
     return <ErrorBox code={err.code} message={err.message} />;
@@ -98,30 +109,22 @@ async function Report({ address, network, threshold, window }: { address: string
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 [&_.label]:text-sm [&_.label]:font-medium [&_.label]:normal-case [&_.label]:tracking-normal [&_.label]:text-silver-2">
-        <Stat label="Крупных переводов" value={<span className="text-2xl lg:text-3xl">{num(s.transfers)}</span>} />
-        <Stat label="Кошельков" value={<span className="text-2xl lg:text-3xl">{num(s.wallets)}</span>} />
-        <Stat
-          label="Куплено на DEX"
-          value={<span className="text-2xl lg:text-3xl">{usd(s.dexBuyUsd)}</span>}
-          tone="ok"
-        />
-        <Stat
-          label="Продано на DEX"
-          value={<span className="text-2xl lg:text-3xl">{usd(s.dexSellUsd)}</span>}
-          tone="crit"
-        />
+        <Stat label={t("bigTransfers")} value={<span className="text-2xl lg:text-3xl">{num(s.transfers, locale)}</span>} />
+        <Stat label={t("wallets")} value={<span className="text-2xl lg:text-3xl">{num(s.wallets, locale)}</span>} />
+        <Stat label={t("dexBuy")} value={<span className="text-2xl lg:text-3xl">{$(s.dexBuyUsd)}</span>} tone="ok" />
+        <Stat label={t("dexSell")} value={<span className="text-2xl lg:text-3xl">{$(s.dexSellUsd)}</span>} tone="crit" />
       </div>
-      {r.thresholdBasis === "supply" && <p className="text-base text-warn">У токена нет цены, поэтому «крупным» считается перевод больше 0,1% от всех токенов.</p>}
+      {r.thresholdBasis === "supply" && <p className="text-base text-warn">{t("noPrice")}</p>}
       {covered < 0.95 && (
         <p className="text-base text-silver-2">
-          Просмотрено {Math.max(1, Math.round(r.coverage.coveredSec / 3600))} ч из выбранного периода.
+          {t("partial", { hours: Math.max(1, Math.round(r.coverage.coveredSec / 3600)) })}
         </p>
       )}
 
-      <Card title="Кошельки китов">
+      <Card title={t("walletsTitle")}>
         {r.wallets.length === 0 ? (
           <Empty>
-            <span className="text-base text-silver-2">Переводов дороже {usd(r.thresholdUsd)} нет.</span>
+            <span className="text-base text-silver-2">{t("none", { value: $(r.thresholdUsd) })}</span>
           </Empty>
         ) : (
           <WhalesTable wallets={r.wallets.slice(0, 50)} labels={r.labels} explorer={ex} />
@@ -129,23 +132,23 @@ async function Report({ address, network, threshold, window }: { address: string
       </Card>
 
       {r.transfers.length > 0 && (
-        <Card title="Крупные переводы">
+        <Card title={t("topTransfers")}>
           <ul className="divide-y divide-line/40">
-            {r.transfers.slice(0, 30).map((t) => (
-              <li key={t.tx + t.from + t.to} className="py-3.5">
+            {r.transfers.slice(0, 30).map((x) => (
+              <li key={x.tx + x.from + x.to} className="py-3.5">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <Badge tone={TYPE[t.type].tone}>{TYPE[t.type].label}</Badge>
-                  <span className="text-lg font-semibold tabular-nums text-silver-1">{usd(t.usd, false)}</span>
+                  <Badge tone={TYPE[x.type].tone}>{t(TYPE[x.type].key)}</Badge>
+                  <span className="text-lg font-semibold tabular-nums text-silver-1">{$(x.usd, false)}</span>
                   <span className="text-base text-silver-2">
-                    {num(t.tokens)} {r.token.symbol}
+                    {num(x.tokens, locale)} {r.token.symbol}
                   </span>
                   <span className="ml-auto inline-flex items-center gap-2 text-sm text-silver-2">
-                    {dateTime(t.ts * 1000)}
+                    {dateTime(x.ts * 1000, locale)}
                     <a
-                      href={`${ex}/tx/${t.tx}`}
+                      href={`${ex}/tx/${x.tx}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label="Транзакция"
+                      aria-label={t("tx")}
                       className="text-silver-2 transition hover:text-silver-1"
                     >
                       <ExternalLink className="size-4" />
@@ -153,9 +156,9 @@ async function Report({ address, network, threshold, window }: { address: string
                   </span>
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                  <Addr value={t.from} className="text-sm text-silver-1" />
+                  <Addr value={x.from} className="text-sm text-silver-1" />
                   <ArrowRight className="size-4 shrink-0 text-silver-3" aria-hidden />
-                  <Addr value={t.to} className="text-sm text-silver-1" />
+                  <Addr value={x.to} className="text-sm text-silver-1" />
                 </div>
               </li>
             ))}

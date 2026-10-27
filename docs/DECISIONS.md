@@ -90,7 +90,10 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   cookies); clicks on `data-track` elements and outbound links go through a tiny write-only beacon `/api/e`;
   product events (check result, token/whales network, report category) are sent from the server. The data layer stores
   only `hash(daily salt + IP + UA)` — the salt of a past day is deleted — so visitors are countable per day but not
-  traceable. Checked addresses are never stored in metrics. Report: `bun run stats`.
+  traceable. Report: `bun run stats`, and the admin panel → Статистика.
+- **Checked addresses are kept in metrics** (owner decision 2026-10-27): what was checked, the result, network and
+  country (from Cloudflare) per event, to see demand in the admin panel. No IPs. Requests to paths that do not exist on
+  the site (scanners looking for .git, WordPress, .env) are stored as "probe" and never counted as visitors.
 - **Cloudflare Web Analytics** allowed in the CSP so it can be switched on in the dashboard for countries/browsers.
 - **Deploy = one VPS + Docker Compose + Cloudflare Tunnel** (files in the private repo `deploy/`). No inbound ports
   except SSH; the data container publishes nothing; logs rotate; SQLite in a named volume; `bun run backup` makes a
@@ -98,3 +101,39 @@ Short log of why things are the way they are. Newest at the bottom of each secti
 - **Own lists = CSV files in `data/own/`** (bind-mounted), imported like any other source; bad rows are skipped and
   logged. `bun run export` writes private CSV exports.
 - **Blog drafts** (`draft: true`) show in development and are hidden (404) in production.
+- **Two languages, Russian and English, picked automatically** (owner request 2026-10-27). Order: the visitor's choice
+  (RU/EN switch in the header → `/lang`, a functional `lang` cookie for a year, no tracking) → browser languages
+  (Russian for ru/uk/be/kk/ky/uz/tg/az/hy/ka readers) → English for everyone else. Same URLs for both languages;
+  `<html lang>` and page titles follow. Wording lives next to each page as a `{ ru, en }` dictionary; shared texts are
+  `texts(locale)` in `web/src/lib/texts.ts`. Blog posts stay Russian (the English list says so).
+- **Traffic source = `?src=` label, then Referer, then in-app browser.** Telegram, Instagram and other apps send no
+  Referer, so a shared link like `spideraml.com/?src=telegram` is the reliable way; without it the app is guessed from
+  the User-Agent.
+- **Token score is fairer to real tokens** (owner report on KGST, 2026-10-27). Stablecoins (CoinGecko category) skip
+  holder concentration and owner powers — an issuer holding unissued supply and mint/freeze rights is how they work.
+  Liquidity counts centralised-exchange order books (CoinGecko "−2% depth") as well as DEX pools. Exchange wallets
+  (Binance, OKX… by explorer label) are not counted as large holders. The page explains each adjustment.
+- **"Fraud signals in databases" badge comes only from databases**, never from our own token heuristic (it used to
+  say "possible scam" for any token the heuristic rated high — that read as an accusation).
+- **Same address, other network**: if a contract address is a known token on another network but not on the one
+  checked (KGST exists on BNB Chain; an unrelated contract sits at the same address on Ethereum), the check and token
+  pages say so and link to the right network. Source: CoinGecko coin list, downloaded once a day.
+- **Terms of use and privacy pages** (`/terms`, `/privacy`, both languages, linked in the footer) describe exactly what
+  the code does; metrics events are now deleted after 13 months (`RETENTION_DAYS` in the data layer). Source licences
+  are listed on `/terms`. Source ages are not shown on the site (owner decision: the lists are kept up to date and
+  extended by hand). Not reviewed by a lawyer.
+- **Front end = the other developer's redesign, our features ported onto it** (2026-10-28). Base: the "Perpetuity" UI
+  (Next.js 16, Tailwind 4, shadcn primitives, next-intl with `/en` URLs). Brought over from our earlier version: score
+  breakdown instead of "Reasons", Tron and ENS in the AML check, checksum error, other-network notice and CoinGecko
+  failure notice, stablecoin / exchange-liquidity context, "fraud signals in databases" badge, terms and privacy pages,
+  source labels and link-preview analytics, wording without slogans. All pages are translated through
+  `messages/ru.json` + `messages/en.json`; the earlier page-local dictionaries were converted into those files.
+- **Language**: first visit without a stored choice gets English unless the browser lists a Russian-reading language
+  (Accept-Language), crawlers and link-preview bots get the Russian default; the choice is the `NEXT_LOCALE` cookie
+  (set by the switcher). Replaces next-intl's own detection, which sent e.g. German browsers to the Russian site.
+- **Home page is rendered per request** (was prerendered every 6 h): the Docker build has no data layer, so a
+  prerendered page shipped without stats and sources.
+- **CI/CD for the site** (2026-10-28). GitHub Actions: `ci.yml` (types, tests, audit, build) on every pull request;
+  `deploy.yml` on merge to `main` builds the image on an ARM runner and ships it to the server over SSH. The server
+  never compiles the site (that build is what made it heavy). The SSH key is restricted by a forced command to one
+  script that swaps the `web` container and rolls back if it is not healthy. No registry, no public image.

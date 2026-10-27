@@ -5,7 +5,7 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/format";
-import { ERROR_TEXT } from "@/lib/texts";
+import { getTranslations } from "next-intl/server";
 import { Alert } from "./ui/alert";
 import { Badge as BadgePrimitive } from "./ui/badge";
 import { Card as CardPrimitive, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -93,8 +93,10 @@ export function Notice({ tone = "info", children }: { tone?: Tone; children: Rea
   );
 }
 
-export function ErrorBox({ code, message }: { code?: string; message?: string }) {
-  return <Notice tone="warn">{(code && ERROR_TEXT[code]) || message || "Что-то пошло не так. Попробуйте ещё."}</Notice>;
+export async function ErrorBox({ code, message }: { code?: string; message?: string }) {
+  const t = await getTranslations("Errors");
+  // messages from the data layer are in Russian: show them only when we have no translation and the page is Russian
+  return <Notice tone="warn">{(code && t.has(code) ? t(code) : null) ?? message ?? t("fallback")}</Notice>;
 }
 
 export function Skeleton({ className }: { className?: string }) {

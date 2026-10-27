@@ -14,6 +14,7 @@ import { NETWORKS, isNetworkId } from "@/lib/networks";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { RiskContext } from "@/components/RiskContext";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Check");
@@ -33,18 +34,19 @@ const TONE_OF_LEVEL: Record<CheckReport["level"], "ok" | "warn" | "crit"> = {
 
 export default async function CheckPage({ searchParams }: { searchParams: SP }) {
   const { address, network: rawNetwork } = await searchParams;
-  const network = rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
+  const network = rawNetwork === "tron" ? "tron" : rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
 
   let report: CheckReport | null = null;
   let error: DataError | null = null;
   if (address) {
     try {
       await limit("check", 20);
+      if (network === "tron" && !/^T\w{33}$/.test(address.trim())) throw new DataError("TRON_EXPECTED", "", 400);
       report = await getCheck(address.trim(), network);
-      trackEvent("check", `${report.kind === "tron" ? "tron" : network}:${report.level}`, "/check");
+      trackEvent("check", `${report.level} · ${report.score}`, "/check", { target: report.address, network: report.kind === "tron" ? "tron" : network });
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
-      trackEvent("check", `error:${error.code}`, "/check");
+      trackEvent("check", `error:${error.code}`, "/check", { target: address.trim(), network });
     }
   }
 
@@ -57,7 +59,7 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
         <h1 className="text-balance text-3xl font-semibold tracking-tight text-silver-1 sm:text-4xl">{t("title")}</h1>
         <p className="max-w-2xl text-base leading-relaxed text-silver-2">{t("sub")}</p>
       </header>
-      <SearchForm action="/check" address={address} network={network} />
+      <SearchForm action="/check" address={address} network={report?.kind === "tron" ? "tron" : network} />
       {error && <ErrorBox message={tErr.has(error.code) ? tErr(error.code) : error.message || tErr("fallback")} />}
       {report && <Report r={report} />}
       {!address && <HowItWorks />}
@@ -84,11 +86,26 @@ async function Report({ r }: { r: CheckReport }) {
   const owner = r.tags[0];
   const chainLabel = r.kind === "tron" ? tChain("tron") : (net?.label ?? r.network);
   const hasBadges = r.sanctions.length > 0 || r.possibleScam || r.contract?.isContract;
-  const showSummary = risky.length > 0 || r.portfolio != null || r.counterparties != null;
-  const hasAside = showSummary || r.tags.length > 0 || r.onchain != null;
+  const signals = risky.length + (r.counterparties?.flagged.length ?? 0);
+  // the on-chain registry matters to the visitor only when the address is recorded there
+  const recorded = r.onchain && r.onchain.level > 0 ? r.onchain : null;
+  const showSummary = signals > 0 || r.portfolio != null || r.counterparties != null;
+  const hasAside = showSummary || r.tags.length > 0 || recorded != null;
+  const elsewhere = (r.listedElsewhere ?? []).filter((x) => isNetworkId(x.network));
+  const netLabel = (n: string) => NETWORKS[n as keyof typeof NETWORKS].label;
 
   return (
     <div className="flex flex-col gap-6">
+      {elsewhere.length > 0 && (
+        <Notice tone="warn">
+          {t("elsewhere", { symbol: elsewhere[0].symbol, networks: elsewhere.map((x) => netLabel(x.network)).join(", "), here: chainLabel })}{" "}
+          {elsewhere.map((x) => (
+            <Link key={x.network} href={`/check?address=${r.address}&network=${x.network}`} className="link mr-3 whitespace-nowrap">
+              {t("checkOn", { network: netLabel(x.network) })}
+            </Link>
+          ))}
+        </Notice>
+      )}
       {/* verdict */}
       <section className="border border-line bg-surface">
         <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[13rem_minmax(0,1fr)] md:items-center md:gap-8">
@@ -118,6 +135,7 @@ async function Report({ r }: { r: CheckReport }) {
             </h2>
             <p className="max-w-2xl text-lg leading-relaxed text-silver-1">{summary}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-silver-2">
+              {r.ensName && <span className="font-medium text-silver-1">{r.ensName} →</span>}
               <Addr value={r.address} href={explorer} full />
               <span>{chainLabel}</span>
               {owner && <span>{owner.label}</span>}
@@ -146,7 +164,7 @@ async function Report({ r }: { r: CheckReport }) {
 
       <div className={cn("grid gap-5", hasAside && "lg:grid-cols-3")}>
         <div className={cn("flex flex-col gap-5", hasAside && "lg:col-span-2")}>
-          <Reasons findings={risky} />
+          <Reasons r={r} findings={risky} />
           {r.sanctions.length > 0 && <Sanctions r={r} />}
           {r.contract?.isContract && r.contract.risk && <TokenRisk r={r} />}
           {r.counterparties && <Counterparties r={r} />}
@@ -156,7 +174,7 @@ async function Report({ r }: { r: CheckReport }) {
             {showSummary && (
               <Card title={t("shortTitle")}>
                 <dl className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
-                  <Metric label={t("riskSignals")} value={risky.length} tone={risky.length ? "warn" : "ok"} />
+                  <Metric label={t("riskSignals")} value={signals} tone={signals ? "warn" : "ok"} />
                   {r.portfolio && (
                     <Metric
                       label={t("balance")}
@@ -186,31 +204,15 @@ async function Report({ r }: { r: CheckReport }) {
                 </ul>
               </Card>
             )}
-            {r.onchain && (
-              <Card title={t("registryTitle")}>
-                <p className="text-base leading-relaxed text-silver-2">
-                  {r.onchain.level > 0 ? (
-                    <>
-                      {t.rich("recordedAs", {
-                        category: tCat.has(r.onchain.category) ? tCat(`${r.onchain.category}.name`) : r.onchain.category,
-                        level: r.onchain.level,
-                        b: (chunks) => <b className="text-silver-1">{chunks}</b>,
-                      })}
-                      {r.onchain.level >= 3 && ` ${t("blockedNote")}`}
-                    </>
-                  ) : (
-                    t("noRecord")
-                  )}
-                </p>
-                <a
-                  href={r.onchain.explorer}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="link mt-3 inline-flex items-center gap-1.5 text-base"
-                >
-                  {t("registryLink")} <ExternalLink className="size-4" />
-                </a>
-              </Card>
+            {recorded && (
+              <Notice tone={recorded.level >= 3 ? "crit" : "warn"}>
+                {t.rich("recordedAs", {
+                  category: tCat.has(recorded.category) ? tCat(`${recorded.category}.name`) : recorded.category,
+                  level: recorded.level,
+                  b: (chunks) => <b>{chunks}</b>,
+                })}
+                {recorded.level >= 3 && ` ${t("blockedNote")}`}
+              </Notice>
             )}
           </div>
         )}
@@ -257,47 +259,71 @@ function Metric({
   );
 }
 
-async function Reasons({ findings }: { findings: Finding[] }) {
+async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] }) {
   const t = await getTranslations("Check");
   const tCat = await getTranslations("Category");
-  if (findings.length === 0)
-    return (
-      <Card title={t("noReasonsTitle")}>
-        <p className="text-base text-silver-2">{t("noReasons")}</p>
-      </Card>
-    );
+  const parts = r.scoreParts ?? { sources: 0, counterparties: 0, token: 0 };
+  const cp = r.counterparties;
+  const rows: { name: string; result: string; points: number }[] = [
+    { name: t("partSources"), result: findings.length ? t("srcFound", { count: findings.length }) : t("srcNone"), points: parts.sources },
+  ];
+  // a token contract has no counterparties in the wallet sense
+  if (!r.contract?.isContract)
+    rows.push({
+      name: t("partCps"),
+      result: !cp ? t("cpSkipped") : cp.flagged.length ? t("cpSummaryFound", { flagged: cp.flagged.length, checked: cp.checked }) : t("cpSummaryNone", { checked: cp.checked }),
+      points: parts.counterparties,
+    });
+  if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
+
   const groups = new Map<string, Finding[]>();
   for (const f of findings) groups.set(f.category, [...(groups.get(f.category) ?? []), f]);
   return (
-    <Card title={t("reasonsTitle")}>
-      <div className="flex flex-col gap-5">
-        {[...groups].map(([cat, list]) => {
-          const worst = Math.max(...list.map((f) => f.severity));
-          return (
-            <div key={cat} className="flex flex-col gap-2.5">
-              <Badge tone={toneOfSeverity(worst)} className="self-start">
-                {tCat.has(cat) ? tCat(`${cat}.name`) : cat}
-              </Badge>
-              <ul className="flex flex-col gap-2">
-                {list.map((f, i) => (
-                  <li key={i} className="text-base leading-snug text-silver-1">
-                    {f.label}
-                    <span className="mt-0.5 block text-sm text-silver-2">
-                      {f.url ? (
-                        <a href={f.url} target="_blank" rel="noopener noreferrer" className="link">
-                          {f.sourceName}
-                        </a>
-                      ) : (
-                        f.sourceName
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
+    <Card title={t("whyTitle")} hint={t("whyHint")}>
+      <ul className="flex flex-col divide-y divide-line/60">
+        {rows.map((x) => (
+          <li key={x.name} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <span className={cn("size-2.5 shrink-0", x.points >= 50 ? "bg-crit" : x.points > 0 ? "bg-warn" : "bg-ok")} aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="block text-base text-silver-1">{x.name}</span>
+              <span className="block text-sm text-silver-2">{x.result}</span>
+            </span>
+            <span className={cn("shrink-0 text-base tabular-nums", x.points >= 50 ? "text-crit" : x.points > 0 ? "text-warn" : "text-silver-2")}>{t("points", { n: x.points })}</span>
+          </li>
+        ))}
+      </ul>
+      {findings.length > 0 && (
+        <div className="mt-5 flex flex-col gap-5 border-t border-line pt-5">
+          <div className="label">{t("detailsTitle")}</div>
+          {[...groups].map(([cat, list]) => {
+            const worst = Math.max(...list.map((f) => f.severity));
+            return (
+              <div key={cat} className="flex flex-col gap-2.5">
+                <Badge tone={toneOfSeverity(worst)} className="self-start">
+                  {tCat.has(cat) ? tCat(`${cat}.name`) : cat}
+                </Badge>
+                <ul className="flex flex-col gap-2">
+                  {list.map((f, i) => (
+                    <li key={i} className="text-base leading-snug text-silver-1">
+                      {f.label}
+                      <span className="mt-0.5 block text-sm text-silver-2">
+                        {t("sourceWord")}:{" "}
+                        {f.url ? (
+                          <a href={f.url} target="_blank" rel="noopener noreferrer" className="link">
+                            {f.sourceName}
+                          </a>
+                        ) : (
+                          f.sourceName
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }
@@ -359,6 +385,10 @@ async function TokenRisk({ r }: { r: CheckReport }) {
           );
         })}
       </ul>
+      <p className="mt-4 border-t border-line pt-3 text-sm text-silver-2">
+        {t("tokenTotal", { points: risk.factors.reduce((n, f) => n + f.points, 0), max: risk.factors.reduce((n, f) => n + f.max, 0), score: risk.score })}
+      </p>
+      <RiskContext codes={risk.context} />
     </Card>
   );
 }

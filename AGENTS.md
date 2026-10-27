@@ -32,12 +32,17 @@ Site is server-rendered; there is NO public JSON API by design.
 - Toasts via `sonner` (`Toaster` in the locale layout).
 - `DATA_URL` + `DATA_SECRET` are server-only (`src/lib/data.ts`, `server-only`). Never prefix with `NEXT_PUBLIC_`, never leak into client bundles.
 - Pages call the data layer from the server and render HTML. No public API routes except the write-only beacon `/api/e`.
+- Wording: facts and concrete actions, no slogans ("это не приговор", "не торопитесь"). All copy lives in
+  `messages/*.json` (both languages, same keys); `lib/texts.ts` keeps only the Russian fallback of action errors.
 - Risk wording: reasons, never accusations. Disclaimer next to every score.
 - Rate limits per IP on expensive pages (`checkLimit` in `src/lib/action-server.ts`).
 - Security headers + CSP in `next.config.mjs`. `experimental.optimizePackageImports`
   covers `lucide-react` and `recharts`. Images below the fold: `loading="lazy"`.
 - `src/proxy.ts` (was `middleware.ts` in Next ≤15): canonical-host redirect →
-  next-intl routing → pageview counting. Matcher covers app pages only.
+  first-visit language (`src/i18n/detect.ts`: Russian for Russian-reading regions, English for everyone else, stored in
+  `NEXT_LOCALE`) → next-intl routing → analytics for what only the server sees (messenger link previews, probes).
+  Page views of people are sent by `ClickTracker` from the browser (visible tab, no automation), so robots posing as
+  browsers never count as visitors. Matcher covers app pages only.
 
 ## UI — one style: Perpetuity
 

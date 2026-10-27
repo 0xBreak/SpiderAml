@@ -3,10 +3,12 @@
 import { useMemo, useState } from "react";
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Addr } from "@/components/Addr";
 import { Badge, toneOfSeverity } from "@/components/ui";
 import { cn, usd } from "@/lib/format";
-import { CATEGORY } from "@/lib/texts";
+import type { Locale } from "@/i18n/routing";
+import type { Category } from "@/lib/api-types";
 import type { HolderKind } from "@/lib/types";
 
 export interface WhaleWallet {
@@ -20,11 +22,9 @@ export interface WhaleWallet {
 
 export interface WhaleLabel {
   severity: number;
-  category: keyof typeof CATEGORY;
+  category: Category;
   label: string;
 }
-
-const KIND: Record<HolderKind, string> = { eoa: "Кошелёк", multisig: "Мультисиг", contract: "Контракт", pool: "Пул DEX", burn: "Сожжено", token: "Сам токен" };
 
 function SortIcon({ dir }: { dir: "asc" | "desc" | false }) {
   if (dir === "asc") return <ArrowUp className="size-4" aria-hidden />;
@@ -32,8 +32,12 @@ function SortIcon({ dir }: { dir: "asc" | "desc" | false }) {
   return <ArrowUpDown className="size-4 opacity-50" aria-hidden />;
 }
 
-/** Whale wallets with sortable Получил / Отправил / Итог columns. */
+/** Whale wallets with sortable Received / Sent / Net columns. */
 export function WhalesTable({ wallets, labels, explorer }: { wallets: WhaleWallet[]; labels: Record<string, WhaleLabel>; explorer: string }) {
+  const t = useTranslations("Whales");
+  const tKind = useTranslations("Holder");
+  const tCat = useTranslations("Category");
+  const locale = useLocale() as Locale;
   const [sorting, setSorting] = useState<SortingState>([{ id: "net", desc: true }]);
   const table = useReactTable({
     data: useMemo(() => wallets, [wallets]),
@@ -41,7 +45,7 @@ export function WhalesTable({ wallets, labels, explorer }: { wallets: WhaleWalle
       () => [
         {
           id: "wallet",
-          header: "Кошелёк",
+          header: t("colWallet"),
           accessorFn: (w: WhaleWallet) => w.address,
           cell: ({ row }: { row: { original: WhaleWallet } }) => (
             <Addr value={row.original.address} href={`${explorer}/address/${row.original.address}`} className="text-base text-silver-1" />
@@ -50,15 +54,15 @@ export function WhalesTable({ wallets, labels, explorer }: { wallets: WhaleWalle
         },
         {
           id: "who",
-          header: "Кто это",
-          accessorFn: (w: WhaleWallet) => w.label ?? KIND[w.kind],
+          header: t("colWho"),
+          accessorFn: (w: WhaleWallet) => w.label ?? tKind(w.kind),
           cell: ({ row }: { row: { original: WhaleWallet } }) => {
             const w = row.original;
             const tag = labels[w.address.toLowerCase()];
             return (
               <span className="flex flex-wrap items-center gap-1.5">
-                <span className="text-silver-1">{w.label ?? (tag?.severity === 0 ? tag.label : KIND[w.kind])}</span>
-                {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{CATEGORY[tag.category]?.name ?? tag.category}</Badge>}
+                <span className="text-silver-1">{w.label ?? (tag?.severity === 0 ? tag.label : tKind(w.kind))}</span>
+                {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{tCat.has(tag.category) ? tCat(`${tag.category}.name`) : tag.category}</Badge>}
               </span>
             );
           },
@@ -66,36 +70,36 @@ export function WhalesTable({ wallets, labels, explorer }: { wallets: WhaleWalle
         },
         {
           id: "in",
-          header: "Получил",
+          header: t("colIn"),
           accessorFn: (w: WhaleWallet) => w.inUsd ?? -1,
           cell: ({ getValue }: { getValue: () => number }) => {
             const v = getValue();
-            return <span className={cn("tabular-nums", v < 0 ? "text-silver-3" : "text-ok")}>{v < 0 ? "—" : usd(v)}</span>;
+            return <span className={cn("tabular-nums", v < 0 ? "text-silver-3" : "text-ok")}>{v < 0 ? "—" : usd(v, true, locale)}</span>;
           },
           meta: { align: "right" as const },
         },
         {
           id: "out",
-          header: "Отправил",
+          header: t("colOut"),
           accessorFn: (w: WhaleWallet) => w.outUsd ?? -1,
           cell: ({ getValue }: { getValue: () => number }) => {
             const v = getValue();
-            return <span className={cn("tabular-nums", v < 0 ? "text-silver-3" : "text-crit")}>{v < 0 ? "—" : usd(v)}</span>;
+            return <span className={cn("tabular-nums", v < 0 ? "text-silver-3" : "text-crit")}>{v < 0 ? "—" : usd(v, true, locale)}</span>;
           },
           meta: { align: "right" as const },
         },
         {
           id: "net",
-          header: "Итог",
+          header: t("colNet"),
           accessorFn: (w: WhaleWallet) => w.netUsd ?? 0,
           cell: ({ getValue }: { getValue: () => number }) => {
             const v = getValue();
-            return <span className={cn("font-semibold tabular-nums", v >= 0 ? "text-ok" : "text-crit")}>{usd(v)}</span>;
+            return <span className={cn("font-semibold tabular-nums", v >= 0 ? "text-ok" : "text-crit")}>{usd(v, true, locale)}</span>;
           },
           meta: { align: "right" as const },
         },
       ],
-      [explorer, labels],
+      [explorer, labels, t, tKind, tCat, locale],
     ),
     state: { sorting },
     onSortingChange: setSorting,
@@ -130,7 +134,7 @@ export function WhalesTable({ wallets, labels, explorer }: { wallets: WhaleWalle
                           "inline-flex items-center gap-1.5 transition-colors hover:text-silver-1",
                           align === "right" && "flex-row-reverse",
                         )}
-                        aria-label={`Сортировать: ${typeof h.column.columnDef.header === "string" ? h.column.columnDef.header : ""}`}
+                        aria-label={t("sortBy", { column: typeof h.column.columnDef.header === "string" ? h.column.columnDef.header : "" })}
                       >
                         {flexRender(h.column.columnDef.header, h.getContext())}
                         <SortIcon dir={sorted} />
