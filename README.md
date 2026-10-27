@@ -1,126 +1,226 @@
 <p align="center">
-  <img src="assets/brand/v3-icon.png" width="96" alt="SpiderAML">
+  <img src="assets/brand/v3-icon.png" width="88" alt="SpiderAML logo">
 </p>
 
 <h1 align="center">SpiderAML</h1>
 
 <p align="center">
-  <b>Проверьте криптоадрес до того, как отправить деньги.</b><br>
-  Бесплатная AML-проверка адресов и токенов — понятным языком, для обычных людей.
+  <b>Check a crypto address before you send money.</b><br>
+  Free AML screening of wallets and tokens, explained in plain language, for ordinary people.
 </p>
 
 <p align="center">
-  <a href="https://spideraml.com"><b>spideraml.com</b></a>
+  <a href="https://spideraml.com"><b>spideraml.com</b></a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#strengths-and-limitations">Strengths and limitations</a> ·
+  <a href="#smart-contracts">Smart contracts</a>
 </p>
 
----
+![Address check](docs/img/check.jpg)
 
-![AML-проверка адреса](docs/img/check.jpg)
+## The problem
 
-## Зачем
+Crypto use in Kyrgyzstan and Central Asia is growing fast: the regulator reported about **$31 billion** in
+virtual-asset turnover in 2025, three times the year before, and around 90% of it goes through local crypto exchangers
+rather than exchanges. Losses grow with it:
 
-Криптовалютой в Кыргызстане и регионе пользуется всё больше людей: обменники, P2P, оплата от зарубежных заказчиков,
-вложения в новые токены. Вместе с этим растут потери — пирамиды вроде MCN Coin, фишинг, дрейнеры кошельков, и новый риск:
-получить средства с адреса, связанного с санкционной структурой, и потерять доступ к бирже или банку.
+- **Pyramids.** MCN Coin, an unregistered "investment" token, ended in a fraud case; the organiser publicly admitted it
+  was a scam; by early 2025, $1.7 million had been returned to 898 victims.
+- **Sanctions exposure.** Western regulators have sanctioned several crypto businesses operating in the region. A person
+  who sells USDT on P2P can receive funds from a sanctioned address and have their exchange account frozen.
+- **Phishing and drainers.** One signature on a fake site empties a wallet.
 
-Профессиональные AML-инструменты продаются компаниям по дорогим контрактам. SpiderAML даёт ту же базовую проверку любому
-человеку: вставил адрес — за секунды получил оценку риска, причины с источниками и совет, что делать.
+Professional AML tools (Chainalysis, TRM, Elliptic, Crystal) are sold to companies under enterprise contracts, in
+English, for compliance teams. An ordinary user has nothing but Telegram chats.
 
-## Что умеет
+## What SpiderAML does
 
-| Раздел | Что показывает |
+| Tool | Answers the question | What it looks at |
+|---|---|---|
+| **Address check** (`/check`) | Is it safe to send money to this address? | Official sanctions lists, exploit / phishing / scam databases, live GoPlus check, risky counterparties in recent transactions, on-chain registry record. Contracts also get token risk factors |
+| **Token analysis** (`/token`) | Can I trust this token? | Price, market cap, CEX and DEX markets with spread and ±2% depth, DEX liquidity, buy/sell flow, top holders with labels, owner and upgrade rights |
+| **Whales** (`/whales`) | Who is buying or dumping right now? | Every transfer above a user-set USD threshold, aggregated per wallet, DEX buys and sells, labels |
+| **Sanctions** (`/sanctions`) | Which crypto addresses are officially sanctioned? | OFAC, UK and EU entries with owner, programme, designation date and a link to the official record |
+| **Safe send** (`/send`) | Can a transfer refuse a sanctioned recipient by itself? | `SpiderSend` contract checks both parties against the on-chain registry before moving USDC |
+| **Report** (`/report`) | I was scammed — what now? | Free report form; reports are reviewed by hand, confirmed addresses join the database, the sender sees the status |
+
+Every verdict comes with the reasons, the source of each reason and what to do next. The UI is in Russian.
+
+![Token analysis](docs/img/token.jpg)
+
+## How it works
+
+```
+Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private channel──▶ Data layer
+                                                                         ├─ sanctions + risk lists (SQLite, refreshed every 6 h)
+                                                                         ├─ scoring, token analytics, whale scans
+                                                                         ├─ providers: QuickNode RPC, Zerion, CoinGecko, GoPlus
+                                                                         └─ writer key ──▶ SpiderRegistry (on-chain)
+```
+
+- **Site** (`web/`, this repo). Next.js 15 App Router. Pages are rendered on the server and the browser receives HTML;
+  there is no public JSON API. JavaScript runs in the browser only for the wallet on `/send`.
+- **Data layer** (separate private service). Downloads the lists, stores them, computes scores, runs token analytics
+  and pushes critical addresses on-chain. Holds all provider keys. The site talks to it over a private channel
+  authenticated with a shared secret; the data layer has no public address at all.
+- **Contracts** (`contracts/`). A risk registry that other contracts can read and a "send with a check" contract.
+
+### Data sources
+
+| Source | Type | Coverage |
+|---|---|---|
+| OFAC SDN (US Treasury) | official sanctions | ~1,050 crypto addresses, 20 assets (BTC, ETH, USDT, TRX…) |
+| UK Sanctions List (FCDO) | official sanctions | addresses quoted in designations, with designation dates |
+| EU Consolidated Financial Sanctions List | official sanctions | addresses quoted in entity remarks |
+| ScamSniffer, MyEtherWallet darklist | phishing / drainers | ~3,200 addresses |
+| Etherscan-family public labels | exploits, phishing, entity tags | 6 chains, ~32,000 labels |
+| Forta labelled datasets | exploits, malicious contracts and deployers | ~15,000 records |
+| GoPlus Security | live lookup per request | aggregates SlowMist, BlockSec and others |
+| User reports | confirmed by hand | grows with the community |
+| CoinGecko, Zerion, QuickNode | market data, wallets, on-chain logs | 7 EVM chains |
+
+In total about **43,000 labelled addresses**, ~12,000 of them risky, ~1,100 from official sanctions lists.
+Chains: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche, plus Tron (sanctions and risk databases).
+
+### Methodology
+
+**Address normalisation.** EVM addresses are validated and normalised (EIP-55); Tron addresses are verified with
+base58check. Addresses quoted in free-text sanctions documents (UK, EU) are extracted only if their checksum is valid —
+EVM, Tron, Bitcoin base58check, bech32 and bech32m — so registration numbers and typos never become "sanctioned
+addresses".
+
+**Address score (0–100).** Each finding has a severity: 3 critical (sanctions, exploits, drainers), 2 elevated,
+1 low, 0 neutral tag (exchange, protocol).
+
+| Input | Contribution |
 |---|---|
-| **AML-проверка адреса** | Оценка риска 0–100 и вердикт: есть ли адрес в официальных санкционных списках, связан ли со взломами, фишингом, миксерами, с какими рискованными адресами взаимодействовал. Для контрактов — риски токена |
-| **Анализ токена** | Цена, капитализация, торги на биржах (CEX) и DEX со спредом и глубиной ±2%, ликвидность в пулах, крупные держатели с метками, права владельца контракта |
-| **Киты** | Крупные переводы токена дороже заданной суммы: кто покупает, кто продаёт, по каждому кошельку |
-| **Санкционные адреса** | Криптоадреса из официальных списков США, Великобритании и ЕС: кому принадлежит, программа, дата включения, ссылка на запись в источнике |
-| **Безопасная отправка** | Перевод USDC через смарт-контракт SpiderSend, который сам отказывается отправлять на санкционный адрес или адрес взломщика |
-| **Сообщить об адресе** | Пострадавшие сообщают о мошеннических адресах; заявки проверяются вручную и пополняют базу, отправитель видит статус |
-| **Блог** | Разборы exit-скамов и пирамид: как распознать заранее |
+| strongest direct finding | severity 3 → 100, 2 → 60, 1 → 25 |
+| flagged counterparties in the last 50 transactions | up to 40 (more flagged and critical ones weigh more) |
+| token heuristics, if the address is a token contract | 70% of the token risk score |
 
-![Анализ токена](docs/img/token.jpg)
+The final score is the maximum of the three. Levels: **80+ critical**, **50+ high**, **20+ medium**, below 20 low.
+Taking the maximum instead of a sum keeps one strong, sourced reason from being diluted and avoids inflating scores
+from many weak ones.
 
-## Данные
+**Token risk factors.** Holder concentration excluding pools and burn addresses (30 points), liquidity depth against
+market cap (20), source verification (20), upgradeability and owner type (14), market coverage (10). A factor that
+cannot be evaluated is listed as "not scored" instead of silently counting as zero.
 
-Только открытые и официальные источники, обновление автоматически каждые 6 часов.
+**Whales and holders.** Holders are discovered from Transfer logs over the last 14 days and confirmed with
+`balanceOf`; whale reports scan logs adaptively within a request budget and state how much of the window they
+actually covered.
 
-- **Санкции:** OFAC SDN (США), UK Sanctions List (Великобритания), EU Consolidated List (ЕС).
-- **Взломы, фишинг, мошенничество:** ScamSniffer, MyEtherWallet darklist, публичные метки обозревателей Etherscan
-  (6 сетей), датасеты Forta, проверка GoPlus в момент запроса, подтверждённые заявки пользователей.
-- **Рынки:** CoinGecko (биржи и DEX), Zerion, данные блокчейна.
+**On-chain sync.** Only critical EVM addresses in the sanctions, exploit and phishing categories go to
+`SpiderRegistry`, diffed against what is already there and written in batches of 150, one storage slot per address.
 
-Сети: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche и Tron (для Tron — санкции и базы рисков).
+**Ingestion safety.** A source replaces its data only after a successful download; a broken or truncated feed keeps
+the previous data (OFAC refuses to import fewer than 100 addresses).
 
-> Оценка строится автоматически по открытым данным. Это не юридическое заключение и не обвинение: адреса могут
-> попадать в списки по ошибке.
+## Strengths and limitations
 
-## Смарт-контракты
+### Strengths
 
-| Контракт | Назначение |
+- **Free and for people.** No account, no wallet, no payment needed to check an address.
+- **Explains itself.** A plain-language verdict, every reason with its source and a link, and what to do next.
+- **Official sanctions from three regulators** read directly from OFAC, UK and EU publications, not from mirrors.
+- **One place for the whole picture:** sanctions, scam databases, counterparties, token structure, CEX/DEX markets
+  and whales.
+- **Enforcement, not only advice.** `SpiderRegistry` can be read by any contract; `SpiderSend` refuses a critical
+  counterparty on-chain.
+- **Privacy by design.** No cookies, checked addresses are not stored, visitor metrics are anonymised with a daily
+  rotating salt.
+- **Small attack surface.** Server-rendered pages, no public API, strict security headers, no wallet SDK dependencies
+  (0 known vulnerabilities in production dependencies).
+
+### Limitations
+
+- **Public data only.** If a scam is not yet in any list, SpiderAML will not know about it. A low score is not a
+  guarantee of safety.
+- **Shallow tracing.** Counterparty analysis looks one hop away, at the last 50 transactions on the selected chain. It
+  does not follow funds through mixers or bridges the way commercial forensics does.
+- **Heuristics, not an audit.** Token risk factors are signals worth checking, not a verdict on the project or its
+  code.
+- **Partial coverage.** The holder list is a lower bound (dormant wallets are invisible); CEX data depends on
+  CoinGecko; Tron has no transaction analysis yet; OFAC does not publish a per-address listing date.
+- **False positives are possible.** Open lists contain mistakes; the report form lets anyone dispute a label, but
+  official sanctions entries cannot be changed by us.
+- **Early stage.** Contracts run on a testnet, the UI is Russian only, and production runs on a single server.
+- **Not a standalone open-source app.** The data layer is private, so this repository alone renders the interface but
+  has no data behind it.
+
+## Smart contracts
+
+| Contract | Purpose |
 |---|---|
-| `SpiderRegistry` | Реестр рисков в блокчейне: `address → (category, level)`. Другие контракты вызывают `checkTransfer(from, to)` |
-| `SpiderSend` | Перевод одного токена с проверкой по реестру; адреса с критическим уровнем (3) блокируются |
-| `examples/SpiderGuardedERC20` | Пример токена, который сам проверяет каждый перевод |
+| `SpiderRegistry` | `address → (category, level)` in one storage slot. Writers push packed batches; `checkTransfer(from, to)` for integrators; `Ownable2Step` owner manages writers |
+| `SpiderSend` | Sends one token with a registry check in front; reverts with `Blocked(account, category, level)` for level 3; never holds funds |
+| `examples/SpiderGuardedERC20` | Example ERC-20 that screens every transfer, mint and burn |
 
-Уровни: 0 — нет записи · 1 — низкий · 2 — повышенный · 3 — критический (перевод блокируется).
-Категории: SANCTIONED, EXPLOIT, PHISHING, SCAM, MIXER, OTHER.
+Levels: 0 none · 1 low · 2 elevated · 3 critical (blocked). Categories: SANCTIONED, EXPLOIT, PHISHING, SCAM, MIXER, OTHER.
 
-**Тестовая сеть Arbitrum Sepolia (421614):**
+**Arbitrum Sepolia (421614)** — verified on Sourcify:
 
-| | Адрес |
+| Contract | Address |
 |---|---|
 | SpiderRegistry | [`0xB7E00e6f9bD10E50F17E12847a83E9dCaA0429E2`](https://sepolia.arbiscan.io/address/0xB7E00e6f9bD10E50F17E12847a83E9dCaA0429E2) |
 | SpiderSend (Circle test USDC) | [`0xAAd92220c7b1896efDcDc59D73552E7D97A34484`](https://sepolia.arbiscan.io/address/0xAAd92220c7b1896efDcDc59D73552E7D97A34484) |
 
-Исходники верифицированы через Sourcify. Тесты Foundry (unit + fuzz), покрытие `src/` — 100%:
-
 ```bash
 cd contracts
-forge test
-forge coverage --ir-minimum
+forge test                     # 31 unit + fuzz tests
+forge coverage --ir-minimum    # 100% of src/ and examples/
 ```
 
-## Как устроено
+Deploy and verify: `scripts/deploy.sh <network>` and `scripts/verify.sh <chainId>` (keys in `.env`, see `.env.example`).
+
+## Tech stack
+
+| Part | Stack |
+|---|---|
+| Site | Next.js 15, React 19, TypeScript, Tailwind CSS, viem, Recharts, MDX |
+| Data layer | Bun, SQLite, viem, Zod |
+| Contracts | Solidity 0.8.28, Foundry, OpenZeppelin |
+| Hosting | Docker Compose on a VPS behind Cloudflare Tunnel (no inbound ports), Cloudflare Access for the admin panel |
+
+## Repository layout
 
 ```
-Браузер ──HTTPS──> сайт (Next.js, рендер на сервере) ──закрытый канал──> слой данных (списки, оценка, аналитика)
-                                                                              │
-                                                       SpiderRegistry <───────┘ критичные адреса
+web/           site (Next.js)
+contracts/     smart contracts and tests (Foundry)
+deployments/   deployed contract addresses per chain
+scripts/       contract deploy / verify, local run
+assets/brand/  logos
+docs/          design decisions, roadmap, how to publish blog posts
 ```
 
-- **Сайт** (`web/`) — Next.js 15, страницы рендерятся на сервере, публичного API нет. Браузер получает готовый HTML;
-  JavaScript нужен только для кошелька на странице отправки.
-- **Слой данных** — отдельный закрытый сервис: собирает списки, считает оценку, хранит ключи провайдеров. Сайт
-  обращается к нему по закрытому каналу с секретом.
-- **Приватность:** без регистрации и cookies, проверяемые адреса не сохраняются, статистика посещений обезличена.
-
-## Структура репозитория
-
-```
-web/           сайт (Next.js 15, TypeScript, Tailwind)
-contracts/     смарт-контракты (Foundry)
-deployments/   адреса развёрнутых контрактов
-scripts/       деплой и верификация контрактов, локальный запуск
-assets/brand/  логотипы
-docs/          решения, план, как публиковать посты в блог
-```
-
-## Локальный запуск
-
-Для работы сайту нужен слой данных (закрытый репозиторий). Контракты можно собрать и протестировать без него.
+## Running locally
 
 ```bash
-cd web && npm install && cp .env.example .env.local   # DATA_URL и DATA_SECRET слоя данных
-npm run dev                                           # http://localhost:3000
+cd web
+npm install
+cp .env.example .env.local     # DATA_URL and DATA_SECRET of a running data layer
+npm run dev                    # http://localhost:3000
 ```
 
-## Документы
+Contracts build and test without anything else (`cd contracts && forge test`).
 
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — почему сделано именно так
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — план развития
-- [`docs/BLOG.md`](docs/BLOG.md) — как опубликовать статью в блоге
+## Roadmap
 
-## Контакты
+- Kyrgyz and English interface
+- AML API, address monitoring and alerts for crypto exchangers
+- Manual wallet assessments and token / project due diligence as paid services
+- Deeper tracing (multi-hop fund flows) and Tron transaction analysis
+- More official sources, including the Israeli NBCTF seizure lists
+- Registry on more networks; owner moved to a multisig before any mainnet deployment
 
-Ошибка на сайте или предложение: [workzero02@gmail.com](mailto:workzero02@gmail.com).
-Мошеннический адрес: [spideraml.com/report](https://spideraml.com/report).
+Details: [`docs/ROADMAP.md`](docs/ROADMAP.md) · design decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md).
+
+## Disclaimer
+
+Scores are produced automatically from public data. They are not legal advice and not an accusation: addresses can be
+listed by mistake. Always double-check before acting on a result.
+
+## Contact
+
+Site issues and suggestions: [workzero02@gmail.com](mailto:workzero02@gmail.com) ·
+report a scam address: [spideraml.com/report](https://spideraml.com/report)
