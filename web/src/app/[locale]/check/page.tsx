@@ -385,6 +385,9 @@ async function TokenRisk({ r }: { r: CheckReport }) {
           );
         })}
       </ul>
+      <p className="mt-4 border-t border-line pt-3 text-sm text-silver-2">
+        {t("tokenTotal", { points: risk.factors.reduce((n, f) => n + f.points, 0), max: risk.factors.reduce((n, f) => n + f.max, 0), score: risk.score })}
+      </p>
       <RiskContext codes={risk.context} />
     </Card>
   );

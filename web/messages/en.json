@@ -243,7 +243,7 @@
     "shortTitle": "At a glance",
     "riskScore": "Risk score",
     "riskSignals": "Risk signals",
-    "balance": "Balance (all chains)",
+    "balance": "Balance, all chains (Zerion, spam tokens excluded)",
     "balanceDay": "past day {pct}",
     "counterpartiesChecked": "Addresses screened",
     "flaggedSub": "flagged: {count}",
@@ -286,12 +286,13 @@
     "cpSummaryNone": "{checked} checked, none in risk databases",
     "cpSummaryFound": "{flagged} of {checked} are in risk databases",
     "cpSkipped": "not checked",
-    "tokenScore": "automatic contract score {score}/100",
+    "tokenScore": "automatic contract score {score}/100, 70% of it counts",
     "points": "{n} pts",
     "detailsTitle": "Signals found",
     "elsewhere": "The {symbol} token is known on {networks}. On {here} this address holds a different contract — the score below is about that contract, not about {symbol}.",
     "checkOn": "Check on {network} →",
-    "sourceWord": "source"
+    "sourceWord": "source",
+    "tokenTotal": "Total: {points} of {max} points → {score}/100"
   },
   "Blog": {
     "title": "Blog",

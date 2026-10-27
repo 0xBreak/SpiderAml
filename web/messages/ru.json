@@ -243,7 +243,7 @@
     "shortTitle": "Коротко",
     "riskScore": "Оценка риска",
     "riskSignals": "Сигналов риска",
-    "balance": "Баланс (все сети)",
+    "balance": "Баланс, все сети (Zerion, без спам-токенов)",
     "balanceDay": "за сутки {pct}",
     "counterpartiesChecked": "Проверено адресов",
     "flaggedSub": "помечено: {count}",
@@ -286,12 +286,13 @@
     "cpSummaryNone": "проверено {checked}, адресов из баз рисков нет",
     "cpSummaryFound": "{flagged} из {checked} — адреса из баз рисков",
     "cpSkipped": "не проверялись",
-    "tokenScore": "автоматическая оценка контракта {score}/100",
+    "tokenScore": "автоматическая оценка контракта {score}/100, в итог входит 70%",
     "points": "{n} балл.",
     "detailsTitle": "Найденные сигналы",
     "elsewhere": "Токен {symbol} известен в сети {networks}. В сети {here} по этому адресу другой контракт — оценка ниже относится к нему, а не к {symbol}.",
     "checkOn": "Проверить в {network} →",
-    "sourceWord": "источник"
+    "sourceWord": "источник",
+    "tokenTotal": "Сумма: {points} из {max} баллов → {score}/100"
   },
   "Blog": {
     "title": "Блог",
