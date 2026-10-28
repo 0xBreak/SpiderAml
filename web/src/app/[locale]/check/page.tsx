@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import type { ReactNode } from "react";
 import { ExternalLink, Send } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -17,9 +18,10 @@ import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
 import { GaEvent } from "@/components/Analytics";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Check");
-  return { title: t("title") };
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Check" });
+  return { title: t("title"), ...seo(locale, "/check", await searchParams) };
 }
 
 export const dynamic = "force-dynamic";

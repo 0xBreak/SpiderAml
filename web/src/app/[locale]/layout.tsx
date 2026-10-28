@@ -26,7 +26,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: { default: t("title"), template: "%s · SpiderAML" },
     description: t("description"),
     openGraph: { siteName: "SpiderAML", locale: locale === "en" ? "en_US" : "ru_RU", type: "website" },
-    alternates: { languages: { ru: "/", en: "/en" } },
   };
 }
 

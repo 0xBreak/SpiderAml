@@ -143,3 +143,8 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   ("Cookie settings"); declining deletes `_ga*`. Only the path is sent as the page address (the query string holds the
   address being checked); ad personalisation and Google signals are off. CSP allows Google hosts only when the id is
   set. Our own statistics stay: GA misses ad-block users and everyone who declines, so its numbers are lower.
+
+## SEO: sitemap, robots, canonical, hreflang (2026-10-28)
+- Before: `/sitemap.xml` was a 404, `robots.txt` had no `Sitemap`, there was no `canonical`, and every page declared the home page as its translation (hreflang in the layout), which Google reads as an error.
+- Now: `app/robots.ts`, `app/sitemap.ts` (static pages + blog posts, each entry with its language pair), `lib/seo.ts` gives every page its own canonical and hreflang (`x-default` = Russian). Result pages (`?address=…`, search text, page number) get `noindex, follow`: they are personal queries, the clean tool page is the one that ranks. JSON-LD: Organization, WebSite, WebApplication on the home page, Article on blog posts.
+- Search Console is connected by a DNS TXT record in Cloudflare (domain property), no code on the site.

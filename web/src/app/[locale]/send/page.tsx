@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { PageTitle } from "@/components/ui";
 import { getMeta } from "@/lib/data";
 import { WalletProvider } from "@/components/Wallet";
 import { SendForm } from "./SendForm";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Send");
-  return { title: t("title") };
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Send" });
+  return { title: t("title"), ...seo(locale, "/send", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 
