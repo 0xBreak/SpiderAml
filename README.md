@@ -39,14 +39,14 @@ English, for compliance teams. An ordinary user has nothing but Telegram chats.
 |---|---|---|
 | **Address check** (`/check`) | Is it safe to send money to this address? | Official sanctions lists, exploit / phishing / scam databases, live GoPlus check, risky counterparties in recent transactions, on-chain registry record. Contracts also get token risk factors |
 | **Token analysis** (`/token`) | Can I trust this token? | Price, market cap, CEX and DEX markets with spread and ±2% depth, DEX liquidity, buy/sell flow, top holders with labels, owner and upgrade rights |
-| **Whales** (`/whales`) | Who is buying or dumping right now? | Every transfer above a user-set USD threshold, aggregated per wallet, DEX buys and sells, labels |
+| **Whales** (`/whales`) | Who is buying or dumping right now? | Every transfer above a user-set USD threshold, aggregated per wallet (people and contracts on separate tabs), a link to each wallet's largest transaction, DEX buys and sells, labels |
 | **Sanctions** (`/sanctions`) | Which crypto addresses are officially sanctioned? | OFAC, UK and EU entries with owner, programme, designation date and a link to the official record |
 | **Safe send** (`/send`) | Can a transfer refuse a sanctioned recipient by itself? | `SpiderSend` contract checks both parties against the on-chain registry before moving USDC |
 | **Report** (`/report`) | I was scammed — what now? | Free report form; reports are reviewed by hand, confirmed addresses join the database, the sender sees the status |
 
-Every verdict comes with the reasons, the source of each reason and what to do next. The UI is in Russian.
+Every verdict comes with the reasons, the source of each reason and what to do next. The interface is in Russian and English (a first visit follows the browser language, the switch is in the header).
 
-![Token analysis](docs/img/token.jpg)
+![Whales](docs/img/whales.jpg)
 
 ## How it works
 
@@ -58,8 +58,9 @@ Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private chann
                                                                          └─ writer key ──▶ SpiderRegistry (on-chain)
 ```
 
-- **Site** (`web/`, this repo). Next.js 15 App Router. Pages are rendered on the server and the browser receives HTML;
-  there is no public JSON API. JavaScript runs in the browser only for the wallet on `/send`.
+- **Site** (`web/`, this repo). Next.js 16 App Router. Pages are rendered on the server and the browser receives HTML;
+  there is no public JSON API. JavaScript in the browser adds forms, sortable tables, the wallet on `/send` and the
+  consent-based analytics below.
 - **Data layer** (separate private service). Downloads the lists, stores them, computes scores, runs token analytics
   and pushes critical addresses on-chain. Holds all provider keys. The site talks to it over a private channel
   authenticated with a shared secret; the data layer has no public address at all.
@@ -127,8 +128,9 @@ the previous data (OFAC refuses to import fewer than 100 addresses).
   and whales.
 - **Enforcement, not only advice.** `SpiderRegistry` can be read by any contract; `SpiderSend` refuses a critical
   counterparty on-chain.
-- **Privacy by design.** No cookies, checked addresses are not stored, visitor metrics are anonymised with a daily
-  rotating salt.
+- **Privacy by design.** No accounts and no IP addresses stored. Own statistics count visitors with an anonymous id
+  that changes every day; checked addresses (public blockchain data) are kept only for usage statistics. Google
+  Analytics 4 loads only after the visitor accepts a banner and never receives addresses or search text.
 - **Small attack surface.** Server-rendered pages, no public API, strict security headers, no wallet SDK dependencies
   (0 known vulnerabilities in production dependencies).
 
@@ -144,7 +146,7 @@ the previous data (OFAC refuses to import fewer than 100 addresses).
   CoinGecko; Tron has no transaction analysis yet; OFAC does not publish a per-address listing date.
 - **False positives are possible.** Open lists contain mistakes; the report form lets anyone dispute a label, but
   official sanctions entries cannot be changed by us.
-- **Early stage.** Contracts run on a testnet, the UI is Russian only, and production runs on a single server.
+- **Early stage.** Contracts run on a testnet and production runs on a single server.
 - **Not a standalone open-source app.** The data layer is private, so this repository alone renders the interface but
   has no data behind it.
 
@@ -177,15 +179,17 @@ Deploy and verify: `scripts/deploy.sh <network>` and `scripts/verify.sh <chainId
 
 | Part | Stack |
 |---|---|
-| Site | Next.js 15, React 19, TypeScript, Tailwind CSS, viem, Recharts, MDX |
+| Site | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, next-intl, TanStack Query and Table, viem, Recharts, MDX |
 | Data layer | Bun, SQLite, viem, Zod |
 | Contracts | Solidity 0.8.28, Foundry, OpenZeppelin |
 | Hosting | Docker Compose on a VPS behind Cloudflare Tunnel (no inbound ports), Cloudflare Access for the admin panel |
+| CI/CD | GitHub Actions: lint, type-check and tests on every pull request; a merge to `main` builds the image and ships it to the server, with an automatic rollback if it is not healthy |
 
 ## Repository layout
 
 ```
 web/           site (Next.js)
+.github/       CI and deploy workflows
 contracts/     smart contracts and tests (Foundry)
 deployments/   deployed contract addresses per chain
 scripts/       contract deploy / verify, local run
@@ -206,7 +210,7 @@ Contracts build and test without anything else (`cd contracts && forge test`).
 
 ## Roadmap
 
-- Kyrgyz and English interface
+- Kyrgyz interface
 - AML API, address monitoring and alerts for crypto exchangers
 - Manual wallet assessments and token / project due diligence as paid services
 - Deeper tracing (multi-hop fund flows) and Tron transaction analysis
