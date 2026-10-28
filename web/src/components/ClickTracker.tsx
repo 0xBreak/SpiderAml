@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { sendGaEvent } from "./Analytics";
 
 const send = (body: string) => {
   if (!navigator.sendBeacon?.("/api/e", new Blob([body], { type: "application/json" })))
@@ -53,6 +54,8 @@ export function ClickTracker() {
       }
       if (!label) return;
       send(JSON.stringify({ label, path: location.pathname }));
+      // our own labelled buttons only (links to other sites are measured by Google itself)
+      if (el.dataset.track) sendGaEvent("ui_click", { label: el.dataset.track.slice(0, 80) });
     };
     document.addEventListener("click", onClick, { capture: true });
     return () => document.removeEventListener("click", onClick, { capture: true });

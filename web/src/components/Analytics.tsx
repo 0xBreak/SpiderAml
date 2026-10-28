@@ -36,6 +36,47 @@ function clearGoogleCookies() {
   }
 }
 
+type Params = Record<string, string | number | boolean>;
+
+/**
+ * Sends an anonymous event to Google Analytics, only after consent. Parameters must never carry what the visitor typed
+ * (addresses, search text): network, risk level, tool names and similar coarse values only.
+ * gtag appears a moment after consent, so the call waits for it (up to ~5 s).
+ */
+export function sendGaEvent(name: string, params: Params = {}) {
+  if (!GA_ID) return;
+  try {
+    if (localStorage.getItem(KEY) !== "granted") return;
+  } catch {
+    return;
+  }
+  let tries = 0;
+  const poll = setInterval(() => {
+    const gtag = (window as unknown as { gtag?: Gtag }).gtag;
+    if (gtag) {
+      clearInterval(poll);
+      gtag("event", name, params);
+    } else if (++tries > 50) clearInterval(poll);
+  }, 100);
+}
+
+const lastFired = new Map<string, number>();
+
+/** Fires one event when it appears on the page (a result was shown). Renders nothing. */
+export function GaEvent({ name, params }: { name: string; params?: Params }) {
+  const key = `${name}:${JSON.stringify(params ?? {})}`;
+  useEffect(() => {
+    // effects can run twice for one render (React strict mode, re-mounts): the same event within 2 s counts once
+    const now = Date.now();
+    if (now - (lastFired.get(key) ?? 0) < 2000) return;
+    lastFired.set(key, now);
+    sendGaEvent(name, params);
+    // the key covers name and params; a re-render with the same values must not count twice
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return null;
+}
+
 export function Analytics() {
   const t = useTranslations("Consent");
   const path = usePathname();
