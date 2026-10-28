@@ -1,5 +1,6 @@
 import { Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { ConsentSettings } from "./Analytics";
 import { Logo } from "./Logo";
 import { NAV } from "./Header";
 import { Link } from "@/i18n/navigation";
@@ -78,6 +79,7 @@ export async function Footer({ locale }: { locale: Locale }) {
             <Link href="/privacy" className="hover:text-silver-1">
               {tF("privacy")}
             </Link>
+            <ConsentSettings />
           </span>
           <span>{tF("tagline")}</span>
         </div>
