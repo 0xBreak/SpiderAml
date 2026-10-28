@@ -5,6 +5,7 @@ import { loadPost, slugs } from "@/lib/blog";
 import { date } from "@/lib/format";
 import { routing, type Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
+import { seo, urlOf, SITE } from "@/lib/seo";
 
 type P = Promise<{ slug: string; locale: string }>;
 
@@ -14,8 +15,9 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: P }): Promise<Metadata> {
-  const post = await loadPost((await params).slug);
-  return post ? { title: post.meta.title, description: post.meta.description } : {};
+  const { slug, locale } = await params;
+  const post = await loadPost(slug);
+  return post ? { title: post.meta.title, description: post.meta.description, ...seo(locale, `/blog/${slug}`), openGraph: { type: "article", publishedTime: post.meta.date } } : {};
 }
 
 export default async function PostPage({ params }: { params: P }) {
@@ -25,8 +27,20 @@ export default async function PostPage({ params }: { params: P }) {
   const post = await loadPost(slug);
   if (!post || (post.meta.draft && process.env.NODE_ENV === "production")) notFound();
   const { meta, Content } = post;
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: meta.title,
+    description: meta.description,
+    datePublished: meta.date,
+    inLanguage: locale,
+    mainEntityOfPage: urlOf(locale, `/blog/${slug}`),
+    author: { "@type": "Organization", name: "SpiderAML", url: SITE },
+    publisher: { "@type": "Organization", name: "SpiderAML", url: SITE },
+  };
   return (
     <article className="mx-auto max-w-3xl">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
       <Link href="/blog" className="link text-sm">
         {t("back")}
       </Link>

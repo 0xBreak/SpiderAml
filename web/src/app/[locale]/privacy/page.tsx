@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { PageTitle } from "@/components/ui";
@@ -8,9 +9,10 @@ import { PageTitle } from "@/components/ui";
 const UPDATED = "2026-10-27";
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Privacy");
-  return { title: t("title") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Privacy" });
+  return { title: t("title"), ...seo(locale, "/privacy") };
 }
 
 export default async function Privacy() {

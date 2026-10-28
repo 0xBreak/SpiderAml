@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Badge, PageTitle } from "@/components/ui";
 import { allPosts } from "@/lib/blog";
@@ -9,7 +10,7 @@ import { Link } from "@/i18n/navigation";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Blog" });
-  return { title: t("title"), description: t("sub") };
+  return { title: t("title"), description: t("sub"), ...seo(locale, "/blog") };
 }
 
 export default async function Blog({ params }: { params: Promise<{ locale: string }> }) {

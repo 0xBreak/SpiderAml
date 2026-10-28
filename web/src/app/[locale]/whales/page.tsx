@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { ArrowDownUp, ArrowRight, Coins, Droplets, ExternalLink, Tag } from "lucide-react";
@@ -14,9 +15,10 @@ import { NETWORKS, isNetworkId, type NetworkId } from "@/lib/networks";
 import type { Locale } from "@/i18n/routing";
 import type { WhaleTransferKind } from "@/lib/types";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Whales");
-  return { title: t("title") };
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Whales" });
+  return { title: t("title"), ...seo(locale, "/whales", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 

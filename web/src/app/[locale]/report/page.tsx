@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Card, PageTitle } from "@/components/ui";
 import { isNetworkId } from "@/lib/networks";
 import { ReportForm } from "./ReportForm";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Report");
-  return { title: t("title") };
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Report" });
+  return { title: t("title"), ...seo(locale, "/report", await searchParams) };
 }
 
 type SP = Promise<{ address?: string; network?: string; category?: string }>;

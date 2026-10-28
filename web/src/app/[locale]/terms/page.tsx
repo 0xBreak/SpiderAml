@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { PageTitle } from "@/components/ui";
@@ -20,9 +21,10 @@ const SOURCES = [
   { name: "Zerion", url: "https://zerion.io", terms: "src_zerion" },
 ] as const;
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Terms");
-  return { title: t("title") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Terms" });
+  return { title: t("title"), ...seo(locale, "/terms") };
 }
 
 export default async function Terms() {

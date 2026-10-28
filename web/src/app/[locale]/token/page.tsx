@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { Coins, Droplets, KeyRound, Users } from "lucide-react";
@@ -12,9 +13,10 @@ import type { MarketsData } from "@/lib/api-types";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
 import { HoldersSection, LiquiditySection, MarketsSection, OverviewSection, RiskSection, TradingSection } from "./sections";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Token");
-  return { title: t("title") };
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Token" });
+  return { title: t("title"), ...seo(locale, "/token", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 

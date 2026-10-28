@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { seo } from "@/lib/seo";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronLeft, ChevronRight, ExternalLink, MoreHorizontal } from "lucide-react";
@@ -12,9 +13,10 @@ import { trackEvent } from "@/lib/metrics";
 import { cn, date, dateTime } from "@/lib/format";
 import type { Locale } from "@/i18n/routing";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Sanctions");
-  return { title: t("title") };
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Sanctions" });
+  return { title: t("title"), ...seo(locale, "/sanctions", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 

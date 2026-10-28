@@ -7,6 +7,8 @@ import { dateTime, plain } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
+import type { Metadata } from "next";
+import { seo, urlOf, SITE } from "@/lib/seo";
 
 // Stats and source lists refresh every 6h on the data layer side; getMeta(21600) caches them for the same time.
 // The page itself is rendered per request: the Docker build has no data layer to read the stats from, and a page
@@ -19,6 +21,11 @@ interface Tool {
   tile: string;
   title: string;
   question: string;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return seo(locale, "/");
 }
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
@@ -61,8 +68,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       ]
     : [];
 
+  const tMeta = await getTranslations({ locale, namespace: "Metadata" });
+  // structured data: what the site is and that it has a search box (helps Google show the name and the description)
+  const ld = [
+    { "@context": "https://schema.org", "@type": "Organization", name: "SpiderAML", url: SITE, logo: `${SITE}/apple-icon.png` },
+    { "@context": "https://schema.org", "@type": "WebSite", name: "SpiderAML", url: urlOf(locale, "/"), inLanguage: locale, description: tMeta("description") },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: "SpiderAML",
+      url: urlOf(locale, "/"),
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Any",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      description: tMeta("description"),
+    },
+  ];
+
   return (
     <div className="space-y-14 sm:space-y-20">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
       {/* hero */}
       <section className="pt-6 text-center sm:pt-12">
         <span className="inline-flex items-center gap-1.5 border border-ok/40 bg-ok/10 px-3 py-1 text-sm text-ok">
