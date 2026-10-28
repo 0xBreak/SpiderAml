@@ -8,6 +8,7 @@ import { defineStepper } from "@stepperize/react";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { Link } from "@/i18n/navigation";
+import { GaEvent } from "@/components/Analytics";
 import { Notice } from "@/components/ui";
 import { Steps } from "@/components/ui/stepper";
 import { NETWORK_IDS, NETWORKS } from "@/lib/networks";
@@ -62,6 +63,7 @@ export function ReportForm({ address, network, category }: { address: string; ne
   const tErr = useTranslations("Errors");
   const schema = useMemo(() => buildSchema(t), [t]);
   const [state, setState] = useState<ReportState | null>(null);
+  const [submittedCategory, setSubmittedCategory] = useState("");
   const [pending, startTransition] = useTransition();
   const stepper = reportStepper.useStepper();
   const {
@@ -86,6 +88,7 @@ export function ReportForm({ address, network, category }: { address: string; ne
     const statusUrl = `/report/status?id=${state.id}&t=${state.token}`;
     return (
       <div className="flex flex-col items-start gap-5 py-4">
+        <GaEvent name="report_sent" params={{ category: submittedCategory }} />
         <CheckCircle2 className="size-10 text-ok" />
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold">{t("accepted", { id: state.id })}</h2>
@@ -116,6 +119,7 @@ export function ReportForm({ address, network, category }: { address: string; ne
   };
 
   const onSubmit = (values: ReportValues) => {
+    setSubmittedCategory(values.category);
     const form = new FormData();
     form.set("address", values.address);
     form.set("network", values.network);

@@ -5,6 +5,7 @@ import { Coins, Droplets, KeyRound, Users } from "lucide-react";
 import { SearchForm } from "@/components/SearchForm";
 import { CardSkeleton, ErrorBox, Notice, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
+import { GaEvent } from "@/components/Analytics";
 import { DataError, getMarkets, getSection, limit } from "@/lib/data";
 import { trackEvent } from "@/lib/metrics";
 import type { MarketsData } from "@/lib/api-types";
@@ -84,6 +85,7 @@ export default async function TokenPage({ searchParams }: { searchParams: SP }) 
       {error && <ErrorBox code={error.code} message={error.message} />}
       {overview && address && (
         <div className="space-y-4">
+          <GaEvent name="token_analysis" params={{ network, is_token: overview.isToken, stablecoin: !!markets?.stablecoin }} />
           {(() => {
             // the same address can hold an unrelated contract on another network: say which network the real token is on
             const other = listed.filter((x) => x.network !== network && isNetworkId(x.network));

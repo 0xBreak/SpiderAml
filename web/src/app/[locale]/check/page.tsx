@@ -15,6 +15,7 @@ import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
+import { GaEvent } from "@/components/Analytics";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Check");
@@ -96,6 +97,15 @@ async function Report({ r }: { r: CheckReport }) {
 
   return (
     <div className="flex flex-col gap-6">
+      <GaEvent
+        name="aml_check"
+        params={{
+          network: r.kind === "tron" ? "tron" : r.network,
+          risk_level: r.level,
+          target: r.contract?.isContract ? "contract" : "wallet",
+          sanctioned: r.sanctions.length > 0,
+        }}
+      />
       {elsewhere.length > 0 && (
         <Notice tone="warn">
           {t("elsewhere", { symbol: elsewhere[0].symbol, networks: elsewhere.map((x) => netLabel(x.network)).join(", "), here: chainLabel })}{" "}

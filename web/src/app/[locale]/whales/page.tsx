@@ -5,6 +5,7 @@ import { ArrowDownUp, ArrowRight, Coins, Droplets, ExternalLink, Tag } from "luc
 import { Addr } from "@/components/Addr";
 import { SearchForm } from "@/components/SearchForm";
 import { Badge, Card, CardSkeleton, Empty, ErrorBox, PageTitle, Stat } from "@/components/ui";
+import { GaEvent } from "@/components/Analytics";
 import { WhalesTable } from "./WhalesTable";
 import { DataError, getWhales, limit } from "@/lib/data";
 import { trackEvent } from "@/lib/metrics";
@@ -108,6 +109,7 @@ async function Report({ address, network, threshold, window }: { address: string
 
   return (
     <div className="space-y-4">
+      <GaEvent name="whales_scan" params={{ network, window, found: s.transfers > 0 }} />
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 [&_.label]:text-sm [&_.label]:font-medium [&_.label]:normal-case [&_.label]:tracking-normal [&_.label]:text-silver-2">
         <Stat label={t("bigTransfers")} value={<span className="text-2xl lg:text-3xl">{num(s.transfers, locale)}</span>} />
         <Stat label={t("wallets")} value={<span className="text-2xl lg:text-3xl">{num(s.wallets, locale)}</span>} />

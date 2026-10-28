@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { ChevronLeft, ChevronRight, ExternalLink, MoreHorizontal } from "lucide-react";
 import { Addr } from "@/components/Addr";
 import { Card, Empty, ErrorBox, Notice, PageTitle } from "@/components/ui";
+import { GaEvent } from "@/components/Analytics";
 import { SanctionsFilters } from "./Filters";
 import type { SanctionsPage } from "@/lib/api-types";
 import { DataError, getSanctions } from "@/lib/data";
@@ -90,6 +91,10 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
     <div className="space-y-5">
       <PageTitle title={t("title")} sub={t("sub")} />
       {error && <ErrorBox code={error.code} message={error.message} />}
+      {data && (sp.q || sp.chain || sp.list) && (
+        // the search text itself is never sent: only that a search happened and the coarse filters
+        <GaEvent name="sanctions_search" params={{ has_text: !!sp.q, network: sp.chain ?? "all", list: sp.list ?? "all", results: data.total > 0 }} />
+      )}
       {data && (
         <>
           <div className="grid gap-2 sm:grid-cols-3">
