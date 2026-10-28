@@ -4,7 +4,7 @@
 #
 # Repository secrets: DEPLOY_SSH_KEY (private key), DEPLOY_HOST, DEPLOY_USER, DEPLOY_KNOWN_HOSTS (pinned host key line).
 # Repository variables (optional): CONTACT_EMAIL, TELEGRAM (public contacts baked into the footer at build time),
-# GA_ID (Google Analytics measurement id; empty = no Google code at all).
+# GA_ID (Google Analytics measurement id; defaults to the SpiderAML property, the id is public).
 name: Deploy site
 
 on:
@@ -54,7 +54,7 @@ jobs:
           docker build \
             --build-arg NEXT_PUBLIC_CONTACT_EMAIL="${{ vars.CONTACT_EMAIL || 'workzero02@gmail.com' }}" \
             --build-arg NEXT_PUBLIC_TELEGRAM="${{ vars.TELEGRAM }}" \
-            --build-arg NEXT_PUBLIC_GA_ID="${{ vars.GA_ID }}" \
+            --build-arg NEXT_PUBLIC_GA_ID="${{ vars.GA_ID || 'G-KJ2L1ZZ5VQ' }}" \
             -t spideraml-web:latest web
           docker save spideraml-web:latest | gzip -1 > web.tar.gz
           ls -lh web.tar.gz
