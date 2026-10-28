@@ -371,7 +371,17 @@
     "colIn": "Received",
     "colOut": "Sent",
     "colNet": "Net",
-    "sortBy": "Sort by {column}"
+    "sortBy": "Sort by {column}",
+    "tabWallets": "Wallets",
+    "tabContracts": "Contracts and protocols",
+    "tabAll": "All",
+    "colLargest": "Largest transfer",
+    "netHint": "Net = received − sent among transfers above the threshold. Routers and pools (contracts) are on their own tab: they are not people.",
+    "dexNone": "not detected",
+    "dexNoneNote": "DEX buys and sells are detected from swaps in pools. No such swaps were recognised for this token (typical for main trading pairs such as WETH), so a dash is shown instead of zero.",
+    "addressOnExplorer": "Address on the explorer",
+    "txOnExplorer": "Transaction on the explorer",
+    "tabEmpty": "No wallets on this tab for the chosen period."
   },
   "Sanctions": {
     "title": "Sanctioned addresses",

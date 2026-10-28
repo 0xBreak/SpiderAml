@@ -106,6 +106,8 @@ async function Report({ address, network, threshold, window }: { address: string
   const ex = NETWORKS[network].explorer;
   const s = r.summary;
   const covered = r.coverage.coveredSec / r.coverage.requestedWindowSec;
+  // zero buys AND zero sells means no swap was recognised (e.g. WETH, a main trading pair), not "nobody traded"
+  const dexKnown = (s.dexBuyUsd ?? 0) + (s.dexSellUsd ?? 0) > 0;
 
   return (
     <div className="space-y-4">
@@ -113,9 +115,10 @@ async function Report({ address, network, threshold, window }: { address: string
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 [&_.label]:text-sm [&_.label]:font-medium [&_.label]:normal-case [&_.label]:tracking-normal [&_.label]:text-silver-2">
         <Stat label={t("bigTransfers")} value={<span className="text-2xl lg:text-3xl">{num(s.transfers, locale)}</span>} />
         <Stat label={t("wallets")} value={<span className="text-2xl lg:text-3xl">{num(s.wallets, locale)}</span>} />
-        <Stat label={t("dexBuy")} value={<span className="text-2xl lg:text-3xl">{$(s.dexBuyUsd)}</span>} tone="ok" />
-        <Stat label={t("dexSell")} value={<span className="text-2xl lg:text-3xl">{$(s.dexSellUsd)}</span>} tone="crit" />
+        <Stat label={t("dexBuy")} value={<span className="text-2xl lg:text-3xl">{dexKnown ? $(s.dexBuyUsd) : "—"}</span>} tone={dexKnown ? "ok" : undefined} sub={dexKnown ? undefined : t("dexNone")} />
+        <Stat label={t("dexSell")} value={<span className="text-2xl lg:text-3xl">{dexKnown ? $(s.dexSellUsd) : "—"}</span>} tone={dexKnown ? "crit" : undefined} sub={dexKnown ? undefined : t("dexNone")} />
       </div>
+      {!dexKnown && <p className="text-sm text-silver-2">{t("dexNoneNote")}</p>}
       {r.thresholdBasis === "supply" && <p className="text-base text-warn">{t("noPrice")}</p>}
       {covered < 0.95 && (
         <p className="text-base text-silver-2">
@@ -129,7 +132,7 @@ async function Report({ address, network, threshold, window }: { address: string
             <span className="text-base text-silver-2">{t("none", { value: $(r.thresholdUsd) })}</span>
           </Empty>
         ) : (
-          <WhalesTable wallets={r.wallets.slice(0, 50)} labels={r.labels} explorer={ex} />
+          <WhalesTable wallets={r.wallets} labels={r.labels} explorer={ex} />
         )}
       </Card>
 
