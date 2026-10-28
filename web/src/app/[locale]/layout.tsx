@@ -7,6 +7,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ClickTracker } from "@/components/ClickTracker";
+import { Analytics } from "@/components/Analytics";
 import { AppQueryProvider } from "@/components/QueryProvider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "sonner";
@@ -59,6 +60,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               </main>
               <Footer locale={locale} />
               <ClickTracker />
+              <Analytics />
               <Toaster position="bottom-right" theme="dark" toastOptions={{ style: { borderRadius: 0 } }} />
             </NuqsAdapter>
           </AppQueryProvider>

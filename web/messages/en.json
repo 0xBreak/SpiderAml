@@ -705,11 +705,15 @@
     "sections": [
       [
         "In short",
-        "There is no sign-up. We do not ask for your name, email or phone, do not store IP addresses and use no advertising or tracking cookies."
+        "There is no sign-up. We do not ask for your name, email or phone, do not store IP addresses and use no advertising cookies. We turn on Google Analytics only if you agree in the banner; until then nothing from Google is loaded."
       ],
       [
         "Visit statistics",
         "To see what is used, we record: which page was opened and what was clicked; the site you came from (domain only) or a link tag such as ?src=telegram; the device type (phone or computer); the country, as reported by Cloudflare. A visitor is identified for one day by a hash of a random “salt”, the IP address and the browser; the salt is deleted the next day, so visits on different days cannot be linked and the record cannot identify a person. Records older than 13 months are deleted automatically."
+      ],
+      [
+        "Google Analytics (only with your consent)",
+        "If you click “Accept”, Google Analytics 4 is switched on. It sets cookies, infers an approximate location and device type, and sends Google which pages were opened and when. The page address is sent without its parameters, so the addresses you check never reach Google. Advertising features and personalisation are off. You can withdraw consent at any time with the “Cookie settings” button at the bottom of the page: Google then stops receiving data and its cookies are deleted."
       ],
       [
         "Checked addresses",
@@ -721,16 +725,24 @@
       ],
       [
         "Cookies and browser storage",
-        "The site remembers your chosen language in one cookie (NEXT_LOCALE) for a year. In Safe send your browser remembers that a wallet was connected; this stays on your device. We never receive your wallet, keys or signatures."
+        "The site remembers your chosen language in one cookie (NEXT_LOCALE) for a year, and your answer about analytics in the browser's local storage. If you allowed Google Analytics, Google sets its own cookies (_ga…); if you decline we delete them. In Safe send your browser remembers that a wallet was connected; this stays on your device. We never receive your wallet, keys or signatures."
       ],
       [
         "Who else handles traffic",
-        "The site runs behind Cloudflare (protection and delivery) on a Hetzner server in the European Union. Cloudflare sees technical request data under its own privacy policy."
+        "The site runs behind Cloudflare (protection and delivery) on a Hetzner server in the European Union. Cloudflare sees technical request data under its own privacy policy. If you agreed to analytics, Google also receives data about your visit."
       ],
       [
         "Your rights",
         "You can ask us to delete a report you sent or ask about your data — write to us. Since we do not know who you are, include the report's status link."
       ]
     ]
+  },
+  "Consent": {
+    "title": "Cookies and analytics",
+    "text": "We would like to count visits with Google Analytics: it sets cookies and sends data to Google. Nothing from Google is loaded until you agree. Only the pages you open are sent, never the addresses you check.",
+    "more": "Learn more",
+    "accept": "Accept",
+    "decline": "Decline",
+    "settings": "Cookie settings"
   }
 }

@@ -4,15 +4,17 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const dev = process.env.NODE_ENV !== "production";
+// Google Analytics hosts are allowed only when a measurement id is configured (it loads only after consent, see Analytics.tsx)
+const ga = !!process.env.NEXT_PUBLIC_GA_ID?.trim();
 
 // Browser may talk only to us, to the testnet RPC for the send page, to Cloudflare Web Analytics, and load token icons.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${dev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${ga ? " https://www.googletagmanager.com" : ""}${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self'",
-  `connect-src 'self' https://sepolia-rollup.arbitrum.io https://cloudflareinsights.com${dev ? " ws:" : ""}`,
+  `connect-src 'self' https://sepolia-rollup.arbitrum.io https://cloudflareinsights.com${ga ? " https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com" : ""}${dev ? " ws:" : ""}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

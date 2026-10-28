@@ -137,3 +137,9 @@ Short log of why things are the way they are. Newest at the bottom of each secti
   `deploy.yml` on merge to `main` builds the image on an ARM runner and ships it to the server over SSH. The server
   never compiles the site (that build is what made it heavy). The SSH key is restricted by a forced command to one
   script that swaps the `web` container and rolls back if it is not healthy. No registry, no public image.
+- **Google Analytics 4, only after consent** (owner request 2026-10-28). `NEXT_PUBLIC_GA_ID` (build variable `GA_ID`);
+  empty = no Google code at all. A banner (Accept / Decline, equal weight) asks first; until "Accept" nothing from
+  Google is loaded (no script, no cookies); the answer is kept in localStorage and can be changed from the footer
+  ("Cookie settings"); declining deletes `_ga*`. Only the path is sent as the page address (the query string holds the
+  address being checked); ad personalisation and Google signals are off. CSP allows Google hosts only when the id is
+  set. Our own statistics stay: GA misses ad-block users and everyone who declines, so its numbers are lower.
