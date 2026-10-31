@@ -31,8 +31,8 @@ function Metric({ label, value, sub, tone, className }: { label: string; value: 
   return (
     <div className={cn("min-w-0", className)}>
       <div className="text-sm text-silver-2">{label}</div>
-      <div className={cn("mt-1 text-2xl font-semibold tabular-nums text-silver-1", tone === "ok" && "text-ok", tone === "warn" && "text-warn", tone === "crit" && "text-crit")}>{value}</div>
-      {sub && <div className="mt-1 text-sm text-silver-2">{sub}</div>}
+      <div className={cn("mt-1.5 text-2xl font-semibold leading-tight tabular-nums text-silver-1 sm:text-3xl", tone === "ok" && "text-ok", tone === "warn" && "text-warn", tone === "crit" && "text-crit")}>{value}</div>
+      {sub && <div className="mt-1 text-base text-silver-2">{sub}</div>}
     </div>
   );
 }
@@ -47,49 +47,53 @@ export function OverviewSection({ o, markets }: { o: ContractOverview; markets: 
   const volume = markets?.volume24hUsd ?? m?.volume1dUsd ?? null;
   return (
     <section className="border border-line bg-surface p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           {m?.iconUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={m.iconUrl} alt="" width={48} height={48} loading="lazy" decoding="async" className="rounded-full" />
+            <img src={m.iconUrl} alt="" width={56} height={56} loading="lazy" decoding="async" className="size-14 rounded-full" />
           ) : (
-            <span className="flex size-12 shrink-0 items-center justify-center bg-surface-2 text-lg font-semibold text-silver-1" aria-hidden>
+            <span className="flex size-14 shrink-0 items-center justify-center bg-surface-2 text-xl font-semibold text-silver-1" aria-hidden>
               {(o.symbol ?? o.name ?? "?").slice(0, 1).toUpperCase()}
             </span>
           )}
           <div className="min-w-0">
-            <h2 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight text-silver-1 sm:text-3xl">
               {o.name ?? t("noName")}
-              {o.symbol && <span className="ml-2 text-silver-2">{o.symbol}</span>}
+              {o.symbol && <span className="ml-2 text-lg text-silver-2 sm:text-xl">{o.symbol}</span>}
             </h2>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-silver-2">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-base text-silver-2">
               <Addr value={o.address} href={explorer(o.network, o.address)} />
               <span>{NETWORKS[o.network].label}</span>
               <span>{t.has(`kind.${o.kind}`) ? t(`kind.${o.kind}`) : o.kindLabel}</span>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {o.verification.sourceVerified === true && <Badge tone="ok">{t("codeOpen")}</Badge>}
-          {o.verification.sourceVerified === false && <Badge tone="crit">{t("codeClosed")}</Badge>}
-          {o.proxy.isProxy && <Badge tone="warn">{t("upgradeable")}</Badge>}
-          {o.owner && <Badge tone={o.ownerIsContract ? "muted" : "warn"}>{o.ownerIsContract ? t("ownerContract") : t("hasOwner")}</Badge>}
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          {o.verification.sourceVerified === true && <Badge tone="ok" className="h-6 px-2.5 text-sm">{t("codeOpen")}</Badge>}
+          {o.verification.sourceVerified === false && <Badge tone="crit" className="h-6 px-2.5 text-sm">{t("codeClosed")}</Badge>}
+          {o.proxy.isProxy && <Badge tone="warn" className="h-6 px-2.5 text-sm">{t("upgradeable")}</Badge>}
+          {o.owner && <Badge tone={o.ownerIsContract ? "muted" : "warn"} className="h-6 px-2.5 text-sm">{o.ownerIsContract ? t("ownerContract") : t("hasOwner")}</Badge>}
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4">
-        <Metric
-          label={t("price")}
-          value={price(m?.priceUsd ?? markets?.priceUsd ?? null, locale)}
-          sub={change != null ? <span className={change >= 0 ? "text-ok" : "text-crit"}>{t("perDay", { value: `${change > 0 ? "+" : ""}${pct(change)}` })}</span> : undefined}
-        />
-        <Metric label={t("mcap")} value={usd(m?.marketCapUsd ?? markets?.marketCapUsd ?? null, true, locale)} />
-        <Metric label={t("vol24")} value={usd(volume, true, locale)} />
-        <Metric label={t("supply")} value={num(o.totalSupply, locale)} />
+      <div className="mt-6">
+        <div className="text-sm text-silver-2">{t("price")}</div>
+        <div className="mt-1.5 text-3xl font-semibold leading-none tabular-nums text-silver-1 sm:text-5xl">{price(m?.priceUsd ?? markets?.priceUsd ?? null, locale)}</div>
+        {change != null && (
+          <div className={cn("mt-2 text-base font-medium", change >= 0 ? "text-ok" : "text-crit")}>
+            {change > 0 ? "+" : ""}{pct(change)} <span className="text-silver-2">{t("perDayShort")}</span>
+          </div>
+        )}
+        <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
+          <Metric label={t("mcap")} value={usd(m?.marketCapUsd ?? markets?.marketCapUsd ?? null, true, locale)} />
+          <Metric label={t("vol24")} value={usd(volume, true, locale)} />
+          <Metric label={t("supply")} value={num(o.totalSupply, locale)} />
+        </div>
       </div>
 
       {o.owner && (
-        <p className="mt-5 flex flex-wrap items-center gap-2 border-t border-line/60 pt-4 text-sm text-silver-2">
+        <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-silver-2">
           {t("owner")}: <Addr value={o.owner} href={explorer(o.network, o.owner)} /> {o.ownerIsContract ? t("ownerIsContract") : t("ownerIsWallet")}
         </p>
       )}
@@ -114,21 +118,23 @@ export function MarketsSection({ m, failed = false }: { m: MarketsData | null; f
   const top = m.markets[0];
   return (
     <Card
-      title={t("whereTitle")}
-      right={
-        <a href={m.url} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1 text-sm">
-          CoinGecko <ExternalLink className="size-3.5" aria-hidden />
-        </a>
+      title={
+        <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <span>{t("whereTitle")}</span>
+          <a href={m.url} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1 text-base font-medium">
+            CoinGecko <ExternalLink className="size-4" aria-hidden />
+          </a>
+        </span>
       }
     >
-      <div className="grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
         <Metric label={t("vol24")} value={$(m.volume24hUsd)} />
         <Metric label={t("cex")} value={pct((m.cexVolumeUsd / total) * 100, 0)} sub={t("venues", { count: cex })} />
         <Metric label={t("dex")} value={pct((m.dexVolumeUsd / total) * 100, 0)} sub={t("venues", { count: m.markets.length - cex })} />
         <Metric
           label={t("topVenue")}
           value={
-            <span className="inline-flex items-center gap-1.5">
+            <span className="flex min-w-0 max-w-full items-center gap-1.5">
               <VenueIcon name={top.exchange} size="sm" />
               <span className="truncate">{top.exchange}</span>
             </span>
@@ -137,29 +143,29 @@ export function MarketsSection({ m, failed = false }: { m: MarketsData | null; f
         />
       </div>
 
-      <ul className="mt-5 space-y-2 sm:hidden">
+      <ul className="mt-5 divide-y divide-line/60 sm:hidden">
         {m.markets.slice(0, 20).map((x, i) => (
-          <li key={`${x.exchange}-${x.pair}-${i}`} className="border border-line px-3 py-2.5">
+          <li key={`${x.exchange}-${x.pair}-${i}`} className="py-3 first:pt-0 last:pb-0">
             <div className="flex items-center justify-between gap-3">
               <span className="flex min-w-0 items-center gap-2">
                 <VenueIcon name={x.exchange} size="xs" />
-                <span className="truncate text-silver-1">{x.exchange}</span>
+                <span className="truncate text-base text-silver-1">{x.exchange}</span>
               </span>
-              <span className="shrink-0 tabular-nums text-silver-1">{$(x.volumeUsd)}</span>
+              <span className="shrink-0 text-base font-medium tabular-nums text-silver-1">{$(x.volumeUsd)}</span>
             </div>
-            <div className="mt-1 flex items-center justify-between gap-3 text-sm text-silver-2">
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-base text-silver-2">
               <span>{x.pair}</span>
-              <span className="flex shrink-0 gap-3 tabular-nums">
+              <span className="flex shrink-0 gap-4 tabular-nums">
                 <span>{price(x.priceUsd, locale)}</span>
                 <span>{pct(x.volumeSharePct, 1)}</span>
               </span>
             </div>
-            {(x.stale || x.anomaly) && <div className="mt-1 text-sm text-warn">{x.anomaly ? t("anomaly") : t("stale")}</div>}
+            {(x.stale || x.anomaly) && <div className="mt-1.5 text-base font-medium text-warn">{x.anomaly ? t("anomaly") : t("stale")}</div>}
           </li>
         ))}
       </ul>
       <div className="mt-5 hidden overflow-x-auto sm:block">
-        <table className="table">
+        <table className="table min-w-[640px] text-base [&_td]:py-3 [&_th]:py-2.5 [&_th]:text-sm [&_th]:text-silver-2">
           <thead>
             <tr>
               <th>{t("colVenue")}</th>
@@ -177,7 +183,7 @@ export function MarketsSection({ m, failed = false }: { m: MarketsData | null; f
                     <VenueIcon name={x.exchange} size="xs" />
                     {x.exchange}
                   </span>
-                  {(x.stale || x.anomaly) && <Badge tone="warn" className="ml-2">{x.anomaly ? t("anomaly") : t("stale")}</Badge>}
+                  {(x.stale || x.anomaly) && <Badge tone="warn" className="ml-2 h-6 px-2 text-sm">{x.anomaly ? t("anomaly") : t("stale")}</Badge>}
                 </td>
                 <td className="whitespace-nowrap">
                   {x.url ? (
@@ -217,7 +223,7 @@ export async function RiskSection({ address, network }: { address: string; netwo
       hint={t("risksHint")}
       right={
         // a stablecoin's main risk (the issuer's reserves) cannot be read from the chain: a bare "Low · 0/100" would overstate it
-        stable ? <Badge tone="info">{t("partialBadge", { score: risk.score })}</Badge> : <Badge tone={tone}>{title} · {risk.score}/100</Badge>
+        stable ? <Badge tone="info" className="h-6 px-2.5 text-sm">{t("partialBadge", { score: risk.score })}</Badge> : <Badge tone={tone} className="h-6 px-2.5 text-sm">{title} {risk.score}/100</Badge>
       }
     >
       <ul className="space-y-4">
@@ -266,17 +272,17 @@ export async function LiquiditySection({ address, network }: { address: string; 
         <Notice tone="warn">{t("noPools")}</Notice>
       ) : priced.length === 0 ? null : (
         <>
-          <ul className="mt-5 space-y-2 sm:hidden">
+          <ul className="mt-5 divide-y divide-line/60 sm:hidden">
             {priced.slice(0, 8).map((p) => (
-              <li key={p.address} className="border border-line px-3 py-2.5">
+              <li key={p.address} className="py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between gap-3">
                   <span className="flex min-w-0 items-center gap-2">
                     <VenueIcon name={p.dex} size="xs" />
-                    <span className="truncate text-silver-1">{p.dex}</span>
+                    <span className="truncate text-base text-silver-1">{p.dex}</span>
                   </span>
-                  <span className="shrink-0 tabular-nums text-silver-1">{usd(p.tvlUsd, true, locale)}</span>
+                  <span className="shrink-0 text-base font-medium tabular-nums text-silver-1">{usd(p.tvlUsd, true, locale)}</span>
                 </div>
-                <div className="mt-1 flex items-center justify-between gap-3 text-sm text-silver-2">
+                <div className="mt-1 flex items-center justify-between gap-3 text-base text-silver-2">
                   <span>{p.token0.symbol}/{p.token1.symbol}</span>
                   {p.feeBps != null && <span className="tabular-nums">{p.feeBps / 100}%</span>}
                 </div>
@@ -284,7 +290,7 @@ export async function LiquiditySection({ address, network }: { address: string; 
             ))}
           </ul>
         <div className="mt-5 hidden overflow-x-auto sm:block">
-          <table className="table">
+          <table className="table min-w-[480px] text-base [&_td]:py-3 [&_th]:py-2.5 [&_th]:text-sm [&_th]:text-silver-2">
             <thead>
               <tr>
                 <th>{t("colVenue")}</th>
@@ -369,16 +375,16 @@ export async function HoldersSection({ address, network }: { address: string; ne
         <Metric label={t("control")} value={c.nakamoto != null ? t("addrs", { count: c.nakamoto }) : ">25"} sub={t("half")} />
       </div>
 
-      <ul className="mt-5 space-y-2 sm:hidden">
+      <ul className="mt-5 divide-y divide-line/60 sm:hidden">
         {h.holders.slice(0, 25).map((x) => {
           const tag = labels[x.address.toLowerCase()];
           return (
-            <li key={x.address} className="border border-line px-3 py-2.5">
+            <li key={x.address} className="py-3 first:pt-0 last:pb-0">
               <div className="flex items-center justify-between gap-3">
                 <Addr value={x.address} href={explorer(network, x.address)} />
-                <span className="shrink-0 tabular-nums text-silver-1">{pct(x.pctSupply, 2)}</span>
+                <span className="shrink-0 text-base font-medium tabular-nums text-silver-1">{pct(x.pctSupply, 2)}</span>
               </div>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-silver-2">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-base text-silver-2">
                 <span>{x.label ?? (tag?.severity === 0 ? tag.label : tKind(x.kind))}</span>
                 {tag && tag.severity > 0 && <Badge tone={toneOfSeverity(tag.severity)}>{tCat.has(tag.category) ? tCat(`${tag.category}.name`) : tag.category}</Badge>}
               </div>
@@ -387,7 +393,7 @@ export async function HoldersSection({ address, network }: { address: string; ne
         })}
       </ul>
       <div className="mt-5 hidden overflow-x-auto sm:block">
-        <table className="table">
+        <table className="table min-w-[640px] text-base [&_td]:py-3 [&_th]:py-2.5 [&_th]:text-sm [&_th]:text-silver-2">
           <thead>
             <tr>
               <th>{t("colAddress")}</th>
