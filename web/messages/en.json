@@ -522,7 +522,8 @@
     "holdersFoot": "From transfers over recent weeks.",
     "partialBadge": "Partial score · {score}/100",
     "incompleteBadge": "Incomplete score · {score}/100",
-    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast, not an audit and not a check of whether the project is honest: organised fraud cannot be seen in the code."
+    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast, not an audit and not a check of whether the project is honest: organised fraud cannot be seen in the code.",
+    "perDayShort": "24h"
   },
   "Send": {
     "title": "Safe send",
