@@ -502,7 +502,8 @@
     "colValue": "Value",
     "holdersFoot": "From transfers over recent weeks.",
     "partialBadge": "Partial score · {score}/100",
-    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast and not an audit."
+    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast and not an audit.",
+    "perDayShort": "24h"
   },
   "Send": {
     "title": "Safe send",
