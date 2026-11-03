@@ -417,7 +417,8 @@
     "perPage": "Results per page",
     "per10": "10 per page",
     "per20": "20 per page",
-    "per50": "50 per page"
+    "per50": "50 per page",
+    "details": "Details"
   },
   "Token": {
     "title": "Token analysis",
@@ -765,5 +766,20 @@
     "accept": "Accept",
     "decline": "Decline",
     "settings": "Cookie settings"
+  },
+  "SanctionAddr": {
+    "eyebrow": "Official sanctions list",
+    "title": "Address {address}",
+    "sub": "This address appears on an official sanctions list. Below is what the regulator published.",
+    "network": "Network and asset",
+    "listedAs": "Listed as",
+    "program": "Program",
+    "listed": "Listing date",
+    "notGiven": "not given",
+    "source": "Entry on the official list",
+    "check": "Run a full check on this address",
+    "back": "All sanctioned addresses",
+    "metaTitle": "Sanctioned address {address} · {list}",
+    "metaDescription": "The address {address} appears on the {list} sanctions list. The regulator's entry with a link to the official source."
   }
 }
