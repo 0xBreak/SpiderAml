@@ -19,6 +19,7 @@ const SOURCES = [
   { name: "GoPlus Security", url: "https://gopluslabs.io", terms: "src_goplus" },
   { name: "Tether and Circle: USDT and USDC contracts (Etherscan, TronGrid)", url: "https://tether.to/en/transparency/", terms: "src_chain" },
   { name: "mempool.space and Blockstream", url: "https://mempool.space", terms: "src_btc" },
+  { name: "Ethereum Fraud Dataset by Activity (Ishmukhamedov, 2025)", url: "https://doi.org/10.57967/hf/6373", terms: "src_ccby" },
   { name: "CoinGecko", url: "https://www.coingecko.com", terms: "src_cg" },
   { name: "Zerion", url: "https://zerion.io", terms: "src_zerion" },
 ] as const;

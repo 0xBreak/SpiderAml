@@ -233,7 +233,8 @@
     "admin": "Метки команды SpiderAML",
     "own": "Списки команды SpiderAML",
     "stablecoin-freezes": "Адреса, заблокированные Tether и Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)",
-    "goplus-seen": "Адреса, которые GoPlus пометил при проверках на сайте: мы сохраняем их, поэтому они находятся и среди контрагентов. Пополняется само."
+    "goplus-seen": "Адреса, которые GoPlus пометил при проверках на сайте: мы сохраняем их, поэтому они находятся и среди контрагентов. Пополняется само.",
+    "eth-fraud-dataset": "Исследовательский набор: адреса, помеченные как мошеннические в публичных списках (снимок на июль 2025). Слабый сигнал, не вывод."
   },
   "Check": {
     "title": "AML-проверка адреса",
@@ -337,7 +338,8 @@
     "admin": "Метки SpiderAML",
     "own": "Списки SpiderAML",
     "stablecoin-freezes": "Заморозки Tether и Circle",
-    "goplus-seen": "Находки GoPlus, сохранённые SpiderAML"
+    "goplus-seen": "Находки GoPlus, сохранённые SpiderAML",
+    "eth-fraud-dataset": "Ethereum Fraud Dataset (Ishmukhamedov, 2025)"
   },
   "Holder": {
     "eoa": "Кошелёк",
@@ -727,6 +729,7 @@
     "src_goplus": "проверка в момент запроса через открытый API; найденные пометки сохраняются в нашей базе с указанием источника",
     "src_chain": "публичные данные блокчейна: события чёрных списков контрактов USDT и USDC",
     "src_btc": "транзакции Bitcoin в момент запроса через открытый API",
+    "src_ccby": "лицензия CC-BY 4.0; автор: Ishmukhamedov, 2025, DOI 10.57967/hf/6373; снимок данных на июль 2025",
     "src_cg": "рыночные данные: Data provided by CoinGecko",
     "src_zerion": "балансы, цены и история транзакций"
   },
