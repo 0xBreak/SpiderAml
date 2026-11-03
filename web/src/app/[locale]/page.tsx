@@ -4,7 +4,7 @@ import { SearchForm } from "@/components/SearchForm";
 import type { MetaInfo } from "@/lib/api-types";
 import { hasPosts } from "@/lib/blog";
 import { getMeta } from "@/lib/data";
-import { dateTime, plain } from "@/lib/format";
+import { date, dateTime, plain } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -204,7 +204,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     </td>
                     <td className="hidden text-silver-2 md:table-cell">{tSrc.has(src.id) ? tSrc(src.id) : ""}</td>
                     <td className="text-right tabular-nums">{plain(src.count, locale)}</td>
-                    <td className="hidden whitespace-nowrap text-right text-silver-2 md:table-cell">{dateTime(src.fetchedAt, locale)}</td>
+                    <td className={cn("hidden whitespace-nowrap text-right md:table-cell", src.asOf && Date.now() - src.asOf > 365 * 86_400_000 ? "text-warn" : "text-silver-2")}>
+                      {/* the date of the data, not of our download: a copy of a list nobody has updated since 2023 must not look fresh */}
+                      {src.asOf ? date(src.asOf, locale) : dateTime(src.fetchedAt, locale)}
+                    </td>
                   </tr>
                 ))}
                 <tr>

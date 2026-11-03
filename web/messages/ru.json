@@ -212,7 +212,7 @@
     "colSource": "Источник",
     "colAbout": "Что в нём",
     "colAddresses": "Адресов",
-    "colUpdated": "Обновлено",
+    "colUpdated": "Данные на",
     "officialBadge": "официальный",
     "goplusName": "GoPlus Security",
     "goplusAbout": "Проверка в момент запроса",
@@ -232,7 +232,8 @@
     "reports": "Заявки пользователей, подтверждённые после проверки",
     "admin": "Метки команды SpiderAML",
     "own": "Списки команды SpiderAML",
-    "stablecoin-freezes": "Адреса, заблокированные Tether и Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)"
+    "stablecoin-freezes": "Адреса, заблокированные Tether и Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)",
+    "goplus-seen": "Адреса, которые GoPlus пометил при проверках на сайте: мы сохраняем их, поэтому они находятся и среди контрагентов. Пополняется само."
   },
   "Check": {
     "title": "AML-проверка адреса",
@@ -335,7 +336,8 @@
     "manual": "Свежие инциденты",
     "admin": "Метки SpiderAML",
     "own": "Списки SpiderAML",
-    "stablecoin-freezes": "Заморозки Tether и Circle"
+    "stablecoin-freezes": "Заморозки Tether и Circle",
+    "goplus-seen": "Находки GoPlus, сохранённые SpiderAML"
   },
   "Holder": {
     "eoa": "Кошелёк",
@@ -722,7 +724,7 @@
     "src_mit": "лицензия MIT",
     "src_gpl": "лицензия GPL-3.0",
     "src_labels": "открытый набор меток обозревателей (MIT)",
-    "src_goplus": "проверка в момент запроса через открытый API",
+    "src_goplus": "проверка в момент запроса через открытый API; найденные пометки сохраняются в нашей базе с указанием источника",
     "src_chain": "публичные данные блокчейна: события чёрных списков контрактов USDT и USDC",
     "src_btc": "транзакции Bitcoin в момент запроса через открытый API",
     "src_cg": "рыночные данные: Data provided by CoinGecko",

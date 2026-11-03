@@ -60,6 +60,8 @@ export interface SourceInfo {
   kind: "labels" | "sanctions";
   count: number;
   fetchedAt: number | null;
+  /** when the publisher last changed the data (null: the same as fetchedAt) */
+  asOf?: number | null;
   error: string | null;
 }
 

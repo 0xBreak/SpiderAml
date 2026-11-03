@@ -212,7 +212,7 @@
     "colSource": "Source",
     "colAbout": "What it covers",
     "colAddresses": "Addresses",
-    "colUpdated": "Updated",
+    "colUpdated": "Data as of",
     "officialBadge": "official",
     "goplusName": "GoPlus Security",
     "goplusAbout": "Checked live at request time",
@@ -232,7 +232,8 @@
     "reports": "User reports confirmed after review",
     "admin": "SpiderAML team labels",
     "own": "SpiderAML team lists",
-    "stablecoin-freezes": "Addresses blocked by Tether and Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)"
+    "stablecoin-freezes": "Addresses blocked by Tether and Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)",
+    "goplus-seen": "Addresses GoPlus flagged during checks on the site: we keep them, so they are found among counterparties too. Fills itself over time."
   },
   "Check": {
     "title": "Address AML check",
@@ -335,7 +336,8 @@
     "manual": "Manual incidents",
     "admin": "SpiderAML labels",
     "own": "SpiderAML lists",
-    "stablecoin-freezes": "Tether and Circle freezes"
+    "stablecoin-freezes": "Tether and Circle freezes",
+    "goplus-seen": "GoPlus findings saved by SpiderAML"
   },
   "Holder": {
     "eoa": "Wallet",
@@ -722,7 +724,7 @@
     "src_mit": "MIT licence",
     "src_gpl": "GPL-3.0 licence",
     "src_labels": "open set of explorer labels (MIT)",
-    "src_goplus": "checked live through the public API",
+    "src_goplus": "checked at the time of the request through an open API; the flags it returns are kept in our database with the source named",
     "src_chain": "public blockchain data: blacklist events of the USDT and USDC contracts",
     "src_btc": "Bitcoin transactions at the time of the request, through a public API",
     "src_cg": "market data: Data provided by CoinGecko",
