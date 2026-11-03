@@ -30,7 +30,8 @@
     "addressSr": "Адрес",
     "networkSr": "Сеть",
     "searchPlaceholder": "Адрес кошелька или токена: 0x…, T… или name.eth",
-    "searchButton": "Проверить"
+    "searchButton": "Проверить",
+    "clear": "Очистить поле"
   },
   "Lang": {
     "label": "Язык",

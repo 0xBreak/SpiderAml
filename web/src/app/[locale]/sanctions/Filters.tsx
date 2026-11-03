@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
+import { ClearInput } from "@/components/ClearInput";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
 /** Live filters for the sanctions list. Typing updates ?q= (debounced),
@@ -37,14 +38,17 @@ export function SanctionsFilters({
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row" role="search">
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        maxLength={100}
-        placeholder={t("searchPlaceholder")}
-        className="input font-mono sm:flex-1"
-        aria-label={t("search")}
-      />
+      <span className="relative block sm:flex-1">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          maxLength={100}
+          placeholder={t("searchPlaceholder")}
+          className="input pr-10 font-mono"
+          aria-label={t("search")}
+        />
+        <ClearInput />
+      </span>
       <select
         defaultValue={initial.chain ?? ""}
         onChange={(e) => {

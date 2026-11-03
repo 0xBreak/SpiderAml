@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { ClearInput } from "@/components/ClearInput";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { defineStepper } from "@stepperize/react";
@@ -141,7 +142,10 @@ export function ReportForm({ address, network, category }: { address: string; ne
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_15rem]">
             <label className="block">
               <span className={LABEL}>{t("addressLabel")}</span>
-              <input {...register("address")} maxLength={100} spellCheck={false} autoComplete="off" placeholder={t("addressPh")} className={`${INPUT} font-mono`} aria-invalid={!!errors.address} />
+              <span className="relative block">
+                <input {...register("address")} maxLength={100} spellCheck={false} autoComplete="off" placeholder={t("addressPh")} className={`${INPUT} pr-10 font-mono`} aria-invalid={!!errors.address} />
+                <ClearInput />
+              </span>
               {fieldError("address")}
             </label>
             <label className="block">
@@ -190,7 +194,10 @@ export function ReportForm({ address, network, category }: { address: string; ne
 
           <label className="block">
             <span className={LABEL}>{t("evidence")}</span>
-            <input {...register("link")} maxLength={500} placeholder="https://…" className={INPUT} aria-invalid={!!errors.link} />
+            <span className="relative block">
+              <input {...register("link")} maxLength={500} placeholder="https://…" className={`${INPUT} pr-10`} aria-invalid={!!errors.link} />
+              <ClearInput />
+            </span>
             {fieldError("link")}
           </label>
 

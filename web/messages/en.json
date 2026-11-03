@@ -30,7 +30,8 @@
     "addressSr": "Address",
     "networkSr": "Network",
     "searchPlaceholder": "Wallet or token address: 0x…, T… or name.eth",
-    "searchButton": "Check"
+    "searchButton": "Check",
+    "clear": "Clear field"
   },
   "Lang": {
     "label": "Language",
