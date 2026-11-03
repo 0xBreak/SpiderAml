@@ -2,7 +2,7 @@
 import type { NetworkMeta } from "./networks";
 import type { RiskData } from "./types";
 
-export type Category = "sanctioned" | "exploit" | "phishing" | "scam" | "mixer" | "other" | "info";
+export type Category = "sanctioned" | "exploit" | "phishing" | "scam" | "mixer" | "frozen" | "other" | "info";
 export type Severity = 0 | 1 | 2 | 3;
 export type Level = "low" | "medium" | "high" | "critical";
 

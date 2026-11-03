@@ -59,6 +59,10 @@
       "name": "Mixer",
       "about": "Hides where the money came from. Exchanges freeze such coins."
     },
+    "frozen": {
+      "name": "Frozen by a stablecoin issuer",
+      "about": "Tether or Circle put this address on their blacklist and blocked its USDT or USDC. It is the issuer's decision, not proof of a crime."
+    },
     "other": {
       "name": "Other signals",
       "about": "Flags in open databases."
@@ -125,7 +129,7 @@
   },
   "Note": {
     "tron_limited": "Tron: lists and open databases only, no transfers.",
-    "bitcoin_limited": "Bitcoin: lists and open databases only, no transfers.",
+    "bitcoin_limited": "Bitcoin: lists, open databases and the latest 25 transactions, no deeper tracing.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
     "contract_unavailable": "Contract could not be analyzed.",
@@ -227,7 +231,8 @@
     "manual": "Recent incidents, verified by hand",
     "reports": "User reports confirmed after review",
     "admin": "SpiderAML team labels",
-    "own": "SpiderAML team lists"
+    "own": "SpiderAML team lists",
+    "stablecoin-freezes": "Addresses blocked by Tether and Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)"
   },
   "Check": {
     "title": "Address AML check",
@@ -329,7 +334,8 @@
     "reports": "Confirmed user reports",
     "manual": "Manual incidents",
     "admin": "SpiderAML labels",
-    "own": "SpiderAML lists"
+    "own": "SpiderAML lists",
+    "stablecoin-freezes": "Tether and Circle freezes"
   },
   "Holder": {
     "eoa": "Wallet",
