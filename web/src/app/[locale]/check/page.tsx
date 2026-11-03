@@ -8,6 +8,7 @@ import { Gauge } from "@/components/Gauge";
 import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
+import { LinkGraph } from "@/components/LinkGraph";
 import { isBitcoinAddress } from "@/lib/action";
 import { DataError, getCheck, limit } from "@/lib/data";
 import { safeTarget, trackEvent } from "@/lib/metrics";
@@ -182,6 +183,7 @@ async function Report({ r }: { r: CheckReport }) {
           {r.sanctions.length > 0 && <Sanctions r={r} />}
           {r.contract?.isContract && r.contract.risk && <TokenRisk r={r} />}
           {r.counterparties && <Counterparties r={r} />}
+          {r.links && r.links.length > 0 && <LinkGraph links={r.links} network={r.network} explorer={explorer && r.kind === "evm" ? net?.explorer ?? null : null} />}
         </div>
         {hasAside && (
           <div className="flex flex-col gap-5">

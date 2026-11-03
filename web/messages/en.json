@@ -796,5 +796,20 @@
     "back": "All sanctioned addresses",
     "metaTitle": "Sanctioned address {address} · {list}",
     "metaDescription": "The address {address} appears on the {list} sanctions list. The regulator's entry with a link to the official source."
+  },
+  "Links": {
+    "title": "Linked addresses",
+    "hint": "Transfers between this address and addresses from our databases, from the Ethereum blockchain history. Updated monthly.",
+    "centre": "address",
+    "aria": "Diagram of the checked address and the flagged addresses it exchanged transfers with",
+    "legend": "Arrow towards the centre: the address received from it. Arrow away from the centre: the address sent to it. A thicker line means more transfers.",
+    "received": "received from this address",
+    "sent": "sent to this address",
+    "transfers": "{count, plural, one {# transfer} other {# transfers}}",
+    "source": "source",
+    "explorer": "Open in explorer",
+    "more": "The diagram shows the first {shown}; {count} more links are in the list only.",
+    "victimNote": "Dashed: the address sent funds to a phishing address. That more often means the person was a victim, so such links are drawn neutral.",
+    "notInScore": "Links are shown for information and are not part of the risk score."
   }
 }

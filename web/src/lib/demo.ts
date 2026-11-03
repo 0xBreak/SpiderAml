@@ -45,6 +45,34 @@ const finding = (category: Category, severity: 0 | 1 | 2 | 3, label: string, sou
 
 // ---------------------------------------------------------------- check
 
+/** Sample linked addresses for the local demo: every kind of link the graph can draw. */
+function demoLinks(): NonNullable<CheckReport["links"]> {
+  const t = Math.floor(Date.now() / 1000);
+  const mk = (n: number, direction: "in" | "out", category: "exploit" | "sanctioned" | "phishing" | "mixer" | "frozen", severity: 2 | 3, tx: number, eth: number, label: string) => ({
+    address: `0x${n.toString(16).padStart(40, "a")}`,
+    direction,
+    txCount: tx,
+    firstTs: t - 86_400 * 700,
+    lastTs: t - 86_400 * (30 + n),
+    assets: [{ symbol: "ETH", amount: eth, txCount: tx }, ...(n % 2 ? [{ symbol: "USDC", amount: 12_500.5, txCount: Math.max(1, tx - 2) }] : [])],
+    category,
+    severity,
+    label,
+    source: "demo",
+    sourceName: "Demo source",
+  });
+  return [
+    mk(1, "in", "exploit", 3, 12, 48.2, "Theft / exploit (SlowMist)"),
+    mk(2, "in", "sanctioned", 3, 3, 5.1, "OFAC SDN: Demo Entity"),
+    mk(3, "out", "mixer", 2, 8, 22.7, "Mixer"),
+    mk(4, "out", "phishing", 2, 1, 0.4, "Wallet drainer / phishing"),
+    mk(5, "in", "frozen", 2, 40, 120.9, "Frozen by Tether (USDT) on Ethereum, 2025-02-01"),
+    mk(6, "out", "exploit", 3, 2, 1.2, "Exploit / hack"),
+    mk(7, "in", "phishing", 2, 5, 0.9, "Phishing"),
+    mk(8, "out", "mixer", 2, 15, 9.9, "Mixer"),
+  ];
+}
+
 export function demoCheck(address: string, network: string): CheckReport {
   const risky = address.toLowerCase() !== A.wallet.toLowerCase();
   return {
@@ -65,6 +93,7 @@ export function demoCheck(address: string, network: string): CheckReport {
       checked: 42,
       flagged: risky ? [{ address: A.risky, category: "phishing", severity: 3, label: "Phishing" }] : [],
     },
+    links: risky ? demoLinks() : [],
     portfolio: { totalUsd: risky ? 12_480.5 : 245_000, change1dPct: 2.35 },
     contract: risky ? null : { isContract: false, name: null, symbol: null, kind: null, risk: null },
     onchain: risky

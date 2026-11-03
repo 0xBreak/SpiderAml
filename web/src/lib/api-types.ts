@@ -31,6 +31,8 @@ export interface CheckReport {
   tags: Finding[];
   sanctions: { list: string; name: string; program: string | null; asset: string; url: string; firstSeen: number; checkedAt: number }[];
   counterparties: { checked: number; flagged: { address: string; category: Category; severity: Severity; label: string }[] } | null;
+  /** transfers with flagged addresses from the offline history; missing on an older data layer */
+  links?: CheckLink[];
   portfolio: { totalUsd: number | null; change1dPct: number | null } | null;
   contract: { isContract: boolean; name: string | null; symbol: string | null; kind: string | null; risk: Omit<RiskData, "meta"> | null } | null;
   onchain: { chainId: number; registry: string; category: string; level: number; explorer: string } | null;
@@ -51,6 +53,22 @@ export interface SanctionItem {
   listedAt: string | null;
   firstSeen: number;
   checkedAt: number;
+}
+
+/** A flagged address this one has exchanged transfers with (history of the blockchain, built offline). */
+export interface CheckLink {
+  address: string;
+  /** 'in': the checked address received from it, 'out': it sent to it */
+  direction: "in" | "out";
+  txCount: number;
+  firstTs: number;
+  lastTs: number;
+  assets: { symbol: string; amount: number | null; txCount: number }[];
+  category: Category;
+  severity: 0 | 1 | 2 | 3;
+  label: string;
+  source: string;
+  sourceName: string;
 }
 
 export interface SourceInfo {
