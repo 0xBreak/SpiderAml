@@ -183,7 +183,7 @@
     "statsRiskLabel": "addresses with risk",
     "statsSanctionsLabel": "sanctioned addresses",
     "statsLabelsLabel": "labeled addresses",
-    "statsNetworksValue": "7 + Tron",
+    "statsNetworksValue": "7 + Tron + Bitcoin",
     "statsNetworksLabelShort": "networks",
     "toolsEyebrow": "Tools",
     "toolsTitle": "What SpiderAML does",
@@ -723,6 +723,8 @@
     "src_gpl": "GPL-3.0 licence",
     "src_labels": "open set of explorer labels (MIT)",
     "src_goplus": "checked live through the public API",
+    "src_chain": "public blockchain data: blacklist events of the USDT and USDC contracts",
+    "src_btc": "Bitcoin transactions at the time of the request, through a public API",
     "src_cg": "market data: Data provided by CoinGecko",
     "src_zerion": "balances, prices and transaction history"
   },
@@ -747,7 +749,7 @@
       ],
       [
         "Checked addresses",
-        "When you check an address or a token we store the address, the network and the result, to see what people look for most. Crypto addresses are public; the record is not tied to your identity. To run the check our server sends the address (not your data) to external services: GoPlus, Zerion, CoinGecko, Etherscan and a blockchain node provider."
+        "When you check an address or a token we store the address, the network and the result, to see what people look for most. Crypto addresses are public; the record is not tied to your identity. To run the check our server sends the address (not your data) to external services: GoPlus, Zerion, CoinGecko, Etherscan, a blockchain node provider and, for Bitcoin addresses, mempool.space and Blockstream. If you type something other than an address (an e-mail or a name, say), it is not stored: only a marker and the length of the text are recorded."
       ],
       [
         "Address reports",

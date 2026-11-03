@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { PageTitle } from "@/components/ui";
 
 // Plain-language terms. Not written by a lawyer: keep them factual and in line with what the site really does.
-const UPDATED = "2026-10-27";
+const UPDATED = "2026-11-03";
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
 
 const SOURCES = [
@@ -17,6 +17,8 @@ const SOURCES = [
   { name: "Forta labelled-datasets", url: "https://github.com/forta-network/labelled-datasets", terms: "src_mit" },
   { name: "etherscan-labels", url: "https://github.com/brianleect/etherscan-labels", terms: "src_labels" },
   { name: "GoPlus Security", url: "https://gopluslabs.io", terms: "src_goplus" },
+  { name: "Tether and Circle: USDT and USDC contracts (Etherscan, TronGrid)", url: "https://tether.to/en/transparency/", terms: "src_chain" },
+  { name: "mempool.space and Blockstream", url: "https://mempool.space", terms: "src_btc" },
   { name: "CoinGecko", url: "https://www.coingecko.com", terms: "src_cg" },
   { name: "Zerion", url: "https://zerion.io", terms: "src_zerion" },
 ] as const;
