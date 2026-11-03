@@ -7,7 +7,8 @@
 - Telegram alerts for reserve drops (from Kalkan) — the spec excludes bots for now.
 - EU / UK / UN sanctions lists once they publish crypto addresses in a machine-readable form.
 - Turkish interface (as in Kalkan); English versions of blog posts; `hreflang` / separate `/en` URLs for search engines.
-- Etherscan page scrape and Chainabuse (needs a key) as extra live sources.
+- Chainabuse (needs a key) and MistTrack / SlowMist (needs a key, check the terms) as extra live sources. Scraping Etherscan pages is out: their terms forbid it and the label API is paid.
+- Fresh incident wallets by hand: the exploiter addresses of recent hacks (Kelp DAO and others) from public post-mortems into the `manual` list, each with the report it came from.
 - Whale report CSV / Markdown export (the code exists in the data layer, the site does not expose it).
 - Litestream backup of the SQLite file to R2/B2 when deployed.
 
