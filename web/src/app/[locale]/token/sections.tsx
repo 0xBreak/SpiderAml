@@ -51,7 +51,7 @@ export function OverviewSection({ o, markets }: { o: ContractOverview; markets: 
         <div className="flex min-w-0 items-center gap-3">
           {m?.iconUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={m.iconUrl} alt="" width={48} height={48} loading="lazy" decoding="async" className="rounded-full" />
+            <img src={m.iconUrl} alt={`${o.name ?? o.symbol ?? "Token"} logo`} width={48} height={48} loading="lazy" decoding="async" className="rounded-full" />
           ) : (
             <span className="flex size-12 shrink-0 items-center justify-center bg-surface-2 text-lg font-semibold text-silver-1" aria-hidden>
               {(o.symbol ?? o.name ?? "?").slice(0, 1).toUpperCase()}
@@ -210,6 +210,8 @@ export async function RiskSection({ address, network }: { address: string; netwo
   const risk = r.data;
   const tone = risk.level === "low" ? "ok" : risk.level === "moderate" ? "warn" : "crit";
   const stable = !!risk.context?.includes("stablecoin");
+  // a key factor (holder concentration) could not be assessed: the number covers only the rest, so it must not read as a clean "Low"
+  const incomplete = !stable && !!risk.context?.includes("skip_concentration");
   const title = t(({ low: "lvLow", moderate: "lvModerate", high: "lvHigh", critical: "lvCritical" } as const)[risk.level]);
   return (
     <Card
@@ -217,7 +219,7 @@ export async function RiskSection({ address, network }: { address: string; netwo
       hint={t("risksHint")}
       right={
         // a stablecoin's main risk (the issuer's reserves) cannot be read from the chain: a bare "Low · 0/100" would overstate it
-        stable ? <Badge tone="info">{t("partialBadge", { score: risk.score })}</Badge> : <Badge tone={tone}>{title} · {risk.score}/100</Badge>
+        stable ? <Badge tone="info">{t("partialBadge", { score: risk.score })}</Badge> : incomplete ? <Badge tone="warn">{t("incompleteBadge", { score: risk.score })}</Badge> : <Badge tone={tone}>{title} · {risk.score}/100</Badge>
       }
     >
       <ul className="space-y-4">

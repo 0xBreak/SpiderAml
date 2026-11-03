@@ -10,7 +10,9 @@ import { Link } from "@/i18n/navigation";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Blog" });
-  return { title: t("title"), description: t("sub"), ...seo(locale, "/blog") };
+  // nothing to read yet: keep the empty page out of the index
+  const empty = (await allPosts()).length === 0;
+  return { title: t("title"), description: t("sub"), ...seo(locale, "/blog"), ...(empty ? { robots: { index: false, follow: true } } : {}) };
 }
 
 export default async function Blog({ params }: { params: Promise<{ locale: string }> }) {

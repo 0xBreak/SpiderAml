@@ -228,6 +228,7 @@
   },
   "Check": {
     "title": "Address AML check",
+    "metaDescription": "Free AML check for a crypto wallet address: US, UK and EU sanctions lists, hacks, phishing and links to risky addresses.",
     "sub": "Paste the recipient address. We'll show the risk and why.",
     "whatToDo": "What to do",
     "sanctionedBadge": "On a sanctions list",
@@ -293,7 +294,8 @@
     "checkOn": "Check on {network} →",
     "sourceWord": "source",
     "tokenTotal": "Total: {points} of {max} points → {score}/100",
-    "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain"
+    "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain",
+    "tokenIncomplete": "incomplete score: holder concentration could not be assessed"
   },
   "Blog": {
     "title": "Blog",
@@ -336,6 +338,7 @@
   },
   "Whales": {
     "title": "Whales",
+    "metaDescription": "Large token transfers above an amount you choose: who is buying, who is selling and how much. Free whale report by token address on major networks.",
     "sub": "Large transfers of a token above the amount you choose: who is buying, who is selling and how much.",
     "placeholder": "Token address 0x…",
     "button": "Show",
@@ -385,6 +388,7 @@
   },
   "Sanctions": {
     "title": "Sanctioned addresses",
+    "metaDescription": "Crypto addresses from the official OFAC (US), UK and EU sanctions lists: only what regulators published, with a link to each record.",
     "sub": "Crypto addresses from the official US, UK and EU lists — only what regulators published, with a link to the record.",
     "updateFailed": "update failed",
     "updated": "updated {date}",
@@ -416,6 +420,7 @@
   },
   "Token": {
     "title": "Token analysis",
+    "metaDescription": "Check a token before you buy: price, liquidity pools, top holders and contract owner powers. Ethereum, BNB Chain, Arbitrum, Base and other networks.",
     "sub": "Price, pools, holders and owner powers.",
     "placeholder": "Token address: 0x…",
     "button": "Analyse",
@@ -502,10 +507,12 @@
     "colValue": "Value",
     "holdersFoot": "From transfers over recent weeks.",
     "partialBadge": "Partial score · {score}/100",
-    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast and not an audit."
+    "incompleteBadge": "Incomplete score · {score}/100",
+    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast, not an audit and not a check of whether the project is honest: organised fraud cannot be seen in the code."
   },
   "Send": {
     "title": "Safe send",
+    "metaDescription": "Send USDC through the SpiderSend contract: it checks the recipient against an on-chain registry and refuses sanctioned or known hacker addresses. Testnet.",
     "sub": "Send USDC through the SpiderSend contract: it checks the sender and the recipient against an on-chain registry and refuses to pay a sanctioned address or a known hacker.",
     "transfer": "Transfer",
     "hint": "{network}. Not real money.",
@@ -568,6 +575,7 @@
   },
   "Report": {
     "title": "Report an address",
+    "metaDescription": "Report phishing, a scam or theft tied to a crypto address, or dispute a wrong flag. We check each report and show its status.",
     "sub": "Ran into phishing, a scam or theft — or think we flagged an address by mistake? Tell us and we will check.",
     "cost": "What it costs",
     "free": "Free",
@@ -658,6 +666,7 @@
   },
   "Terms": {
     "title": "Terms of use",
+    "metaDescription": "SpiderAML terms of use: a free information service; the risk score is automatic, based on public data, and is not legal advice.",
     "updated": "Updated",
     "sources": "Data sources",
     "contact": "Contact",
@@ -709,6 +718,7 @@
   },
   "Privacy": {
     "title": "Privacy",
+    "metaDescription": "What data SpiderAML collects and why: checked addresses, anonymous visit statistics and your analytics choice.",
     "updated": "Updated",
     "contactText": "Email:",
     "terms": "Terms of use →",

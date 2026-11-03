@@ -9,7 +9,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
 import { DataError, getCheck, limit } from "@/lib/data";
-import { trackEvent } from "@/lib/metrics";
+import { safeTarget, trackEvent } from "@/lib/metrics";
 import { date, dateTime, pct, short, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
 import type { Locale } from "@/i18n/routing";
@@ -21,7 +21,7 @@ import { GaEvent } from "@/components/Analytics";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Check" });
-  return { title: t("title"), ...seo(locale, "/check", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/check", await searchParams) };
 }
 
 export const dynamic = "force-dynamic";
@@ -49,7 +49,7 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
       trackEvent("check", `${report.level} · ${report.score}`, "/check", { target: report.address, network: report.kind === "tron" ? "tron" : network });
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
-      trackEvent("check", `error:${error.code}`, "/check", { target: address.trim(), network });
+      trackEvent("check", `error:${error.code}`, "/check", { target: safeTarget(address), network });
     }
   }
 
@@ -286,7 +286,7 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
       result: !cp ? t("cpSkipped") : cp.flagged.length ? t("cpSummaryFound", { flagged: cp.flagged.length, checked: cp.checked }) : t("cpSummaryNone", { checked: cp.checked }),
       points: parts.counterparties,
     });
-  if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
+  if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : r.contract.risk.context?.includes("skip_concentration") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenIncomplete")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
 
   const groups = new Map<string, Finding[]>();
   for (const f of findings) groups.set(f.category, [...(groups.get(f.category) ?? []), f]);

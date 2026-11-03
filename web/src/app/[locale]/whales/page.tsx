@@ -18,7 +18,7 @@ import type { WhaleTransferKind } from "@/lib/types";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Whales" });
-  return { title: t("title"), ...seo(locale, "/whales", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/whales", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 

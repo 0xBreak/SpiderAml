@@ -16,7 +16,7 @@ import type { Locale } from "@/i18n/routing";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Sanctions" });
-  return { title: t("title"), ...seo(locale, "/sanctions", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/sanctions", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 

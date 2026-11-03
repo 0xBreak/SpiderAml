@@ -9,6 +9,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { pickLocale } from "./i18n/detect";
 import { routing } from "./i18n/routing";
+import { OWNER_COOKIE } from "./lib/owner";
 
 export const config = {
   matcher: ["/((?!api|trpc|_next|_vercel|brand|apple-icon|opengraph-image|.*\\..*).*)"],
@@ -49,7 +50,12 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
 
   const intlRes = handleI18nRouting(req);
 
-  if (req.method === "GET" && !fromInside && process.env.DATA_SECRET && intlRes.status < 300) {
+  // ?me=1 marks this browser as the owner's so its visits stay out of the statistics; ?me=0 removes the mark
+  const me = req.nextUrl.searchParams.get("me");
+  if (me === "1" || me === "0") intlRes.cookies.set(OWNER_COOKIE, "1", { path: "/", maxAge: me === "1" ? 31_536_000 : 0, sameSite: "lax", secure: !!CANONICAL_HOST });
+  const owner = req.cookies.get(OWNER_COOKIE)?.value === "1";
+
+  if (req.method === "GET" && !fromInside && !owner && process.env.DATA_SECRET && intlRes.status < 300) {
     const sitePage = SITE_PAGES.test(req.nextUrl.pathname);
     const preview = SHARE_BOT.test(ua);
     // browsers mark every request with Sec-Fetch-*; robots and scripts mostly do not

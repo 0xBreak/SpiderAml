@@ -5,12 +5,15 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { OWNER_COOKIE } from "@/lib/owner";
 
 // Google Analytics 4, loaded only after the visitor agrees. Without a stored "granted" nothing from Google reaches the
 // browser (no script, no cookies). The id is public (it is in every page that uses GA) and comes from the build.
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID?.trim() || "";
 const KEY = "spideraml:analytics";
 export const OPEN_EVENT = "spideraml:consent-open";
+
+const isOwner = () => document.cookie.split("; ").includes(`${OWNER_COOKIE}=1`);
 
 type Choice = "granted" | "denied" | null;
 type Gtag = (...args: unknown[]) => void;
@@ -44,7 +47,7 @@ type Params = Record<string, string | number | boolean>;
  * gtag appears a moment after consent, so the call waits for it (up to ~5 s).
  */
 export function sendGaEvent(name: string, params: Params = {}) {
-  if (!GA_ID) return;
+  if (!GA_ID || isOwner()) return;
   try {
     if (localStorage.getItem(KEY) !== "granted") return;
   } catch {
@@ -97,7 +100,7 @@ export function Analytics() {
   // every page view, including single-page navigation. Waits for gtag (the script loads after consent) and for Next.js to
   // update the document title, so the view carries the right page name.
   useEffect(() => {
-    if (choice !== "granted") return;
+    if (choice !== "granted" || isOwner()) return;
     let tries = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const poll = setInterval(() => {

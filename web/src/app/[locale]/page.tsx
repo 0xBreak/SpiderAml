@@ -2,6 +2,7 @@ import { ArrowRight, BookOpen, Check, Fish, Flag, Landmark, LineChart, Send, Shi
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
 import type { MetaInfo } from "@/lib/api-types";
+import { hasPosts } from "@/lib/blog";
 import { getMeta } from "@/lib/data";
 import { dateTime, plain } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -43,11 +44,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { href: "/sanctions", icon: Landmark, tile: "bg-crit/10 text-crit", title: t("toolSanctionsTitle"), question: t("toolSanctionsQuestion") },
   ];
 
+  const posts = await hasPosts();
   const EXTRA = [
     { href: "/send", icon: Send, tile: "bg-ok/10 text-ok", title: t("extraSendTitle") },
     { href: "/report", icon: Flag, tile: "bg-warn/10 text-warn", title: t("extraReportTitle") },
     { href: "/blog", icon: BookOpen, tile: "bg-accent/10 text-accent", title: t("extraBlogTitle") },
-  ];
+  ].filter((x) => x.href !== "/blog" || posts);
 
   const LEVELS = [
     { range: "0–19", name: t("levelLow"), bar: "border-t-ok" },
@@ -185,7 +187,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 </tr>
               </thead>
               <tbody>
-                {meta.sources.map((src) => (
+                {/* a source with nothing in it yet (user reports, own lists) is not shown as a row of zeros */}
+                {meta.sources.filter((src) => src.count > 0).map((src) => (
                   <tr key={src.id}>
                     <td>
                       {src.url ? (

@@ -9,7 +9,7 @@ import { SendForm } from "./SendForm";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Send" });
-  return { title: t("title"), ...seo(locale, "/send", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/send", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 
