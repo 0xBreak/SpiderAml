@@ -21,7 +21,7 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
       <PageTitle title={t("title")} sub={t("sub")} />
       <div className="grid items-start gap-4 lg:grid-cols-3">
         <Card className="text-base lg:col-span-2">
-          <ReportForm category={category ?? ""} address={address?.slice(0, 100) ?? ""} network={network && (isNetworkId(network) || network === "tron") ? network : "ethereum"} />
+          <ReportForm category={category ?? ""} address={address?.slice(0, 100) ?? ""} network={network && (isNetworkId(network) || network === "tron" || network === "bitcoin") ? network : "ethereum"} />
         </Card>
         <div className="space-y-4">
           <Card className="text-base" title={t("cost")}>

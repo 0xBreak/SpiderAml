@@ -157,6 +157,7 @@ export function ReportForm({ address, network, category }: { address: string; ne
                   </option>
                 ))}
                 <option value="tron">Tron</option>
+                <option value="bitcoin">Bitcoin</option>
               </select>
             </label>
           </div>

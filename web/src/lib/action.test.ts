@@ -12,10 +12,13 @@ describe("address validators", () => {
     expect(isTronAddress("TJCnKs_OTJ-J9?")).toBe(false);
     expect(isTronAddress("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")).toBe(true);
   });
-  it("isAnyAddress covers both families", () => {
+  it("isAnyAddress covers EVM, Tron and Bitcoin", () => {
     expect(isAnyAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")).toBe(true);
     expect(isAnyAddress("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")).toBe(true);
-    expect(isAnyAddress("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4")).toBe(false);
+    expect(isAnyAddress("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4")).toBe(true);
+    expect(isAnyAddress("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa")).toBe(true);
+    expect(isAnyAddress("ivan.petrov@mail.ru")).toBe(false);
+    expect(isAnyAddress("0x123")).toBe(false);
   });
 });
 

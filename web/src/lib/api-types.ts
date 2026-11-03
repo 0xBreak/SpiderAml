@@ -22,7 +22,7 @@ export interface CheckReport {
   scoreParts?: { sources: number; counterparties: number; token: number };
   /** the address is a known token on these networks but not on the checked one */
   listedElsewhere?: { network: string; symbol: string }[];
-  kind: "evm" | "tron";
+  kind: "evm" | "tron" | "bitcoin";
   network: string;
   score: number;
   level: Level;
