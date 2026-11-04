@@ -37,10 +37,10 @@ English, for compliance teams. An ordinary user has nothing but Telegram chats.
 
 | Tool | Answers the question | What it looks at |
 |---|---|---|
-| **Address check** (`/check`) | Is it safe to send money to this address? | Official sanctions lists, exploit / phishing / scam databases, live GoPlus check, risky counterparties in recent transactions, on-chain registry record. Contracts also get token risk factors |
+| **Address check** (`/check`) | Is it safe to send money to this address? | Official sanctions lists, exploit / phishing / scam databases, addresses frozen by Tether and Circle, a live GoPlus check (its flags are kept in our own database), risky counterparties in recent transactions, the history of transfers with flagged addresses (a diagram), on-chain registry record. Ethereum and compatible chains, Tron and Bitcoin |
 | **Token analysis** (`/token`) | Can I trust this token? | Price, market cap, CEX and DEX markets with spread and ±2% depth, DEX liquidity, buy/sell flow, top holders with labels, owner and upgrade rights |
 | **Whales** (`/whales`) | Who is buying or dumping right now? | Every transfer above a user-set USD threshold, aggregated per wallet (people and contracts on separate tabs), a link to each wallet's largest transaction, DEX buys and sells, labels |
-| **Sanctions** (`/sanctions`) | Which crypto addresses are officially sanctioned? | OFAC, UK and EU entries with owner, programme, designation date and a link to the official record |
+| **Sanctions** (`/sanctions`) | Which crypto addresses are officially sanctioned? | OFAC, UK and EU entries with owner, programme, designation date and a link to the official record, and a page for each sanctioned address |
 | **Safe send** (`/send`) | Can a transfer refuse a sanctioned recipient by itself? | `SpiderSend` contract checks both parties against the on-chain registry before moving USDC |
 | **Report** (`/report`) | I was scammed — what now? | Free report form; reports are reviewed by hand, confirmed addresses join the database, the sender sees the status |
 
@@ -48,13 +48,21 @@ Every verdict comes with the reasons, the source of each reason and what to do n
 
 ![Whales](docs/img/whales.jpg)
 
+The address check also draws the **linked addresses**: the flagged addresses the checked one has exchanged transfers with,
+with direction, amounts, dates and the source of each label (here a sanctioned address from the official OFAC list; the diagram is drawn on the server as plain SVG).
+
+![Linked addresses](docs/img/links.jpg)
+
 ## How it works
 
 ```
 Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private channel──▶ Data layer
                                                                          ├─ sanctions + risk lists (SQLite, refreshed every 6 h)
                                                                          ├─ scoring, token analytics, whale scans
-                                                                         ├─ providers: QuickNode RPC, Zerion, CoinGecko, GoPlus
+                                                                         ├─ providers: QuickNode RPC, Zerion, CoinGecko, GoPlus, Etherscan, TronGrid,
+                                                                         │    mempool.space / Blockstream (Bitcoin)
+                                                                         ├─ transfer history of flagged addresses (built offline from public
+                                                                         │    BigQuery data about once a month, loaded as a table)
                                                                          └─ writer key ──▶ SpiderRegistry (on-chain)
 ```
 
@@ -73,15 +81,22 @@ Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private chann
 | OFAC SDN (US Treasury) | official sanctions | ~1,050 crypto addresses, 20 assets (BTC, ETH, USDT, TRX…) |
 | UK Sanctions List (FCDO) | official sanctions | addresses quoted in designations, with designation dates |
 | EU Consolidated Financial Sanctions List | official sanctions | addresses quoted in entity remarks |
-| ScamSniffer, MyEtherWallet darklist | phishing / drainers | ~3,200 addresses |
-| Etherscan-family public labels | exploits, phishing, entity tags | 6 chains, ~32,000 labels |
-| Forta labelled datasets | exploits, malicious contracts and deployers | ~15,000 records |
-| GoPlus Security | live lookup per request | aggregates SlowMist, BlockSec and others |
+| ScamSniffer, MyEtherWallet darklist | phishing / drainers | ~3,200 addresses (ScamSniffer updates daily) |
+| Etherscan-family public labels | exploits, phishing, entity tags | 6 chains, ~32,000 labels; a snapshot: its author last updated it in October 2023 |
+| Forta labelled datasets | exploits, malicious contracts and deployers | ~15,000 records; a snapshot of January 2023 |
+| Tether and Circle freezes | addresses the issuers blacklisted in their own contracts (read from the contract events) | USDT on Ethereum and Tron, USDC on Ethereum, Arbitrum and Polygon; ~11,500 addresses frozen now |
+| Ethereum Fraud Dataset (Ishmukhamedov, 2025, CC-BY-4.0) | weak signal | ~51,000 addresses marked as scam in a public research dataset, snapshot of July 2025 |
+| GoPlus Security | live lookup per request; the flags it returns are saved as our own labels | aggregates SlowMist, BlockSec and others |
+| mempool.space, Blockstream | Bitcoin transactions at the time of the request | the last 25 transactions of a checked address |
+| Google BigQuery public Ethereum data | transfer history of flagged addresses, built offline | ~380,000 links for ~10,900 flagged addresses |
 | User reports | confirmed by hand | grows with the community |
 | CoinGecko, Zerion, QuickNode | market data, wallets, on-chain logs | 7 EVM chains |
 
-In total about **43,000 labelled addresses**, ~12,000 of them risky, ~1,100 from official sanctions lists.
-Chains: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche, plus Tron (sanctions and risk databases).
+In total about **95,000 labelled addresses**: ~22,400 with a serious label (severity 2 or 3), ~41,000 with only a weak one
+(severity 1), and 1,072 addresses from the official sanctions lists. The sources table on the home page shows the date of
+each dataset, not the date we downloaded it, so an old snapshot cannot pass for fresh data.
+Chains: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche, plus Tron (sanctions, frozen addresses and risk
+databases) and Bitcoin (sanctions and counterparties).
 
 ### Methodology
 
@@ -96,12 +111,29 @@ addresses".
 | Input | Contribution |
 |---|---|
 | strongest direct finding | severity 3 → 100, 2 → 60, 1 → 25 |
-| flagged counterparties in the last 50 transactions | up to 40 (more flagged and critical ones weigh more) |
+| flagged counterparties (serious labels) in the last 50 transactions | up to 40 (more flagged and critical ones weigh more) |
 | token heuristics, if the address is a token contract | 70% of the token risk score |
 
 The final score is the maximum of the three. Levels: **80+ critical**, **50+ high**, **20+ medium**, below 20 low.
 Taking the maximum instead of a sum keeps one strong, sourced reason from being diluted and avoids inflating scores
 from many weak ones.
+
+**Serious and weak labels.** A label of severity 2 or 3 comes from a source we trust more (official lists, scam databases,
+issuer freezes); severity 1 is a weak signal, for example an address that only appears in a public research dataset whose
+labels have no source per address. A weak label is shown but never gives a high score and never counts a counterparty as risky.
+A finding the live GoPlus check confirms is saved under its own source and counts as serious.
+
+**Frozen funds.** Tether and Circle can blacklist an address in their own contracts. We read every blacklist and release
+event, keep the newest one per address (so an unfrozen address leaves the list) and show it with severity 2: it is the issuer's
+decision, not proof of a crime. The issuers' own contracts are left out.
+
+**Linked addresses.** An offline history of transfers between our flagged Ethereum addresses and everyone else (ETH from
+2015, tokens from 2024; the top 100 counterparties per address and direction). The check shows the flagged addresses the
+checked one has dealt with. Rules: a link needs a real amount (ETH from 0.01, stablecoins from 100; far less for sanctioned,
+exploit and mixer addresses; dust, zero-value spam and look-alike tokens never count); an address linked to over a hundred flagged
+ones is infrastructure (a token, an exchange) and shows nothing; sending money to a phishing, scam or frozen address is
+drawn neutral, because that is far more often a victim or an ordinary payment. Links are shown for information and are
+not part of the score.
 
 **Token risk factors.** Holder concentration excluding pools and burn addresses (30 points), liquidity depth against
 market cap (20), source verification (20), upgradeability and owner type (14), market coverage (10). A factor that
@@ -112,7 +144,10 @@ cannot be evaluated is listed as "not scored" instead of silently counting as ze
 actually covered.
 
 **On-chain sync.** Only critical EVM addresses in the sanctions, exploit and phishing categories go to
-`SpiderRegistry`, diffed against what is already there and written in batches of 150, one storage slot per address.
+`SpiderRegistry`, diffed against what is already there and written in batches of 150, one storage slot per address. Before
+anything is sent the cost is estimated and the sync is refused (unless forced by a person) when it would remove more than
+10% of the entries, change over 20,000, pay over 1 gwei per gas or run past the writer's balance; mainnet writes need two
+explicit switches (`docs/MAINNET.md`).
 
 **Ingestion safety.** A source replaces its data only after a successful download; a broken or truncated feed keeps
 the previous data (OFAC refuses to import fewer than 100 addresses).
@@ -124,6 +159,7 @@ the previous data (OFAC refuses to import fewer than 100 addresses).
 - **Free and for people.** No account, no wallet, no payment needed to check an address.
 - **Explains itself.** A plain-language verdict, every reason with its source and a link, and what to do next.
 - **Official sanctions from three regulators** read directly from OFAC, UK and EU publications, not from mirrors.
+- **Honest about the age of its data.** Every dataset shows when its publisher last changed it, and weak signals are kept apart from serious ones.
 - **One place for the whole picture:** sanctions, scam databases, counterparties, token structure, CEX/DEX markets
   and whales.
 - **Enforcement, not only advice.** `SpiderRegistry` can be read by any contract; `SpiderSend` refuses a critical
@@ -138,12 +174,15 @@ the previous data (OFAC refuses to import fewer than 100 addresses).
 
 - **Public data only.** If a scam is not yet in any list, SpiderAML will not know about it. A low score is not a
   guarantee of safety.
-- **Shallow tracing.** Counterparty analysis looks one hop away, at the last 50 transactions on the selected chain. It
-  does not follow funds through mixers or bridges the way commercial forensics does.
+- **Shallow tracing.** Counterparty analysis looks one hop away: the last 50 transactions on the selected chain plus a
+  transfer history built about once a month for Ethereum only. It does not follow funds through mixers or bridges the way
+  commercial forensics does.
+- **Some data is old.** The two largest label sets (Etherscan-family labels, Forta) are snapshots from 2023; fresh incidents
+  come from ScamSniffer, official lists, issuer freezes and the live GoPlus check.
 - **Heuristics, not an audit.** Token risk factors are signals worth checking, not a verdict on the project or its
   code.
 - **Partial coverage.** The holder list is a lower bound (dormant wallets are invisible); CEX data depends on
-  CoinGecko; Tron has no transaction analysis yet; OFAC does not publish a per-address listing date.
+  CoinGecko; Tron has no transaction analysis yet and Bitcoin only the last 25 transactions; OFAC does not publish a per-address listing date.
 - **False positives are possible.** Open lists contain mistakes; the report form lets anyone dispute a label, but
   official sanctions entries cannot be changed by us.
 - **Early stage.** Contracts run on a testnet and production runs on a single server.
@@ -160,7 +199,7 @@ the previous data (OFAC refuses to import fewer than 100 addresses).
 
 Levels: 0 none · 1 low · 2 elevated · 3 critical (blocked). Categories: SANCTIONED, EXPLOIT, PHISHING, SCAM, MIXER, OTHER.
 
-**Arbitrum Sepolia (421614)** — verified on Sourcify:
+**Arbitrum Sepolia (421614)** — verified on Sourcify and Arbiscan. The registry holds 9,966 critical addresses (written on 4 November 2026) and `SpiderSend` refuses a transfer to any of them; before mainnet see [`docs/MAINNET.md`](docs/MAINNET.md).
 
 | Contract | Address |
 |---|---|
@@ -180,7 +219,7 @@ Deploy and verify: `scripts/deploy.sh <network>` and `scripts/verify.sh <chainId
 | Part | Stack |
 |---|---|
 | Site | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, next-intl, TanStack Query and Table, viem, Recharts, MDX |
-| Data layer | Bun, SQLite, viem, Zod |
+| Data layer | Bun, SQLite, viem, Zod; Google BigQuery public data for the offline transfer history |
 | Contracts | Solidity 0.8.28, Foundry, OpenZeppelin |
 | Hosting | Docker Compose on a VPS behind Cloudflare Tunnel (no inbound ports), Cloudflare Access for the admin panel |
 | CI/CD | GitHub Actions: lint, type-check and tests on every pull request; a merge to `main` builds the image and ships it to the server, with an automatic rollback if it is not healthy |
@@ -194,7 +233,7 @@ contracts/     smart contracts and tests (Foundry)
 deployments/   deployed contract addresses per chain
 scripts/       contract deploy / verify, local run
 assets/brand/  logos
-docs/          design decisions, roadmap, how to publish blog posts
+docs/          design decisions, roadmap, ideas, the before-mainnet checklist, how to publish blog posts
 ```
 
 ## Running locally
@@ -213,7 +252,8 @@ Contracts build and test without anything else (`cd contracts && forge test`).
 - Kyrgyz interface
 - AML API, address monitoring and alerts for crypto exchangers
 - Manual wallet assessments and token / project due diligence as paid services
-- Deeper tracing (multi-hop fund flows) and Tron transaction analysis
+- Deeper tracing (multi-hop fund flows) and Tron transaction analysis; Bitcoin balance and history from our own node
+- Issuer freezes on Base, Optimism and Avalanche, token history before 2024
 - More official sources, including the Israeli NBCTF seizure lists
 - Registry on more networks; owner moved to a multisig before any mainnet deployment
 
