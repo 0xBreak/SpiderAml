@@ -2,7 +2,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import type { ApiErrorBody, SectionMap, SectionName, WhaleReport } from "./types";
-import type { CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, SanctionsPage } from "./api-types";
+import type { FrozenPage, CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, SanctionsPage } from "./api-types";
 import { demoCall, demoEnabled } from "./demo";
 
 export class DataError extends Error {
@@ -72,6 +72,8 @@ export const getSection = <K extends SectionName>(name: K, address: string, netw
 
 export const getWhales = (address: string, network: string, whaleUsd: number, window: string) =>
   call<WhaleReport & { labels: LabelMap }>("/v1/whales", { address, network, whaleUsd, window }, 90_000);
+
+export const getFrozen = (p: { q?: string; chain?: string; asset?: string; page?: number; pageSize?: number }) => call<FrozenPage>("/v1/frozen", p);
 
 export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number; pageSize?: number }) => call<SanctionsPage>("/v1/sanctions", p);
 

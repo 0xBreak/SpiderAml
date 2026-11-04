@@ -40,7 +40,7 @@ English, for compliance teams. An ordinary user has nothing but Telegram chats.
 | **Address check** (`/check`) | Is it safe to send money to this address? | Official sanctions lists, exploit / phishing / scam databases, addresses frozen by Tether and Circle, a live GoPlus check (its flags are kept in our own database), risky counterparties in recent transactions, the history of transfers with flagged addresses (a diagram), on-chain registry record. Ethereum and compatible chains, Tron and Bitcoin |
 | **Token analysis** (`/token`) | Can I trust this token? | Price, market cap, CEX and DEX markets with spread and ±2% depth, DEX liquidity, buy/sell flow, top holders with labels, owner and upgrade rights |
 | **Whales** (`/whales`) | Who is buying or dumping right now? | Every transfer above a user-set USD threshold, aggregated per wallet (people and contracts on separate tabs), a link to each wallet's largest transaction, DEX buys and sells, labels |
-| **Sanctions** (`/sanctions`) | Which crypto addresses are officially sanctioned? | OFAC, UK and EU entries with owner, programme, designation date and a link to the official record, and a page for each sanctioned address |
+| **Sanctions** (`/sanctions`) | Which crypto addresses are officially sanctioned? | OFAC, UK and EU entries with owner, programme, designation date and a link to the official record, a page for each sanctioned address, and a tab with the addresses frozen by Tether and Circle (search, filter by network and asset, link to the transaction) |
 | **Safe send** (`/send`) | Can a transfer refuse a sanctioned recipient by itself? | `SpiderSend` contract checks both parties against the on-chain registry before moving USDC |
 | **Report** (`/report`) | I was scammed — what now? | Free report form; reports are reviewed by hand, confirmed addresses join the database, the sender sees the status |
 
@@ -81,10 +81,11 @@ Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private chann
 | OFAC SDN (US Treasury) | official sanctions | ~1,050 crypto addresses, 20 assets (BTC, ETH, USDT, TRX…) |
 | UK Sanctions List (FCDO) | official sanctions | addresses quoted in designations, with designation dates |
 | EU Consolidated Financial Sanctions List | official sanctions | addresses quoted in entity remarks |
-| ScamSniffer, MyEtherWallet darklist | phishing / drainers | ~3,200 addresses (ScamSniffer updates daily) |
+| ScamSniffer, MyEtherWallet darklist | phishing / drainers | ~5,300 addresses; the ScamSniffer address list is a snapshot of 28 Feb 2024 (its domain list is still updated, the address list is not) |
 | Etherscan-family public labels | exploits, phishing, entity tags | 6 chains, ~32,000 labels; a snapshot: its author last updated it in October 2023 |
 | Forta labelled datasets | exploits, malicious contracts and deployers | ~15,000 records; a snapshot of January 2023 |
-| Tether and Circle freezes | addresses the issuers blacklisted in their own contracts (read from the contract events) | USDT on Ethereum and Tron, USDC on Ethereum, Arbitrum and Polygon; ~11,500 addresses frozen now |
+| Tether and Circle freezes | addresses the issuers blacklisted in their own contracts (read from the contract events) | USDT on Ethereum and Tron, USDC on Ethereum, Arbitrum, Polygon, Base, Optimism and Avalanche; ~11,600 addresses (~14,200 network-asset entries) frozen now, with their own page, `/frozen` |
+| MyEtherWallet and Trust Wallet token lists (MIT) | neutral "who is this" labels (token names, not risk) | ~15,900 new addresses; shown in the owner card, never as a warning |
 | Ethereum Fraud Dataset (Ishmukhamedov, 2025, CC-BY-4.0) | weak signal | ~51,000 addresses marked as scam in a public research dataset, snapshot of July 2025 |
 | GoPlus Security | live lookup per request; the flags it returns are saved as our own labels | aggregates SlowMist, BlockSec and others |
 | mempool.space, Blockstream | Bitcoin transactions at the time of the request | the last 25 transactions of a checked address |
@@ -92,8 +93,8 @@ Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private chann
 | User reports | confirmed by hand | grows with the community |
 | CoinGecko, Zerion, QuickNode | market data, wallets, on-chain logs | 7 EVM chains |
 
-In total about **95,000 labelled addresses**: ~22,400 with a serious label (severity 2 or 3), ~41,000 with only a weak one
-(severity 1), and 1,072 addresses from the official sanctions lists. The sources table on the home page shows the date of
+In total about **110,800 labelled addresses**: ~24,500 with a serious label (severity 2 or 3), ~39,100 with only a weak one
+(severity 1) and ~47,200 with only a neutral identity label (who it is, no risk). Among them 1,064 addresses are on the official sanctions lists. Another ~1,300 addresses are known only from issuer freezes (not labelled otherwise), so about 112,100 distinct addresses are known in total. The sources table on the home page shows the date of
 each dataset, not the date we downloaded it, so an old snapshot cannot pass for fresh data.
 Chains: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche, plus Tron (sanctions, frozen addresses and risk
 databases) and Bitcoin (sanctions and counterparties).

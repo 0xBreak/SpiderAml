@@ -45,6 +45,20 @@ const finding = (category: Category, severity: 0 | 1 | 2 | 3, label: string, sou
 
 // ---------------------------------------------------------------- check
 
+/** Sample frozen addresses for the local demo (about 90 of them over the four chains). */
+function demoFrozen(p: { q?: string; chain?: string; asset?: string; page: number; pageSize: number }) {
+  const t = Math.floor(Date.now() / 1000);
+  const kinds = [["ethereum", "USDT"], ["tron", "USDT"], ["ethereum", "USDC"], ["arbitrum", "USDC"], ["polygon", "USDC"]] as const;
+  const all = Array.from({ length: 90 }, (_, i) => {
+    const [chain, asset] = kinds[i % kinds.length];
+    const address = chain === "tron" ? `T${(i * 7919).toString(36).padStart(33, "X")}` : `0x${(i * 104729).toString(16).padStart(40, "b")}`;
+    return { address, chain, asset, issuer: asset === "USDT" ? "Tether" : "Circle", frozenAt: t - 86_400 * (i * 3 + 1), txUrl: "https://example.com/tx" };
+  });
+  const rows = all.filter((r) => (!p.q || r.address.toLowerCase().includes(p.q.toLowerCase())) && (!p.chain || r.chain === p.chain) && (!p.asset || r.asset === p.asset));
+  const groups = kinds.map(([chain, asset]) => ({ chain, asset, count: all.filter((r) => r.chain === chain && r.asset === asset).length }));
+  return { total: rows.length, page: p.page, pageSize: p.pageSize, items: rows.slice((p.page - 1) * p.pageSize, p.page * p.pageSize), groups, distinctAddresses: all.length, updatedAt: Date.now() - 3_600_000 };
+}
+
 /** Sample linked addresses for the local demo: every kind of link the graph can draw. */
 function demoLinks(): NonNullable<CheckReport["links"]> {
   const t = Math.floor(Date.now() / 1000);
@@ -467,6 +481,8 @@ export function demoCall(path: string, params: Record<string, string | number | 
       return { markets };
     case "/v1/meta":
       return demoMeta();
+    case "/v1/frozen":
+      return demoFrozen({ q: params.q as string | undefined, chain: params.chain as string | undefined, asset: params.asset as string | undefined, page: Number(params.page) || 1, pageSize: Number(params.pageSize) || 25 });
     case "/v1/sanctions":
       return demoSanctions({ q: params.q as string | undefined, chain: params.chain as string | undefined, list: params.list as string | undefined, page: Number(params.page) || 1, pageSize: Number(params.pageSize) || 10 });
     case "/v1/whales":

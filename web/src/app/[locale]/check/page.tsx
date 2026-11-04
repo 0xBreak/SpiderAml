@@ -18,12 +18,13 @@ import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
+import { owners as readableOwners } from "@/lib/owner-tags";
 import { GaEvent } from "@/components/Analytics";
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Check" });
-  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/check", await searchParams) };
+  return { title: t("pageTitle"), description: t("metaDescription"), ...seo(locale, "/check", await searchParams) };
 }
 
 export const dynamic = "force-dynamic";
@@ -89,14 +90,19 @@ async function Report({ r }: { r: CheckReport }) {
   const net = r.kind === "evm" && isNetworkId(r.network) ? NETWORKS[r.network] : null;
   const explorer = net ? `${net.explorer}/address/${r.address}` : r.kind === "tron" ? `https://tronscan.org/#/address/${r.address}` : r.kind === "bitcoin" ? `https://mempool.space/address/${r.address}` : null;
   const risky = r.findings.filter((f) => f.category !== "info");
-  const owner = r.tags[0];
+  const ownerList = readableOwners(r.tags.map((x) => x.label));
+  const owner = ownerList[0];
+  const isContract = r.kind === "evm" && r.contract != null ? r.contract.isContract : null;
   const chainLabel = r.kind === "tron" || r.kind === "bitcoin" ? tChain(r.kind) : (net?.label ?? r.network);
-  const hasBadges = r.sanctions.length > 0 || r.possibleScam || r.contract?.isContract;
+  const frozen = r.findings.some((f) => f.category === "frozen");
+  const hasBadges = r.sanctions.length > 0 || r.possibleScam || frozen || r.contract?.isContract;
   const signals = risky.length + (r.counterparties?.flagged.length ?? 0);
   // the on-chain registry matters to the visitor only when the address is recorded there
   const recorded = r.onchain && r.onchain.level > 0 ? r.onchain : null;
   const showSummary = signals > 0 || r.portfolio != null || r.counterparties != null;
-  const hasAside = showSummary || r.tags.length > 0 || recorded != null;
+  // shown only when there is something to say: a known owner, or a smart contract; an ordinary wallet with no label gets no empty card
+  const hasOwnerCard = ownerList.length > 0 || isContract === true;
+  const hasAside = showSummary || hasOwnerCard || recorded != null;
   const elsewhere = (r.listedElsewhere ?? []).filter((x) => isNetworkId(x.network));
   const netLabel = (n: string) => NETWORKS[n as keyof typeof NETWORKS].label;
 
@@ -132,6 +138,7 @@ async function Report({ r }: { r: CheckReport }) {
               <div className="flex flex-wrap items-center gap-2">
                 {r.sanctions.length > 0 && <Badge tone="crit">{t("sanctionedBadge")}</Badge>}
                 {r.possibleScam && r.sanctions.length === 0 && <Badge tone="crit">{t("scamBadge")}</Badge>}
+                {frozen && <Badge tone="warn">{t("frozenBadge")}</Badge>}
                 {r.contract?.isContract && (
                   <Badge tone="muted">
                     {t("contractBadge")}
@@ -153,7 +160,7 @@ async function Report({ r }: { r: CheckReport }) {
               {r.ensName && <span className="font-medium text-silver-1">{r.ensName} →</span>}
               <Addr value={r.address} href={explorer} full />
               <span>{chainLabel}</span>
-              {owner && <span>{owner.label}</span>}
+              {owner && <span>{owner.name}{owner.detail ? ` · ${owner.detail}` : ""}</span>}
             </div>
           </div>
         </div>
@@ -208,16 +215,24 @@ async function Report({ r }: { r: CheckReport }) {
                 </dl>
               </Card>
             )}
-            {r.tags.length > 0 && (
+            {hasOwnerCard && (
               <Card title={t("ownerTitle")}>
-                <ul className="flex flex-col gap-2">
-                  {r.tags.slice(0, 6).map((tag) => (
-                    <li key={`${tag.source}-${tag.label}`} className="text-base leading-snug text-silver-1">
-                      {tag.label}
-                      {tag.chain && <span className="ml-2 text-sm text-silver-2">{tag.chain}</span>}
-                    </li>
-                  ))}
-                </ul>
+                {ownerList.length > 0 && (
+                  <ul className="flex flex-col gap-3">
+                    {ownerList.map((o) => (
+                      <li key={`${o.name}-${o.detail}`} className="text-base leading-snug text-silver-1">
+                        <span className="font-medium">{o.name}</span>
+                        {o.detail && <span className="text-silver-2"> · {o.detail}</span>}
+                        <span className="mt-1 flex flex-wrap gap-1.5">
+                          <Badge tone="muted">{t(`ownerKind.${o.kind}`)}</Badge>
+                          {o.retired && <Badge tone="warn">{t("ownerRetired")}</Badge>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {isContract === true && <p className={cn("text-sm text-silver-2", ownerList.length > 0 && "mt-3")}>{t("ownerTypeContract")}</p>}
+                {ownerList.length > 0 && r.tags[0] && <p className="mt-3 text-sm text-silver-3">{t("sourceWord")}: {r.tags[0].sourceName}</p>}
               </Card>
             )}
             {recorded && (
@@ -292,8 +307,14 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
     });
   if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : r.contract.risk.context?.includes("skip_concentration") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenIncomplete")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
 
-  const groups = new Map<string, Finding[]>();
-  for (const f of findings) groups.set(f.category, [...(groups.get(f.category) ?? []), f]);
+  // three separate blocks instead of one pile: serious risks, a freeze by a stablecoin issuer, and weak (unconfirmed) signals
+  const sections = (
+    [
+      { key: "serious", list: findings.filter((f) => f.severity >= 2 && f.category !== "frozen") },
+      { key: "frozen", list: findings.filter((f) => f.category === "frozen") },
+      { key: "weak", list: findings.filter((f) => f.severity < 2 && f.category !== "frozen") },
+    ] as const
+  ).filter((x) => x.list.length > 0);
   return (
     <Card title={t("whyTitle")} hint={t("whyHint")}>
       <ul className="flex flex-col divide-y divide-line/60">
@@ -309,33 +330,48 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
         ))}
       </ul>
       {findings.length > 0 && (
-        <div className="mt-5 flex flex-col gap-5 border-t border-line pt-5">
-          <div className="label">{t("detailsTitle")}</div>
-          {[...groups].map(([cat, list]) => {
-            const worst = Math.max(...list.map((f) => f.severity));
+        <div className="mt-5 flex flex-col gap-6 border-t border-line pt-5">
+          {sections.map((sec) => {
+            const byCat = new Map<string, Finding[]>();
+            for (const f of sec.list) byCat.set(f.category, [...(byCat.get(f.category) ?? []), f]);
             return (
-              <div key={cat} className="flex flex-col gap-2.5">
-                <Badge tone={toneOfSeverity(worst)} className="self-start">
-                  {tCat.has(cat) ? tCat(`${cat}.name`) : cat}
-                </Badge>
-                <ul className="flex flex-col gap-2">
-                  {list.map((f, i) => (
-                    <li key={i} className="text-base leading-snug text-silver-1">
-                      {f.label}
-                      <span className="mt-0.5 block text-sm text-silver-2">
-                        {t("sourceWord")}:{" "}
-                        {f.url ? (
-                          <a href={f.url} target="_blank" rel="noopener noreferrer" className="link">
-                            {f.sourceName}
-                          </a>
-                        ) : (
-                          f.sourceName
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <section key={sec.key} className="flex flex-col gap-3">
+                <div>
+                  <div className="label">{t(`section.${sec.key}.title`)}</div>
+                  <p className="mt-1 text-sm leading-snug text-silver-2">{t(`section.${sec.key}.note`)}</p>
+                </div>
+                {[...byCat].map(([cat, list]) => {
+                  const worst = Math.max(...list.map((f) => f.severity));
+                  return (
+                    <div key={cat} className="flex flex-col gap-2.5 border-l-2 border-line pl-4">
+                      <Badge tone={sec.key === "weak" ? "muted" : toneOfSeverity(worst)} className="self-start">
+                        {tCat.has(cat) ? tCat(`${cat}.name`) : cat}
+                      </Badge>
+                      {tCat.has(`${cat}.about`) && <p className="text-sm leading-snug text-silver-2">{tCat(`${cat}.about`)}</p>}
+                      <ul className="flex flex-col gap-2">
+                        {list.map((f, i) => (
+                          <li key={i} className="text-base leading-snug text-silver-1">
+                            {f.label}
+                            <span className="mt-0.5 block text-sm text-silver-2">
+                              {t("sourceWord")}:{" "}
+                              {f.url ? (
+                                <a href={f.url} target="_blank" rel="noopener noreferrer" className="link">
+                                  {f.sourceName}
+                                </a>
+                              ) : (
+                                f.sourceName
+                              )}
+                            </span>
+                            {r.kind === "evm" && f.chain && f.chain !== r.network && isNetworkId(f.chain) && (
+                              <span className="mt-0.5 block text-sm text-silver-2">{t("otherNetwork", { net: NETWORKS[f.chain].label })}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </section>
             );
           })}
         </div>

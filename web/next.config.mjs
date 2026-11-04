@@ -34,7 +34,11 @@ const nextConfig = {
     optimizePackageImports: ["lucide-react", "recharts"],
   },
   async redirects() {
-    return [{ source: "/aml", destination: "/token", permanent: true }];
+    return [
+      { source: "/aml", destination: "/token", permanent: true },
+      { source: "/sanctions/frozen", destination: "/frozen", permanent: true },
+      { source: "/en/sanctions/frozen", destination: "/en/frozen", permanent: true },
+    ];
   },
   async headers() {
     return [

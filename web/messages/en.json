@@ -1,7 +1,7 @@
 {
   "Metadata": {
-    "title": "SpiderAML — crypto address screening",
-    "description": "Check a crypto address before sending: sanctions lists, hacks, phishing, suspicious activity. Token analysis and large transfers."
+    "title": "Free crypto wallet checker: AML risk, sanctions and frozen USDT — SpiderAML",
+    "description": "Check a USDT, ETH, TRON or Bitcoin address before sending: OFAC sanctions, hacks, phishing, Tether and Circle freezes. Free, no sign-up, plain language."
   },
   "Nav": {
     "home": "Home",
@@ -14,7 +14,8 @@
     "blog": "Blog",
     "checkCta": "Check an address",
     "menu": "Menu",
-    "sections": "Sections"
+    "sections": "Sections",
+    "frozen": "Frozen"
   },
   "Footer": {
     "contact": "Contact",
@@ -178,6 +179,7 @@
     "tryLabel": "Examples:",
     "exampleSanctioned": "Sanctioned",
     "exampleExploit": "Bybit hacker",
+    "exampleFrozen": "Frozen by Tether",
     "exampleClean": "Clean wallet",
     "statsAria": "Statistics",
     "statsRiskLabel": "addresses with risk",
@@ -238,11 +240,13 @@
   },
   "Check": {
     "title": "Address AML check",
-    "metaDescription": "Free AML check for a crypto wallet address: US, UK and EU sanctions lists, hacks, phishing and links to risky addresses.",
+    "metaDescription": "Free wallet and USDT (TRC20, ERC20) address check for AML risk: US, EU and UK sanctions lists, hacks, phishing and freezes by Tether and Circle.",
     "sub": "Paste the recipient address. We'll show the risk and why.",
     "whatToDo": "What to do",
     "sanctionedBadge": "On a sanctions list",
     "scamBadge": "Fraud signals in databases",
+    "frozenBadge": "Frozen by a stablecoin issuer",
+    "otherNetwork": "Flagged on {net}. The address is the same on every network, so it matters here too.",
     "contractBadge": "Contract",
     "recordedAs": "Registry: <b>{category}</b>, level {level}/3.",
     "blockedNote": " SpiderSend will block transfers here.",
@@ -258,8 +262,7 @@
     "balanceDay": "past day {pct}",
     "counterpartiesChecked": "Addresses screened",
     "flaggedSub": "flagged: {count}",
-    "ownerTitle": "Who owns it",
-    "ownerHint": "Who it is",
+    "ownerTitle": "Whose address is this",
     "registryTitle": "On-chain registry",
     "registryHint": "Readable by any contract",
     "reasonsTitle": "Why this score",
@@ -299,13 +302,37 @@
     "cpSkipped": "not checked",
     "tokenScore": "automatic contract score {score}/100, 70% of it counts",
     "points": "{n} pts",
-    "detailsTitle": "Signals found",
     "elsewhere": "The {symbol} token is known on {networks}. On {here} this address holds a different contract — the score below is about that contract, not about {symbol}.",
     "checkOn": "Check on {network} →",
     "sourceWord": "source",
     "tokenTotal": "Total: {points} of {max} points → {score}/100",
     "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain",
-    "tokenIncomplete": "incomplete score: holder concentration could not be assessed"
+    "tokenIncomplete": "incomplete score: holder concentration could not be assessed",
+    "ownerKind": {
+      "protocol": "DeFi protocol or service",
+      "bridge": "Bridge between networks",
+      "exchange": "Exchange",
+      "token": "Token",
+      "bot": "Automated bot",
+      "other": "Known label"
+    },
+    "ownerRetired": "Old contract",
+    "ownerTypeContract": "This is a smart contract (a program on the blockchain), not a personal wallet.",
+    "section": {
+      "serious": {
+        "title": "Serious signals",
+        "note": "Confirmed by sources: sanctions, hacks, phishing. This is the main reason for the score."
+      },
+      "frozen": {
+        "title": "Issuer freeze",
+        "note": "Tether or Circle blocked this address. Funds on it may be unavailable."
+      },
+      "weak": {
+        "title": "Weak signals",
+        "note": "Labels from open research and lists, not confirmed. Not a reason to refuse by themselves, but be more careful."
+      }
+    },
+    "pageTitle": "Free AML check of a USDT wallet address"
   },
   "Blog": {
     "title": "Blog",
@@ -522,7 +549,8 @@
     "partialBadge": "Partial score · {score}/100",
     "incompleteBadge": "Incomplete score · {score}/100",
     "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast, not an audit and not a check of whether the project is honest: organised fraud cannot be seen in the code.",
-    "perDayShort": "24h"
+    "perDayShort": "24h",
+    "pageTitle": "Token scam checker: risks, holders and liquidity"
   },
   "Send": {
     "title": "Safe send",
@@ -811,5 +839,46 @@
     "more": "The diagram shows the first {shown}; {count} more links are in the list only.",
     "victimNote": "Dashed: the address sent funds to a phishing, scam or frozen address. That is most often a victim or an ordinary payment, so such links are drawn neutral.",
     "notInScore": "Links are shown for information and are not part of the risk score."
+  },
+  "Frozen": {
+    "title": "Frozen USDT and USDC addresses",
+    "sub": "Check whether a wallet is frozen: addresses that Tether and Circle have blocked in their contracts.",
+    "metaDescription": "Addresses frozen by Tether (USDT: Ethereum, Tron) and Circle (USDC: Ethereum, Arbitrum, Polygon, Base, Optimism, Avalanche): network, date and a link to the transaction. Search by address.",
+    "summary": "Addresses frozen now: {addresses}",
+    "updated": "updated {date}",
+    "search": "Search by address",
+    "searchPlaceholder": "Address or part of it",
+    "searchButton": "Search",
+    "filters": "Filter by network and asset",
+    "all": "All",
+    "note": "A freeze is the issuer's decision (Tether or Circle) to block the tokens on an address. It is not proof of a crime: the issuer does not give a reason, and an address can be released. The list is built from the events of the USDT and USDC contracts.",
+    "found": "Found: {count}",
+    "nothing": "Nothing found",
+    "colAddress": "Address",
+    "colNetwork": "Network and asset",
+    "colIssuer": "Issuer",
+    "colFrozen": "Frozen on",
+    "colTx": "Transaction",
+    "frozenOn": "frozen {date}",
+    "transaction": "transaction",
+    "check": "Check",
+    "pagination": "Pages",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {pages}",
+    "verdictFrozen": "This address is frozen",
+    "verdictClear": "Not found in the freeze lists",
+    "verdictClearText": "Tether and Circle do not currently block this address (Ethereum, Tron, Arbitrum, Polygon, Base, Optimism, Avalanche). That does not make it safe: a freeze is only one of the checks.",
+    "fullCheck": "Full AML check of this address",
+    "faqTitle": "Questions about frozen USDT",
+    "faq1q": "Who freezes USDT and why?",
+    "faq1a": "Tether and Circle can block tokens at any address in their contracts. It usually happens at the request of law enforcement, because of sanctions or a link to fraud. The issuer does not disclose the reason.",
+    "faq2q": "Is a freeze the same as sanctions?",
+    "faq2a": "No. Sanctions are imposed by a government and addresses appear on official lists (OFAC and others). A freeze is made by the stablecoin issuer and can be lifted. See the Sanctions section for official lists.",
+    "faq3q": "Can frozen USDT be recovered?",
+    "faq3a": "Only through the issuer or a court. Only Tether or Circle can lift a block. If you own the address, contact their support with proof of identity and of where the funds came from.",
+    "faq4q": "Where does the list come from?",
+    "faq4a": "From the block and unblock events in the USDT and USDC contracts on chain. We take the latest event for each address, so an unblocked address is not listed.",
+    "pageTitle": "Frozen USDT addresses: check if a wallet is blacklisted"
   }
 }
