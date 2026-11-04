@@ -16,7 +16,7 @@ import type { Locale } from "@/i18n/routing";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Sanctions" });
-  return { title: t("title"), ...seo(locale, "/sanctions", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/sanctions", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 
@@ -157,6 +157,9 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                           {s.list}
                           <ExternalLink className="size-3.5" aria-hidden />
                         </a>
+                        <Link href={`/sanctions/${s.address}`} className={LINK}>
+                          {t("details")}
+                        </Link>
                       </div>
                     </li>
                   ))}
@@ -177,6 +180,9 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                         <tr key={s.address + s.list} className="border-b border-line/40 transition-colors last:border-0 hover:bg-surface-2/30">
                           <td className={TD}>
                             <Addr value={s.address} href={EXPLORER[s.chain]?.(s.address)} className="text-base text-silver-1" />
+                            <Link href={`/sanctions/${s.address}`} className="mt-1 block text-sm text-silver-2 underline decoration-line underline-offset-4 hover:decoration-silver-2">
+                              {t("details")}
+                            </Link>
                           </td>
                           <td className={cn(TD, "whitespace-nowrap")}>
                             <div className="text-silver-1">{chainName(s.chain)}</div>

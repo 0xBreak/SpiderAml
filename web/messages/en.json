@@ -30,7 +30,8 @@
     "addressSr": "Address",
     "networkSr": "Network",
     "searchPlaceholder": "Wallet or token address: 0x…, T… or name.eth",
-    "searchButton": "Check"
+    "searchButton": "Check",
+    "clear": "Clear field"
   },
   "Lang": {
     "label": "Language",
@@ -57,6 +58,10 @@
     "mixer": {
       "name": "Mixer",
       "about": "Hides where the money came from. Exchanges freeze such coins."
+    },
+    "frozen": {
+      "name": "Frozen by a stablecoin issuer",
+      "about": "Tether or Circle put this address on their blacklist and blocked its USDT or USDC. It is the issuer's decision, not proof of a crime."
     },
     "other": {
       "name": "Other signals",
@@ -124,6 +129,7 @@
   },
   "Note": {
     "tron_limited": "Tron: lists and open databases only, no transfers.",
+    "bitcoin_limited": "Bitcoin: lists, open databases and the latest 25 transactions, no deeper tracing.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
     "contract_unavailable": "Contract could not be analyzed.",
@@ -147,7 +153,7 @@
     "bnb-beacon": "BNB Beacon"
   },
   "Errors": {
-    "INVALID_ADDRESS": "This does not look like an address. Use 0x… (Ethereum, BNB Chain and others), T… (Tron) or an ENS name like name.eth.",
+    "INVALID_ADDRESS": "This does not look like an address. Use 0x… (Ethereum, BNB Chain and others), T… (Tron), a Bitcoin address (1…, 3…, bc1…) or an ENS name like name.eth.",
     "INVALID_NETWORK": "This network is not supported.",
     "NOT_A_CONTRACT": "There is no contract at this address on the selected network. Check the network or paste a token address.",
     "UNSUPPORTED": "This contract does not look like a token — this analysis is unavailable for it.",
@@ -158,6 +164,7 @@
     "ENS_NOT_FOUND": "This ENS name does not point to any address. Check the spelling.",
     "BAD_CHECKSUM": "The address fails its checksum: it has a typo or was copied only partly. Copy it again from the wallet or explorer. Funds cannot be sent to such an address.",
     "TRON_EXPECTED": "Tron is selected, but this is not a Tron address. A Tron address starts with T and has 34 characters.",
+    "BITCOIN_EXPECTED": "Bitcoin is selected, but this is not a Bitcoin address. It starts with 1, 3 or bc1.",
     "INVALID_CATEGORY": "Choose what happened.",
     "DESCRIPTION_SHORT": "Describe what happened in a couple of sentences at least.",
     "DESCRIPTION_LONG": "The description is too long (2000 characters max).",
@@ -176,7 +183,7 @@
     "statsRiskLabel": "addresses with risk",
     "statsSanctionsLabel": "sanctioned addresses",
     "statsLabelsLabel": "labeled addresses",
-    "statsNetworksValue": "7 + Tron",
+    "statsNetworksValue": "7 + Tron + Bitcoin",
     "statsNetworksLabelShort": "networks",
     "toolsEyebrow": "Tools",
     "toolsTitle": "What SpiderAML does",
@@ -205,7 +212,7 @@
     "colSource": "Source",
     "colAbout": "What it covers",
     "colAddresses": "Addresses",
-    "colUpdated": "Updated",
+    "colUpdated": "Data as of",
     "officialBadge": "official",
     "goplusName": "GoPlus Security",
     "goplusAbout": "Checked live at request time",
@@ -224,10 +231,14 @@
     "manual": "Recent incidents, verified by hand",
     "reports": "User reports confirmed after review",
     "admin": "SpiderAML team labels",
-    "own": "SpiderAML team lists"
+    "own": "SpiderAML team lists",
+    "stablecoin-freezes": "Addresses blocked by Tether and Circle: USDT (Ethereum, Tron), USDC (Ethereum, Arbitrum, Polygon)",
+    "goplus-seen": "Addresses GoPlus flagged during checks on the site: we keep them, so they are found among counterparties too. Fills itself over time.",
+    "eth-fraud-dataset": "A research dataset: addresses marked as fraud in public lists (snapshot of July 2025). A weak signal, not a verdict."
   },
   "Check": {
     "title": "Address AML check",
+    "metaDescription": "Free AML check for a crypto wallet address: US, UK and EU sanctions lists, hacks, phishing and links to risky addresses.",
     "sub": "Paste the recipient address. We'll show the risk and why.",
     "whatToDo": "What to do",
     "sanctionedBadge": "On a sanctions list",
@@ -293,7 +304,8 @@
     "checkOn": "Check on {network} →",
     "sourceWord": "source",
     "tokenTotal": "Total: {points} of {max} points → {score}/100",
-    "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain"
+    "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain",
+    "tokenIncomplete": "incomplete score: holder concentration could not be assessed"
   },
   "Blog": {
     "title": "Blog",
@@ -324,7 +336,10 @@
     "reports": "Confirmed user reports",
     "manual": "Manual incidents",
     "admin": "SpiderAML labels",
-    "own": "SpiderAML lists"
+    "own": "SpiderAML lists",
+    "stablecoin-freezes": "Tether and Circle freezes",
+    "goplus-seen": "GoPlus findings saved by SpiderAML",
+    "eth-fraud-dataset": "Ethereum Fraud Dataset (Ishmukhamedov, 2025)"
   },
   "Holder": {
     "eoa": "Wallet",
@@ -336,6 +351,7 @@
   },
   "Whales": {
     "title": "Whales",
+    "metaDescription": "Large token transfers above an amount you choose: who is buying, who is selling and how much. Free whale report by token address on major networks.",
     "sub": "Large transfers of a token above the amount you choose: who is buying, who is selling and how much.",
     "placeholder": "Token address 0x…",
     "button": "Show",
@@ -385,6 +401,7 @@
   },
   "Sanctions": {
     "title": "Sanctioned addresses",
+    "metaDescription": "Crypto addresses from the official OFAC (US), UK and EU sanctions lists: only what regulators published, with a link to each record.",
     "sub": "Crypto addresses from the official US, UK and EU lists — only what regulators published, with a link to the record.",
     "updateFailed": "update failed",
     "updated": "updated {date}",
@@ -412,10 +429,12 @@
     "perPage": "Results per page",
     "per10": "10 per page",
     "per20": "20 per page",
-    "per50": "50 per page"
+    "per50": "50 per page",
+    "details": "Details"
   },
   "Token": {
     "title": "Token analysis",
+    "metaDescription": "Check a token before you buy: price, liquidity pools, top holders and contract owner powers. Ethereum, BNB Chain, Arbitrum, Base and other networks.",
     "sub": "Price, pools, holders and owner powers.",
     "placeholder": "Token address: 0x…",
     "button": "Analyse",
@@ -445,7 +464,6 @@
     "ownerContract": "Owner is a contract",
     "hasOwner": "Has an owner",
     "price": "Price",
-    "perDay": "{value} 24h",
     "mcap": "Market cap",
     "vol24": "24h volume",
     "supply": "Total supply",
@@ -502,10 +520,13 @@
     "colValue": "Value",
     "holdersFoot": "From transfers over recent weeks.",
     "partialBadge": "Partial score · {score}/100",
-    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast and not an audit."
+    "incompleteBadge": "Incomplete score · {score}/100",
+    "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast, not an audit and not a check of whether the project is honest: organised fraud cannot be seen in the code.",
+    "perDayShort": "24h"
   },
   "Send": {
     "title": "Safe send",
+    "metaDescription": "Send USDC through the SpiderSend contract: it checks the recipient against an on-chain registry and refuses sanctioned or known hacker addresses. Testnet.",
     "sub": "Send USDC through the SpiderSend contract: it checks the sender and the recipient against an on-chain registry and refuses to pay a sanctioned address or a known hacker.",
     "transfer": "Transfer",
     "hint": "{network}. Not real money.",
@@ -568,6 +589,7 @@
   },
   "Report": {
     "title": "Report an address",
+    "metaDescription": "Report phishing, a scam or theft tied to a crypto address, or dispute a wrong flag. We check each report and show its status.",
     "sub": "Ran into phishing, a scam or theft — or think we flagged an address by mistake? Tell us and we will check.",
     "cost": "What it costs",
     "free": "Free",
@@ -658,6 +680,7 @@
   },
   "Terms": {
     "title": "Terms of use",
+    "metaDescription": "SpiderAML terms of use: a free information service; the risk score is automatic, based on public data, and is not legal advice.",
     "updated": "Updated",
     "sources": "Data sources",
     "contact": "Contact",
@@ -703,12 +726,16 @@
     "src_mit": "MIT licence",
     "src_gpl": "GPL-3.0 licence",
     "src_labels": "open set of explorer labels (MIT)",
-    "src_goplus": "checked live through the public API",
+    "src_goplus": "checked at the time of the request through an open API; the flags it returns are kept in our database with the source named",
+    "src_chain": "public blockchain data: blacklist events of the USDT and USDC contracts",
+    "src_btc": "Bitcoin transactions at the time of the request, through a public API",
+    "src_ccby": "licence CC-BY 4.0; author: Ishmukhamedov, 2025, DOI 10.57967/hf/6373; data snapshot of July 2025",
     "src_cg": "market data: Data provided by CoinGecko",
     "src_zerion": "balances, prices and transaction history"
   },
   "Privacy": {
     "title": "Privacy",
+    "metaDescription": "What data SpiderAML collects and why: checked addresses, anonymous visit statistics and your analytics choice.",
     "updated": "Updated",
     "contactText": "Email:",
     "terms": "Terms of use →",
@@ -727,7 +754,7 @@
       ],
       [
         "Checked addresses",
-        "When you check an address or a token we store the address, the network and the result, to see what people look for most. Crypto addresses are public; the record is not tied to your identity. To run the check our server sends the address (not your data) to external services: GoPlus, Zerion, CoinGecko, Etherscan and a blockchain node provider."
+        "When you check an address or a token we store the address, the network and the result, to see what people look for most. Crypto addresses are public; the record is not tied to your identity. To run the check our server sends the address (not your data) to external services: GoPlus, Zerion, CoinGecko, Etherscan, a blockchain node provider and, for Bitcoin addresses, mempool.space and Blockstream. If you type something other than an address (an e-mail or a name, say), it is not stored: only a marker and the length of the text are recorded."
       ],
       [
         "Address reports",
@@ -754,5 +781,35 @@
     "accept": "Accept",
     "decline": "Decline",
     "settings": "Cookie settings"
+  },
+  "SanctionAddr": {
+    "eyebrow": "Official sanctions list",
+    "title": "Address {address}",
+    "sub": "This address appears on an official sanctions list. Below is what the regulator published.",
+    "network": "Network and asset",
+    "listedAs": "Listed as",
+    "program": "Program",
+    "listed": "Listing date",
+    "notGiven": "not given",
+    "source": "Entry on the official list",
+    "check": "Run a full check on this address",
+    "back": "All sanctioned addresses",
+    "metaTitle": "Sanctioned address {address} · {list}",
+    "metaDescription": "The address {address} appears on the {list} sanctions list. The regulator's entry with a link to the official source."
+  },
+  "Links": {
+    "title": "Linked addresses",
+    "hint": "Transfers between this address and addresses from our databases, from the Ethereum blockchain history. Updated monthly.",
+    "centre": "address",
+    "aria": "Diagram of the checked address and the flagged addresses it exchanged transfers with",
+    "legend": "Arrow towards the centre: the address received from it. Arrow away from the centre: the address sent to it. A thicker line means more transfers.",
+    "received": "The checked address received from it",
+    "sent": "The checked address sent to it",
+    "transfers": "{count, plural, one {# transfer} other {# transfers}}",
+    "source": "source",
+    "explorer": "Open in explorer",
+    "more": "The diagram shows the first {shown}; {count} more links are in the list only.",
+    "victimNote": "Dashed: the address sent funds to a phishing, scam or frozen address. That is most often a victim or an ordinary payment, so such links are drawn neutral.",
+    "notInScore": "Links are shown for information and are not part of the risk score."
   }
 }

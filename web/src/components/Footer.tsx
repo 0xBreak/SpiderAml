@@ -2,7 +2,7 @@ import { Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { ConsentSettings } from "./Analytics";
 import { Logo } from "./Logo";
-import { NAV } from "./Header";
+import { visibleNav } from "./Header";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -14,7 +14,7 @@ export async function Footer({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Nav" });
   const tF = await getTranslations({ locale, namespace: "Footer" });
   const tC = await getTranslations({ locale, namespace: "Common" });
-  const items = NAV.filter((n) => n.href !== "/").map((n) => ({ href: n.href, label: t(n.key) }));
+  const items = (await visibleNav()).filter((n) => n.href !== "/").map((n) => ({ href: n.href, label: t(n.key) }));
   return (
     <footer className="mt-16 border-t border-line">
       <div className="mx-auto grid max-w-page gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">

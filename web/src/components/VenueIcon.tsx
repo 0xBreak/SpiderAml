@@ -8,7 +8,7 @@ export function VenueIcon({ name, size = "sm", className }: { name: string; size
   const src = venueIconSrc(name);
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" aria-hidden="true" className={cn(box, "shrink-0 rounded-[5px] object-contain", className)} />;
+    return <img src={src} alt={`${name} logo`} className={cn(box, "shrink-0 rounded-[5px] object-contain", className)} />;
   }
   const letter = name.trim().charAt(0).toUpperCase() || "?";
   return (

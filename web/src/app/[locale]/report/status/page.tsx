@@ -87,7 +87,7 @@ export default async function ReportStatusPage({ searchParams }: { searchParams:
             </div>
             <div>
               <dt className="text-sm text-silver-2">{t("network")}</dt>
-              <dd className="mt-1 text-silver-1">{isNetworkId(r.network) ? NETWORKS[r.network].label : r.network === "tron" ? "Tron" : r.network}</dd>
+              <dd className="mt-1 text-silver-1">{isNetworkId(r.network) ? NETWORKS[r.network].label : r.network === "tron" ? "Tron" : r.network === "bitcoin" ? "Bitcoin" : r.network}</dd>
             </div>
             <div>
               <dt className="text-sm text-silver-2">{t("what")}</dt>

@@ -102,9 +102,16 @@ export function isTronAddress(v: unknown): v is string {
   return typeof v === "string" && TRON_ADDRESS_RE.test(v.trim());
 }
 
-/** EVM (0x…) or Tron (T…) address. */
+/** Bitcoin: legacy (1…), P2SH (3…) or bech32 (bc1…). Shape only; the data layer verifies the checksum. */
+export const BITCOIN_ADDRESS_RE = /^(?:[13][1-9A-HJ-NP-Za-km-z]{25,34}|bc1[02-9ac-hj-np-z]{8,87})$/i;
+
+export function isBitcoinAddress(v: unknown): v is string {
+  return typeof v === "string" && BITCOIN_ADDRESS_RE.test(v.trim());
+}
+
+/** EVM (0x…), Tron (T…) or Bitcoin address. */
 export function isAnyAddress(v: unknown): v is string {
-  return isEvmAddress(v) || isTronAddress(v);
+  return isEvmAddress(v) || isTronAddress(v) || isBitcoinAddress(v);
 }
 
 export function isHttpsUrl(v: unknown): v is string {

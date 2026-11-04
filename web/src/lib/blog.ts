@@ -23,6 +23,9 @@ export async function loadPost(slug: string) {
   return { slug, meta: mod.meta, Content: mod.default };
 }
 
+/** The blog menu item, the sitemap entry and indexing of /blog wait for the first published article. */
+export const hasPosts = async () => (await allPosts()).length > 0;
+
 export async function allPosts() {
   const posts = await Promise.all(slugs().map(loadPost));
   // drafts are visible while developing (npm run dev) and hidden on the live site

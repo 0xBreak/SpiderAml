@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { NETWORK_IDS, NETWORKS } from "@/lib/networks";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/format";
+import { ClearInput } from "./ClearInput";
 
 interface Props {
   action: "/check" | "/token" | "/whales";
@@ -39,8 +40,9 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
           autoComplete="off"
           spellCheck={false}
           placeholder={placeholder ?? t("searchPlaceholder")}
-          className={cn("input pl-9 font-mono", size === "lg" && "h-12 text-[15px]")}
+          className={cn("input pl-9 pr-10 font-mono", size === "lg" && "h-12 text-[15px]")}
         />
+        <ClearInput />
       </label>
       <label className="sm:w-44">
         <span className="sr-only">{t("networkSr")}</span>
@@ -50,8 +52,9 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
               {NETWORKS[id].label}
             </option>
           ))}
-          {/* Tron is screened by the AML check only (lists and databases, no token analytics) */}
+          {/* Tron and Bitcoin are screened by the AML check only (lists and databases, no token analytics) */}
           {action === "/check" && <option value="tron">Tron</option>}
+          {action === "/check" && <option value="bitcoin">Bitcoin</option>}
         </select>
       </label>
       {children}

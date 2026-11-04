@@ -6,13 +6,13 @@ import { PageTitle } from "@/components/ui";
 
 // Must match what the code really does: src/proxy.ts, src/components/ClickTracker.tsx, src/lib/metrics.ts and the data
 // layer's metrics.ts (13-month retention there). Update this page whenever tracking changes.
-const UPDATED = "2026-10-27";
+const UPDATED = "2026-11-03";
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Privacy" });
-  return { title: t("title"), ...seo(locale, "/privacy") };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/privacy") };
 }
 
 export default async function Privacy() {

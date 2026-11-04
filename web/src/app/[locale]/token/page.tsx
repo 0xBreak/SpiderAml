@@ -8,7 +8,7 @@ import { CardSkeleton, ErrorBox, Notice, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { GaEvent } from "@/components/Analytics";
 import { DataError, getMarkets, getSection, limit } from "@/lib/data";
-import { trackEvent } from "@/lib/metrics";
+import { safeTarget, trackEvent } from "@/lib/metrics";
 import type { MarketsData } from "@/lib/api-types";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
 import { HoldersSection, LiquiditySection, MarketsSection, OverviewSection, RiskSection, TradingSection } from "./sections";
@@ -16,7 +16,7 @@ import { HoldersSection, LiquiditySection, MarketsSection, OverviewSection, Risk
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Token" });
-  return { title: t("title"), ...seo(locale, "/token", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/token", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 
@@ -52,7 +52,7 @@ export default async function TokenPage({ searchParams }: { searchParams: SP }) 
       trackEvent("token", overview?.symbol ?? network, "/token", { target: address.trim(), network });
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
-      trackEvent("token", `error:${error.code}`, "/token", { target: address.trim(), network });
+      trackEvent("token", `error:${error.code}`, "/token", { target: safeTarget(address), network });
     }
   }
 

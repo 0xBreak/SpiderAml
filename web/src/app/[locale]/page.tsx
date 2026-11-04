@@ -2,8 +2,9 @@ import { ArrowRight, BookOpen, Check, Fish, Flag, Landmark, LineChart, Send, Shi
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
 import type { MetaInfo } from "@/lib/api-types";
+import { hasPosts } from "@/lib/blog";
 import { getMeta } from "@/lib/data";
-import { dateTime, plain } from "@/lib/format";
+import { date, dateTime, plain } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -43,11 +44,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { href: "/sanctions", icon: Landmark, tile: "bg-crit/10 text-crit", title: t("toolSanctionsTitle"), question: t("toolSanctionsQuestion") },
   ];
 
+  const posts = await hasPosts();
   const EXTRA = [
     { href: "/send", icon: Send, tile: "bg-ok/10 text-ok", title: t("extraSendTitle") },
     { href: "/report", icon: Flag, tile: "bg-warn/10 text-warn", title: t("extraReportTitle") },
     { href: "/blog", icon: BookOpen, tile: "bg-accent/10 text-accent", title: t("extraBlogTitle") },
-  ];
+  ].filter((x) => x.href !== "/blog" || posts);
 
   const LEVELS = [
     { range: "0–19", name: t("levelLow"), bar: "border-t-ok" },
@@ -185,7 +187,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 </tr>
               </thead>
               <tbody>
-                {meta.sources.map((src) => (
+                {/* a source with nothing in it yet (user reports, own lists) is not shown as a row of zeros */}
+                {meta.sources.filter((src) => src.count > 0).map((src) => (
                   <tr key={src.id}>
                     <td>
                       {src.url ? (
@@ -201,7 +204,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     </td>
                     <td className="hidden text-silver-2 md:table-cell">{tSrc.has(src.id) ? tSrc(src.id) : ""}</td>
                     <td className="text-right tabular-nums">{plain(src.count, locale)}</td>
-                    <td className="hidden whitespace-nowrap text-right text-silver-2 md:table-cell">{dateTime(src.fetchedAt, locale)}</td>
+                    <td className={cn("hidden whitespace-nowrap text-right md:table-cell", src.asOf && Date.now() - src.asOf > 365 * 86_400_000 ? "text-warn" : "text-silver-2")}>
+                      {/* the date of the data, not of our download: a copy of a list nobody has updated since 2023 must not look fresh */}
+                      {src.asOf ? date(src.asOf, locale) : dateTime(src.fetchedAt, locale)}
+                    </td>
                   </tr>
                 ))}
                 <tr>

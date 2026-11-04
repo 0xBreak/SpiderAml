@@ -8,8 +8,10 @@ import { Gauge } from "@/components/Gauge";
 import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
+import { LinkGraph } from "@/components/LinkGraph";
+import { isBitcoinAddress } from "@/lib/action";
 import { DataError, getCheck, limit } from "@/lib/data";
-import { trackEvent } from "@/lib/metrics";
+import { safeTarget, trackEvent } from "@/lib/metrics";
 import { date, dateTime, pct, short, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
 import type { Locale } from "@/i18n/routing";
@@ -21,7 +23,7 @@ import { GaEvent } from "@/components/Analytics";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Check" });
-  return { title: t("title"), ...seo(locale, "/check", await searchParams) };
+  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/check", await searchParams) };
 }
 
 export const dynamic = "force-dynamic";
@@ -37,7 +39,7 @@ const TONE_OF_LEVEL: Record<CheckReport["level"], "ok" | "warn" | "crit"> = {
 
 export default async function CheckPage({ searchParams }: { searchParams: SP }) {
   const { address, network: rawNetwork } = await searchParams;
-  const network = rawNetwork === "tron" ? "tron" : rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
+  const network = rawNetwork === "tron" || rawNetwork === "bitcoin" ? rawNetwork : rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
 
   let report: CheckReport | null = null;
   let error: DataError | null = null;
@@ -45,11 +47,12 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
     try {
       await limit("check", 20);
       if (network === "tron" && !/^T\w{33}$/.test(address.trim())) throw new DataError("TRON_EXPECTED", "", 400);
+      if (network === "bitcoin" && !isBitcoinAddress(address)) throw new DataError("BITCOIN_EXPECTED", "", 400);
       report = await getCheck(address.trim(), network);
-      trackEvent("check", `${report.level} · ${report.score}`, "/check", { target: report.address, network: report.kind === "tron" ? "tron" : network });
+      trackEvent("check", `${report.level} · ${report.score}`, "/check", { target: report.address, network: report.kind === "evm" ? network : report.kind });
     } catch (e) {
       error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
-      trackEvent("check", `error:${error.code}`, "/check", { target: address.trim(), network });
+      trackEvent("check", `error:${error.code}`, "/check", { target: safeTarget(address), network });
     }
   }
 
@@ -62,7 +65,7 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
         <h1 className="text-balance text-3xl font-semibold tracking-tight text-silver-1 sm:text-4xl">{t("title")}</h1>
         <p className="max-w-2xl text-base leading-relaxed text-silver-2">{t("sub")}</p>
       </header>
-      <SearchForm action="/check" address={address} network={report?.kind === "tron" ? "tron" : network} />
+      <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
       {error && <ErrorBox message={tErr.has(error.code) ? tErr(error.code) : error.message || tErr("fallback")} />}
       {report && <Report r={report} />}
       {!address && <HowItWorks />}
@@ -84,10 +87,10 @@ async function Report({ r }: { r: CheckReport }) {
   const summary = tLv(`${r.level}.summary`);
   const advice = tLv.raw(`${r.level}.advice`) as string[];
   const net = r.kind === "evm" && isNetworkId(r.network) ? NETWORKS[r.network] : null;
-  const explorer = net ? `${net.explorer}/address/${r.address}` : r.kind === "tron" ? `https://tronscan.org/#/address/${r.address}` : null;
+  const explorer = net ? `${net.explorer}/address/${r.address}` : r.kind === "tron" ? `https://tronscan.org/#/address/${r.address}` : r.kind === "bitcoin" ? `https://mempool.space/address/${r.address}` : null;
   const risky = r.findings.filter((f) => f.category !== "info");
   const owner = r.tags[0];
-  const chainLabel = r.kind === "tron" ? tChain("tron") : (net?.label ?? r.network);
+  const chainLabel = r.kind === "tron" || r.kind === "bitcoin" ? tChain(r.kind) : (net?.label ?? r.network);
   const hasBadges = r.sanctions.length > 0 || r.possibleScam || r.contract?.isContract;
   const signals = risky.length + (r.counterparties?.flagged.length ?? 0);
   // the on-chain registry matters to the visitor only when the address is recorded there
@@ -102,7 +105,7 @@ async function Report({ r }: { r: CheckReport }) {
       <GaEvent
         name="aml_check"
         params={{
-          network: r.kind === "tron" ? "tron" : r.network,
+          network: r.kind === "evm" ? r.network : r.kind,
           risk_level: r.level,
           target: r.contract?.isContract ? "contract" : "wallet",
           sanctioned: r.sanctions.length > 0,
@@ -180,6 +183,7 @@ async function Report({ r }: { r: CheckReport }) {
           {r.sanctions.length > 0 && <Sanctions r={r} />}
           {r.contract?.isContract && r.contract.risk && <TokenRisk r={r} />}
           {r.counterparties && <Counterparties r={r} />}
+          {r.links && r.links.length > 0 && <LinkGraph links={r.links} network={r.network} explorer={explorer && r.kind === "evm" ? net?.explorer ?? null : null} />}
         </div>
         {hasAside && (
           <div className="flex flex-col gap-5">
@@ -286,7 +290,7 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
       result: !cp ? t("cpSkipped") : cp.flagged.length ? t("cpSummaryFound", { flagged: cp.flagged.length, checked: cp.checked }) : t("cpSummaryNone", { checked: cp.checked }),
       points: parts.counterparties,
     });
-  if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
+  if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : r.contract.risk.context?.includes("skip_concentration") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenIncomplete")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
 
   const groups = new Map<string, Finding[]>();
   for (const f of findings) groups.set(f.category, [...(groups.get(f.category) ?? []), f]);

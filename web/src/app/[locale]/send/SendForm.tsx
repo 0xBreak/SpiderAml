@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ClearInput } from "@/components/ClearInput";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BaseError, ContractFunctionRevertedError, createPublicClient, formatEther, formatUnits, getAddress, http, isAddress, parseUnits, type Address, type Hash } from "viem";
 import { ExternalLink, Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
@@ -201,7 +202,10 @@ export function SendForm({ initialTo, ethUsd }: { initialTo: string; ethUsd: num
           <div>
             <label className="block">
               <span className={LABEL}>{t("recipient")}</span>
-              <input value={to} onChange={(e) => setTo(e.target.value)} placeholder="0x…" spellCheck={false} autoComplete="off" className="input h-12 font-mono text-base" />
+              <span className="relative block">
+                <input value={to} onChange={(e) => setTo(e.target.value)} placeholder="0x…" spellCheck={false} autoComplete="off" className="input h-12 pr-10 font-mono text-base" />
+                <ClearInput />
+              </span>
             </label>
             {to && !toValid && <p className="mt-2 text-sm text-warn">{tErr("INVALID_ADDRESS")}</p>}
             {selfSend && <p className="mt-2 text-sm text-warn">{t("self")}</p>}

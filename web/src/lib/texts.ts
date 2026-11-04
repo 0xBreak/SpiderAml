@@ -2,7 +2,7 @@
 // The UI translates by `code` through the "Errors" messages namespace; this table only guarantees a readable message
 // when a code has no translation. All other site wording lives in messages/ru.json and messages/en.json.
 export const ERROR_TEXT: Record<string, string> = {
-  INVALID_ADDRESS: "Это не похоже на адрес. Нужен адрес вида 0x… (Ethereum, BNB и др.), T… (Tron) или ENS-имя вида name.eth.",
+  INVALID_ADDRESS: "Это не похоже на адрес. Нужен адрес вида 0x… (Ethereum, BNB и др.), T… (Tron), адрес Bitcoin (1…, 3…, bc1…) или ENS-имя вида name.eth.",
   INVALID_NETWORK: "Эта сеть не поддерживается.",
   INVALID_CATEGORY: "Выберите, что случилось.",
   DESCRIPTION_SHORT: "Опишите ситуацию хотя бы парой предложений.",

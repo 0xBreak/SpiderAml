@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Logo } from "./Logo";
 import { NavLinks } from "./NavLinks";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { hasPosts } from "@/lib/blog";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -17,10 +18,16 @@ export const NAV = [
   { href: "/blog", key: "blog" },
 ] as const;
 
+/** Menu items: the blog link appears once there is a published article. */
+export async function visibleNav() {
+  const posts = await hasPosts();
+  return NAV.filter((n) => n.href !== "/blog" || posts);
+}
+
 /** One row: logo, sections, language, "check" button. Below 1280px the sections fold into a menu (plain <details>, no JS needed). */
 export async function Header({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Nav" });
-  const items = NAV.map((n) => ({ href: n.href, label: t(n.key) }));
+  const items = (await visibleNav()).map((n) => ({ href: n.href, label: t(n.key) }));
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-page items-center gap-6 px-4">
