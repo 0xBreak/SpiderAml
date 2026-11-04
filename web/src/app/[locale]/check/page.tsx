@@ -91,7 +91,8 @@ async function Report({ r }: { r: CheckReport }) {
   const risky = r.findings.filter((f) => f.category !== "info");
   const owner = r.tags[0];
   const chainLabel = r.kind === "tron" || r.kind === "bitcoin" ? tChain(r.kind) : (net?.label ?? r.network);
-  const hasBadges = r.sanctions.length > 0 || r.possibleScam || r.contract?.isContract;
+  const frozen = r.findings.some((f) => f.category === "frozen");
+  const hasBadges = r.sanctions.length > 0 || r.possibleScam || frozen || r.contract?.isContract;
   const signals = risky.length + (r.counterparties?.flagged.length ?? 0);
   // the on-chain registry matters to the visitor only when the address is recorded there
   const recorded = r.onchain && r.onchain.level > 0 ? r.onchain : null;
@@ -132,6 +133,7 @@ async function Report({ r }: { r: CheckReport }) {
               <div className="flex flex-wrap items-center gap-2">
                 {r.sanctions.length > 0 && <Badge tone="crit">{t("sanctionedBadge")}</Badge>}
                 {r.possibleScam && r.sanctions.length === 0 && <Badge tone="crit">{t("scamBadge")}</Badge>}
+                {frozen && <Badge tone="warn">{t("frozenBadge")}</Badge>}
                 {r.contract?.isContract && (
                   <Badge tone="muted">
                     {t("contractBadge")}

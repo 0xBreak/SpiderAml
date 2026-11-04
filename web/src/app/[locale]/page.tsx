@@ -107,6 +107,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {[
             ["0x098B716B8Aaf21512996dC57EB0615e2383E2f96", t("exampleSanctioned")],
             ["0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2", t("exampleExploit")],
+            ["0x0582aa82344b23374d065bd9de9e1a379061f467", t("exampleFrozen")],
             ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", t("exampleClean")],
           ].map(([a, l]) => (
             <Link key={a} href={`/check?address=${a}&network=ethereum`} data-track={`home:example:${l}`} className="border border-line px-3 py-1 text-sm text-silver-2 transition hover:border-silver-3 hover:text-silver-1">
