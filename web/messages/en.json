@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "Free crypto wallet checker: AML risk, sanctions and frozen USDT — SpiderAML",
+    "title": "Crypto wallet checker: AML and frozen USDT — SpiderAML",
     "description": "Check a USDT, ETH, TRON or Bitcoin address before sending: OFAC sanctions, hacks, phishing, Tether and Circle freezes. Free, no sign-up, plain language."
   },
   "Nav": {
@@ -332,7 +332,7 @@
         "note": "Labels from open research and lists, not confirmed. Not a reason to refuse by themselves, but be more careful."
       }
     },
-    "pageTitle": "Free AML check of a USDT wallet address"
+    "pageTitle": "Free AML check of a USDT wallet"
   },
   "Blog": {
     "title": "Blog",
@@ -424,7 +424,8 @@
     "dexNoneNote": "DEX buys and sells are detected from swaps in pools. No such swaps were recognised for this token (typical for main trading pairs such as WETH), so a dash is shown instead of zero.",
     "addressOnExplorer": "Address on the explorer",
     "txOnExplorer": "Transaction on the explorer",
-    "tabEmpty": "No wallets on this tab for the chosen period."
+    "tabEmpty": "No wallets on this tab for the chosen period.",
+    "pageTitle": "Token whales: top holders"
   },
   "Sanctions": {
     "title": "Sanctioned addresses",
@@ -550,7 +551,7 @@
     "incompleteBadge": "Incomplete score · {score}/100",
     "risksHint": "Technical signs of the contract only: code, owner powers, liquidity, holders. Not a price forecast, not an audit and not a check of whether the project is honest: organised fraud cannot be seen in the code.",
     "perDayShort": "24h",
-    "pageTitle": "Token scam checker: risks, holders and liquidity"
+    "pageTitle": "Token scam checker: risks and holders"
   },
   "Send": {
     "title": "Safe send",
@@ -879,6 +880,6 @@
     "faq3a": "Only through the issuer or a court. Only Tether or Circle can lift a block. If you own the address, contact their support with proof of identity and of where the funds came from.",
     "faq4q": "Where does the list come from?",
     "faq4a": "From the block and unblock events in the USDT and USDC contracts on chain. We take the latest event for each address, so an unblocked address is not listed.",
-    "pageTitle": "Frozen USDT addresses: check if a wallet is blacklisted"
+    "pageTitle": "Frozen USDT addresses: check a wallet"
   }
 }
