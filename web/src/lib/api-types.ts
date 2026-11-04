@@ -55,6 +55,27 @@ export interface SanctionItem {
   checkedAt: number;
 }
 
+/** An address a stablecoin issuer has blocked right now (the newest event of its contract decides). */
+export interface FrozenItem {
+  address: string;
+  chain: string;
+  asset: string;
+  issuer: string;
+  /** unix seconds */
+  frozenAt: number;
+  txUrl: string;
+}
+
+export interface FrozenPage {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: FrozenItem[];
+  groups: { chain: string; asset: string; count: number }[];
+  distinctAddresses: number;
+  updatedAt: number | null;
+}
+
 /** A flagged address this one has exchanged transfers with (history of the blockchain, built offline). */
 export interface CheckLink {
   address: string;

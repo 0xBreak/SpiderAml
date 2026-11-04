@@ -20,7 +20,7 @@ const handleI18nRouting = createMiddleware(routing);
 /** Messenger and social preview fetchers: the data layer turns their visit into "the link was shared". */
 const SHARE_BOT = /TelegramBot|WhatsApp|facebookexternalhit|Facebot|Twitterbot|Discordbot|Slackbot|vkShare|LinkedInBot|Viber|SkypeUriPreview/i;
 /** Pages that exist (with or without the /en prefix); anything else is a scanner guessing paths. */
-const SITE_PAGES = /^(?:\/en)?(?:\/(?:check|token|whales|sanctions(?:\/[A-Za-z0-9]{20,100})?|send|report(?:\/status)?|terms|privacy|blog(?:\/[a-z0-9-]+)?))?\/?$/;
+const SITE_PAGES = /^(?:\/en)?(?:\/(?:check|token|whales|sanctions(?:\/(?:frozen|[A-Za-z0-9]{20,100}))?|send|report(?:\/status)?|terms|privacy|blog(?:\/[a-z0-9-]+)?))?\/?$/;
 const CRAWLER = /bot|crawl|spider|slurp|preview|headless|wget|curl|python|go-http|httpclient/i;
 
 /** spideraml.com in production (set in docker-compose); empty locally, so dev on localhost is untouched. */
