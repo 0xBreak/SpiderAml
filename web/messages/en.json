@@ -843,7 +843,7 @@
   "Frozen": {
     "title": "Frozen USDT and USDC addresses",
     "sub": "Check whether a wallet is frozen: addresses that Tether and Circle have blocked in their contracts.",
-    "metaDescription": "Addresses frozen by Tether (USDT: Ethereum, Tron) and Circle (USDC: Ethereum, Arbitrum, Polygon, Base, Optimism, Avalanche): network, date and a link to the transaction. Search by address.",
+    "metaDescription": "Frozen USDT and USDC addresses: check if a wallet is blocked by Tether or Circle. Network, freeze date and transaction link. Search by address.",
     "summary": "Addresses frozen now: {addresses}",
     "updated": "updated {date}",
     "search": "Search by address",
