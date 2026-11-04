@@ -16,7 +16,7 @@ import { HoldersSection, LiquiditySection, MarketsSection, OverviewSection, Risk
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Token" });
-  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/token", await searchParams) };
+  return { title: t("pageTitle"), description: t("metaDescription"), ...seo(locale, "/token", await searchParams) };
 }
 export const dynamic = "force-dynamic";
 
