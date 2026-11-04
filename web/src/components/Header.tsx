@@ -13,6 +13,7 @@ export const NAV = [
   { href: "/token", key: "token" },
   { href: "/whales", key: "whales" },
   { href: "/sanctions", key: "sanctions" },
+  { href: "/frozen", key: "frozen" },
   { href: "/send", key: "send" },
   { href: "/report", key: "report" },
   { href: "/blog", key: "blog" },

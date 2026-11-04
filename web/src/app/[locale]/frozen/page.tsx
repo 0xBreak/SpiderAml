@@ -5,7 +5,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Addr } from "@/components/Addr";
 import { ClearInput } from "@/components/ClearInput";
-import { SanctionsTabs } from "@/components/SanctionsTabs";
 import { Card, Empty, ErrorBox, Notice, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/routing";
@@ -20,19 +19,22 @@ export const dynamic = "force-dynamic";
 type SP = Promise<{ q?: string; chain?: string; asset?: string; page?: string }>;
 
 const PAGE_SIZE = 25;
-const CHAINS = ["ethereum", "arbitrum", "polygon", "tron"] as const;
-const CHAIN_LABEL: Record<string, string> = { ethereum: "Ethereum", arbitrum: "Arbitrum", polygon: "Polygon", tron: "Tron" };
+const CHAINS = ["ethereum", "arbitrum", "polygon", "base", "optimism", "avalanche", "tron"] as const;
+const CHAIN_LABEL: Record<string, string> = { ethereum: "Ethereum", arbitrum: "Arbitrum", polygon: "Polygon", base: "Base", optimism: "Optimism", avalanche: "Avalanche", tron: "Tron" };
 const EXPLORER: Record<string, (a: string) => string> = {
   ethereum: (a) => `https://etherscan.io/address/${a}`,
   arbitrum: (a) => `https://arbiscan.io/address/${a}`,
   polygon: (a) => `https://polygonscan.com/address/${a}`,
+  base: (a) => `https://basescan.org/address/${a}`,
+  optimism: (a) => `https://optimistic.etherscan.io/address/${a}`,
+  avalanche: (a) => `https://snowtrace.io/address/${a}`,
   tron: (a) => `https://tronscan.org/#/address/${a}`,
 };
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: SP }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Frozen" });
-  return { title: t("title"), description: t("metaDescription"), ...seo(locale, "/sanctions/frozen", await searchParams) };
+  return { title: t("pageTitle"), description: t("metaDescription"), ...seo(locale, "/frozen", await searchParams) };
 }
 
 const TH = "whitespace-nowrap border-b border-line px-3 py-3 text-sm font-medium text-silver-2 first:pl-4 last:pr-4 sm:first:pl-5 sm:last:pr-5";
@@ -54,7 +56,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
   try {
     await limit("frozen", 30);
     data = await getFrozen({ q, chain, asset, page, pageSize: PAGE_SIZE });
-    if (q || chain || asset) trackEvent("sanctions_search", "frozen", "/sanctions", { target: q ? safeTarget(q) : null, network: chain ?? null });
+    if (q || chain || asset) trackEvent("sanctions_search", "frozen", "/frozen", { target: q ? safeTarget(q) : null, network: chain ?? null });
   } catch (e) {
     error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
   }
@@ -72,16 +74,19 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
     if (a) u.set("asset", a);
     if (over.page && over.page > 1) u.set("page", String(over.page));
     const s = u.toString();
-    return `/sanctions/frozen${s ? `?${s}` : ""}`;
+    return `/frozen${s ? `?${s}` : ""}`;
   };
+  const EVM = /^0x[0-9a-fA-F]{40}$/;
+  const TRON = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
+  const full = q && !chain && !asset && (EVM.test(q) || TRON.test(q)) ? q : null;
+  const hits = full && data ? data.items.filter((i) => i.address.toLowerCase() === full.toLowerCase()) : [];
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
-  const action = locale === DEFAULT_LOCALE ? "/sanctions/frozen" : `/${locale}/sanctions/frozen`;
+  const action = locale === DEFAULT_LOCALE ? "/frozen" : `/${locale}/frozen`;
   const checkHref = (a: string, c: string) => `/check?address=${a}&network=${c === "tron" ? "tron" : c}`;
 
   return (
     <div className="space-y-5">
       <PageTitle title={t("title")} sub={t("sub")} />
-      <SanctionsTabs active="frozen" />
       {error && <ErrorBox code={error.code} message={error.message} />}
       {data && (
         <>
@@ -117,8 +122,35 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
             ))}
           </div>
 
+          {full && (
+            <Card title={<span className="text-lg">{hits.length > 0 ? t("verdictFrozen") : t("verdictClear")}</span>}>
+              <div className="space-y-3 text-base text-silver-2">
+                <Addr value={full} className="text-base text-silver-1" />
+                {hits.length > 0 ? (
+                  <ul className="space-y-1">
+                    {hits.map((h) => (
+                      <li key={`${h.chain}-${h.asset}`}>
+                        {h.issuer} · {CHAIN_LABEL[h.chain] ?? h.chain} · {h.asset} · {t("frozenOn", { date: date(h.frozenAt * 1000, locale) })}{" "}
+                        <a href={h.txUrl} target="_blank" rel="noopener noreferrer" className={LINK}>
+                          {t("transaction")}
+                          <ExternalLink className="size-3.5" aria-hidden />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>{t("verdictClearText")}</p>
+                )}
+                <Link href={`/check?address=${full}`} className={LINK}>
+                  {t("fullCheck")}
+                </Link>
+              </div>
+            </Card>
+          )}
+
           <Notice>{t("note")}</Notice>
 
+          {!full && (
           <Card title={<span className="text-lg">{t("found", { count: fmt(data.total) })}</span>}>
             {data.items.length === 0 ? (
               <Empty>
@@ -205,8 +237,20 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
               </>
             )}
           </Card>
+          )}
         </>
       )}
+      <section className="space-y-4 pt-4" aria-labelledby="faq">
+        <h2 id="faq" className="text-xl font-medium text-silver-1">
+          {t("faqTitle")}
+        </h2>
+        {(["1", "2", "3", "4"] as const).map((n) => (
+          <div key={n} className="space-y-1">
+            <h3 className="text-base font-medium text-silver-1">{t(`faq${n}q`)}</h3>
+            <p className="text-base text-silver-2">{t(`faq${n}a`)}</p>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }
