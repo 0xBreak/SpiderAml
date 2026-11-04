@@ -17,8 +17,12 @@ const R_NODE = 18;
 
 const fill = (severity: number) => (severity >= 3 ? "fill-crit" : severity === 2 ? "fill-warn" : "fill-silver-3");
 const stroke = (severity: number) => (severity >= 3 ? "stroke-crit" : severity === 2 ? "stroke-warn" : "stroke-silver-3");
-/** The checked address sent money to a phishing address: far more often a victim than a culprit, so the link is drawn neutral. */
-const isVictimLink = (l: CheckLink) => l.direction === "out" && l.category === "phishing";
+/**
+ * The checked address sent money to a phishing, scam or frozen address: far more often a victim or an ordinary payment than a
+ * culprit (most flagged addresses a random wallet touches are of this kind), so the link is drawn neutral. Money sent to a
+ * sanctioned, exploit or mixer address, and anything received from a flagged address, keeps its colour.
+ */
+const isVictimLink = (l: CheckLink) => l.direction === "out" && (l.category === "phishing" || l.category === "scam" || l.category === "frozen");
 
 export async function LinkGraph({ links, network, explorer }: { links: CheckLink[]; network: string; explorer: string | null }) {
   const t = await getTranslations("Links");

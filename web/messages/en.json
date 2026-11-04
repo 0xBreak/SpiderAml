@@ -809,7 +809,7 @@
     "source": "source",
     "explorer": "Open in explorer",
     "more": "The diagram shows the first {shown}; {count} more links are in the list only.",
-    "victimNote": "Dashed: the address sent funds to a phishing address. That more often means the person was a victim, so such links are drawn neutral.",
+    "victimNote": "Dashed: the address sent funds to a phishing, scam or frozen address. That is most often a victim or an ordinary payment, so such links are drawn neutral.",
     "notInScore": "Links are shown for information and are not part of the risk score."
   }
 }
