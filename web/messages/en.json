@@ -464,7 +464,6 @@
     "ownerContract": "Owner is a contract",
     "hasOwner": "Has an owner",
     "price": "Price",
-    "perDay": "{value} 24h",
     "mcap": "Market cap",
     "vol24": "24h volume",
     "supply": "Total supply",
