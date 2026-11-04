@@ -94,7 +94,7 @@ Browser ──HTTPS──▶ Site (Next.js, server-rendered) ──private chann
 | CoinGecko, Zerion, QuickNode | market data, wallets, on-chain logs | 7 EVM chains |
 
 In total about **110,800 labelled addresses**: ~24,500 with a serious label (severity 2 or 3), ~39,100 with only a weak one
-(severity 1) and ~47,200 with only a neutral identity label (who it is, no risk). Among them 1,064 addresses are on the official sanctions lists. Another ~1,300 addresses are known only from issuer freezes (not labelled otherwise), so about 112,100 distinct addresses are known in total. The sources table on the home page shows the date of
+(severity 1) and ~47,200 with only a neutral identity label (who it is, no risk). Among them 1,072 addresses are on the official sanctions lists. Another ~1,300 addresses are known only from issuer freezes (not labelled otherwise), so about 112,100 distinct addresses are known in total. The sources table on the home page shows the date of
 each dataset, not the date we downloaded it, so an old snapshot cannot pass for fresh data.
 Chains: Ethereum, BNB Chain, Arbitrum, Base, Polygon, Optimism, Avalanche, plus Tron (sanctions, frozen addresses and risk
 databases) and Bitcoin (sanctions and counterparties).

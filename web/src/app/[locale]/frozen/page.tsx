@@ -240,6 +240,16 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
           )}
         </>
       )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: (["1", "2", "3", "4"] as const).map((n) => ({ "@type": "Question", name: t(`faq${n}q`), acceptedAnswer: { "@type": "Answer", text: t(`faq${n}a`) } })),
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="space-y-4 pt-4" aria-labelledby="faq">
         <h2 id="faq" className="text-xl font-medium text-silver-1">
           {t("faqTitle")}
