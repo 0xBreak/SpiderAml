@@ -322,7 +322,7 @@ const sources: SourceInfo[] = [
 export function demoRequests() {
   const real = [0, 0, 64, 105, 39, 60, 19, 70, 14, 5, 24, 41, 48, 13];
   const series = real.map((n, i) => ({ day: new Date(Date.now() - (real.length - 1 - i) * 86_400_000).toISOString().slice(0, 10), n }));
-  return { total: 502, last24h: 61, since: series[2].day, series };
+  return { total: 502, last24h: 21, since: series[2].day, series };
 }
 
 export function demoMeta(): MetaInfo {
