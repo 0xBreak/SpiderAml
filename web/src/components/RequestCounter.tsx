@@ -9,7 +9,7 @@ interface Props {
   last24h: number;
   series: { day: string; n: number }[];
   locale: string;
-  labels: { title: string; kinds: string; today: string; since: string | null; chart: string; chartCaption: string };
+  labels: { title: string; kinds: string; today: string; since: string | null; chart: string; chartToday: string };
 }
 
 /**
@@ -65,26 +65,34 @@ export function RequestCounter({ total, last24h, series, locale, labels }: Props
     return () => clearTimeout(timer);
   }, [router]);
 
+  // the chart: a line with a soft fill, straight segments like the rest of the site (square corners, no curves)
+  const W = 640;
+  const H = 96;
+  const PAD = 10;
+  const n = series.length;
   const max = Math.max(1, ...series.map((d) => d.n));
-  const W = 224;
-  const H = 56;
-  const gap = 4;
-  const bw = (W - gap * (series.length - 1)) / series.length;
+  const pts = series.map((d, i) => [n < 2 ? W / 2 : (i * W) / (n - 1), H - PAD - (d.n / max) * (H - PAD * 2)] as const);
+  const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  const area = `${line} L${W} ${H} L0 ${H} Z`;
+  const short = new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-US", { day: "numeric", month: "short" });
+  const last = pts[pts.length - 1];
 
   return (
-    <div className="card mx-auto flex max-w-3xl flex-col gap-6 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 text-sm text-silver-2">
+    <div className="relative mx-auto max-w-2xl px-2 text-center">
+      {/* a soft glow behind the number: the same teal as the accents of the page */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-56 bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--color-ok)_14%,transparent),transparent_68%)]" />
+      <div className="relative">
+        <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-silver-2">
           <span className="relative flex size-2" aria-hidden>
             <span className="absolute inline-flex size-full rounded-full bg-ok/60 motion-safe:animate-ping" />
             <span className="relative inline-flex size-2 rounded-full bg-ok" />
           </span>
           {labels.title}
         </div>
-        <div className="mt-1 text-5xl font-semibold leading-none tracking-tight tabular-nums text-silver-1 sm:text-6xl" aria-label={`${labels.title}: ${fmt.format(total)}`}>
+        <div className="mt-3 text-6xl font-semibold leading-none tracking-tight tabular-nums text-silver-1 sm:text-7xl" aria-label={`${labels.title}: ${fmt.format(total)}`}>
           {fmt.format(shown)}
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm">
           {last24h > 0 && (
             <span className="inline-flex items-center gap-1 text-ok">
               <ArrowUp className="size-3.5" aria-hidden />
@@ -93,22 +101,41 @@ export function RequestCounter({ total, last24h, series, locale, labels }: Props
           )}
           {labels.since && <span className="text-silver-2">{labels.since}</span>}
         </div>
-        <p className="mt-1 max-w-sm text-sm text-silver-3">{labels.kinds}</p>
+
+        {n > 1 && (
+          <figure className="mt-7">
+            <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={labels.chart} className="h-auto w-full overflow-visible">
+              <defs>
+                <linearGradient id="rc-fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-ok)" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="var(--color-ok)" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <line x1="0" x2={W} y1={H - 0.5} y2={H - 0.5} stroke="var(--color-line)" />
+              <path d={area} fill="url(#rc-fill)" />
+              <path d={line} fill="none" stroke="var(--color-ok)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              {pts.map(([x, y], i) => (
+                <g key={series[i].day}>
+                  <rect x={x - W / (2 * (n - 1))} y={0} width={W / (n - 1)} height={H} fill="transparent">
+                    <title>{`${short.format(Date.parse(series[i].day))}: ${fmt.format(series[i].n)}`}</title>
+                  </rect>
+                  {i === n - 1 && (
+                    <>
+                      <circle cx={x} cy={y} r="9" fill="var(--color-ok)" opacity="0.18" />
+                      <circle cx={x} cy={y} r="4" fill="var(--color-ok)" />
+                    </>
+                  )}
+                </g>
+              ))}
+            </svg>
+            <figcaption className="mt-2 flex justify-between text-xs text-silver-3">
+              <span>{short.format(Date.parse(series[0].day))}</span>
+              <span>{labels.chartToday}</span>
+            </figcaption>
+          </figure>
+        )}
+        <p className="mx-auto mt-5 max-w-md text-sm text-silver-3">{labels.kinds}</p>
       </div>
-      <figure className="shrink-0 sm:w-56">
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={labels.chart} className="h-14 w-full overflow-visible">
-          {series.map((d, i) => {
-            const h = d.n === 0 ? 2 : Math.max(4, (d.n / max) * (H - 2));
-            const last = i === series.length - 1;
-            return (
-              <rect key={d.day} x={i * (bw + gap)} y={H - h} width={bw} height={h} rx={1} className={last ? "fill-ok" : d.n === 0 ? "fill-line" : "fill-accent/80"}>
-                <title>{`${d.day}: ${fmt.format(d.n)}`}</title>
-              </rect>
-            );
-          })}
-        </svg>
-        <figcaption className="mt-1.5 text-xs text-silver-3">{labels.chartCaption}</figcaption>
-      </figure>
     </div>
   );
 }

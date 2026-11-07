@@ -187,7 +187,7 @@
     "requestsToday": "+{n} за 24 часа",
     "requestsSince": "с {date}",
     "requestsChartAria": "Запросы по дням за последние 14 дней",
-    "requestsChartCaption": "Запросов по дням, 14 дней",
+    "requestsChartToday": "сегодня",
     "statsAria": "Статистика",
     "statsRiskLabel": "адресов с риском",
     "statsSanctionsLabel": "адресов под санкциями",

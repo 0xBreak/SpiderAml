@@ -187,7 +187,7 @@
     "requestsToday": "+{n} in the last 24 hours",
     "requestsSince": "since {date}",
     "requestsChartAria": "Requests per day over the last 14 days",
-    "requestsChartCaption": "Requests per day, 14 days",
+    "requestsChartToday": "today",
     "statsAria": "Statistics",
     "statsRiskLabel": "addresses with risk",
     "statsSanctionsLabel": "sanctioned addresses",

@@ -136,7 +136,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               today: t("requestsToday", { n: plain(requests.last24h, locale) }),
               since: requests.since ? t("requestsSince", { date: date(Date.parse(requests.since), locale) }) : null,
               chart: t("requestsChartAria"),
-              chartCaption: t("requestsChartCaption"),
+              chartToday: t("requestsChartToday"),
             }}
           />
         </section>
