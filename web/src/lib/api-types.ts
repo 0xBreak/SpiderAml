@@ -117,6 +117,14 @@ export interface SanctionsPage {
   updatedAt: number | null;
 }
 
+/** Public aggregate counter of answered requests (address checks, token analyses, whales and sanctions searches). */
+export interface RequestsInfo {
+  total: number;
+  last24h: number;
+  since: string | null;
+  series: { day: string; n: number }[];
+}
+
 export interface MetaInfo {
   networks: (NetworkMeta & { configured: boolean })[];
   sources: SourceInfo[];

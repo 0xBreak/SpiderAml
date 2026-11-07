@@ -1,9 +1,10 @@
 import { ArrowRight, BookOpen, Check, Fish, Flag, Landmark, LineChart, Send, ShieldCheck, type LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
-import type { MetaInfo } from "@/lib/api-types";
+import type { MetaInfo, RequestsInfo } from "@/lib/api-types";
 import { hasPosts } from "@/lib/blog";
-import { getMeta } from "@/lib/data";
+import { getMeta, getRequests } from "@/lib/data";
+import { RequestCounter } from "@/components/RequestCounter";
 import { date, dateTime, plain } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
@@ -44,7 +45,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { href: "/sanctions", icon: Landmark, tile: "bg-crit/10 text-crit", title: t("toolSanctionsTitle"), question: t("toolSanctionsQuestion") },
   ];
 
-  const posts = await hasPosts();
+  // everything the page needs from outside, fetched at the same time
+  const [posts, meta, requests]: [boolean, MetaInfo | null, RequestsInfo | null] = await Promise.all([
+    hasPosts(),
+    getMeta(21600).catch(() => null),
+    getRequests(30).catch(() => null),
+  ]);
   const EXTRA = [
     { href: "/send", icon: Send, tile: "bg-ok/10 text-ok", title: t("extraSendTitle") },
     { href: "/report", icon: Flag, tile: "bg-warn/10 text-warn", title: t("extraReportTitle") },
@@ -58,7 +64,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { range: "80–100", name: t("levelCritical"), bar: "border-t-crit/60" },
   ];
 
-  const meta: MetaInfo | null = await getMeta(21600).catch(() => null);
   const s = meta?.stats;
 
   const STATS = s
@@ -116,6 +121,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ))}
         </div>
       </section>
+
+      {/* request counter: one public number for everything people ask the service */}
+      {requests && requests.total > 0 && (
+        <section aria-label={t("requestsAria")}>
+          <RequestCounter
+            total={requests.total}
+            last24h={requests.last24h}
+            series={requests.series}
+            locale={locale}
+            labels={{
+              title: t("requestsTitle"),
+              kinds: t("requestsKinds"),
+              today: t("requestsToday", { n: plain(requests.last24h, locale) }),
+              since: requests.since ? t("requestsSince", { date: date(Date.parse(requests.since), locale) }) : null,
+              chart: t("requestsChartAria"),
+              chartCaption: t("requestsChartCaption"),
+            }}
+          />
+        </section>
+      )}
 
       {/* stats */}
       {STATS.length > 0 && (

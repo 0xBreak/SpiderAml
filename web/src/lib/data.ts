@@ -2,7 +2,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import type { ApiErrorBody, SectionMap, SectionName, WhaleReport } from "./types";
-import type { FrozenPage, CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, SanctionsPage } from "./api-types";
+import type { FrozenPage, CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, RequestsInfo, SanctionsPage } from "./api-types";
 import { demoCall, demoEnabled } from "./demo";
 
 export class DataError extends Error {
@@ -76,6 +76,9 @@ export const getWhales = (address: string, network: string, whaleUsd: number, wi
 export const getFrozen = (p: { q?: string; chain?: string; asset?: string; page?: number; pageSize?: number }) => call<FrozenPage>("/v1/frozen", p);
 
 export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number; pageSize?: number }) => call<SanctionsPage>("/v1/sanctions", p);
+
+/** The request counter on the home page: fresh within half a minute. */
+export const getRequests = (revalidate = 30) => call<RequestsInfo>("/v1/requests", {}, 5_000, undefined, revalidate);
 
 export const getMeta = (revalidate?: number) => call<MetaInfo>("/v1/meta", {}, 10_000, undefined, revalidate);
 
