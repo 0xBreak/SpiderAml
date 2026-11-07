@@ -338,7 +338,7 @@
     "cpSummaryFound": "{flagged} of {checked} are in risk databases",
     "cpSkipped": "not checked",
     "tokenScore": "automatic contract score {score}/100, 70% of it counts",
-    "points": "{n} pts",
+    "points": "{n, plural, one {# point} other {# points}}",
     "elsewhere": "The {symbol} token is known on {networks}. On {here} this address holds a different contract — the score below is about that contract, not about {symbol}.",
     "checkOn": "Check on {network} →",
     "etherscanFound": "Found in the Etherscan database",
@@ -371,7 +371,9 @@
         "note": "Labels from open research and lists, not confirmed. Not a reason to refuse by themselves, but be more careful."
       }
     },
-    "pageTitle": "Free AML check of a USDT wallet"
+    "pageTitle": "Free AML check of a USDT wallet",
+    "freezeOne": "Blacklisted by {issuer} ({asset}) on {chain}, {date}",
+    "freezeMany": "Blacklisted by {issuer} ({asset}) on {n, plural, one {# network} other {# networks}}, {date}"
   },
   "Blog": {
     "title": "Blog",

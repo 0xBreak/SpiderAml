@@ -338,7 +338,7 @@
     "cpSummaryFound": "{flagged} из {checked} — адреса из баз рисков",
     "cpSkipped": "не проверялись",
     "tokenScore": "автоматическая оценка контракта {score}/100, в итог входит 70%",
-    "points": "{n} балл.",
+    "points": "{n, plural, one {# балл} few {# балла} many {# баллов} other {# баллов}}",
     "elsewhere": "Токен {symbol} известен в сети {networks}. В сети {here} по этому адресу другой контракт — оценка ниже относится к нему, а не к {symbol}.",
     "checkOn": "Проверить в {network} →",
     "etherscanFound": "Найдено в базе Etherscan",
@@ -371,7 +371,9 @@
         "note": "Метки из открытых исследований и списков без подтверждения. Сами по себе не повод отказываться, но стоит быть осторожнее."
       }
     },
-    "pageTitle": "AML-проверка кошелька USDT бесплатно"
+    "pageTitle": "AML-проверка кошелька USDT бесплатно",
+    "freezeOne": "Внесён в чёрный список {issuer} ({asset}), сеть {chain}, {date}",
+    "freezeMany": "Внесён в чёрный список {issuer} ({asset}) в {n, plural, one {# сети} other {# сетях}}, {date}"
   },
   "Blog": {
     "title": "Блог",

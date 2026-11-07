@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
 import { owners as readableOwners } from "@/lib/owner-tags";
 import { etherscanSite } from "@/lib/etherscan";
-import { chainName, mergeFreezes, withoutListedSanctions } from "@/lib/freezes";
+import { chainName, mergeFreezes, parseFreezeLabel, withoutListedSanctions } from "@/lib/freezes";
 import { GaEvent } from "@/components/Analytics";
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
@@ -310,6 +310,14 @@ function Metric({
 
 async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] }) {
   const t = await getTranslations("Check");
+  const locale = (await getLocale()) as Locale;
+  // issuer blacklist lines are stored in English; the page says them in the visitor's language
+  const labelText = (label: string) => {
+    const z = parseFreezeLabel(label);
+    if (!z) return label;
+    const when = z.from === z.to ? date(Date.parse(z.from), locale) : `${date(Date.parse(z.from), locale)} – ${date(Date.parse(z.to), locale)}`;
+    return z.networks > 1 ? t("freezeMany", { issuer: z.issuer, asset: z.asset, n: z.networks, date: when }) : t("freezeOne", { issuer: z.issuer, asset: z.asset, chain: z.chain ?? "", date: when });
+  };
   const tCat = await getTranslations("Category");
   const parts = r.scoreParts ?? { sources: 0, counterparties: 0, token: 0 };
   const cp = r.counterparties;
@@ -369,7 +377,7 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
                       <ul className="flex flex-col gap-2">
                         {list.map((f, i) => (
                           <li key={i} className="text-base leading-snug text-silver-1">
-                            {f.label}
+                            {labelText(f.label)}
                             <span className="mt-0.5 block text-sm text-silver-2">
                               {etherscanSite(f) ? (
                                 <>

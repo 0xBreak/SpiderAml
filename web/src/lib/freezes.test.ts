@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Finding } from "./api-types";
-import { latestFrozenRows, mergeFreezes, withoutListedSanctions } from "./freezes";
+import { latestFrozenRows, mergeFreezes, parseFreezeLabel, withoutListedSanctions } from "./freezes";
 
 const f = (chain: string, label: string, category: Finding["category"] = "frozen"): Finding => ({ category, severity: 2, label, source: "stablecoin-freezes", sourceName: "Stablecoin issuer freezes (Tether, Circle)", url: `https://x/${chain}`, chain });
 
@@ -12,11 +12,18 @@ describe("mergeFreezes", () => {
     expect(out[0].label).toBe("Frozen by Circle (USDC) on 6 networks, 2026-11-06");
     expect(out[0].merged?.map((m) => m.chain)).toEqual(["arbitrum", "base", "optimism", "polygon", "ethereum", "avalanche"]);
   });
-  it("keeps a single freeze, other days and other findings as they are", () => {
-    const rows = [f("ethereum", "Frozen by Tether (USDT) on Ethereum, 2025-03-17"), f("base", "Frozen by Circle (USDC) on Base, 2026-11-06"), f("ethereum", "Frozen by Circle (USDC) on Ethereum, 2026-11-07"), f("ethereum", "Phishing", "phishing")];
+  it("merges the same issuer and token even when the days differ, and shows the range of days", () => {
+    const rows = [f("ethereum", "Frozen by Circle (USDC) on Ethereum, 2025-03-17"), f("base", "Frozen by Circle (USDC) on Base, 2026-11-06")];
+    const out = mergeFreezes(rows);
+    expect(out).toHaveLength(1);
+    expect(out[0].label).toBe("Frozen by Circle (USDC) on 2 networks, 2025-03-17 – 2026-11-06");
+    expect(out[0].merged).toHaveLength(2);
+  });
+  it("keeps a single freeze and other findings as they are", () => {
+    const rows = [f("ethereum", "Frozen by Tether (USDT) on Ethereum, 2025-03-17"), f("ethereum", "Phishing", "phishing")];
     expect(mergeFreezes(rows)).toEqual(rows);
   });
-  it("does not merge different issuers on the same day", () => {
+  it("does not merge different issuers or tokens", () => {
     const rows = [f("ethereum", "Frozen by Tether (USDT) on Ethereum, 2026-11-06"), f("ethereum", "Frozen by Circle (USDC) on Ethereum, 2026-11-06")];
     expect(mergeFreezes(rows)).toHaveLength(2);
   });
@@ -50,5 +57,18 @@ describe("latestFrozenRows", () => {
     const rows = latestFrozenRows(items, 2);
     expect(rows).toHaveLength(2);
     expect(rows[0].chains).toEqual(["Base", "Polygon"]);
+  });
+});
+
+describe("parseFreezeLabel", () => {
+  it("takes a one-network label apart", () => {
+    expect(parseFreezeLabel("Frozen by Tether (USDT) on Ethereum, 2025-03-17")).toEqual({ issuer: "Tether", asset: "USDT", networks: 1, chain: "Ethereum", from: "2025-03-17", to: "2025-03-17" });
+  });
+  it("takes a merged label apart, with one day or a range", () => {
+    expect(parseFreezeLabel("Frozen by Circle (USDC) on 6 networks, 2026-11-06")).toMatchObject({ networks: 6, chain: null, from: "2026-11-06", to: "2026-11-06" });
+    expect(parseFreezeLabel("Frozen by Circle (USDC) on 3 networks, 2025-03-17 – 2026-11-06")).toMatchObject({ networks: 3, from: "2025-03-17", to: "2026-11-06" });
+  });
+  it("returns null for anything else", () => {
+    expect(parseFreezeLabel("Phishing: defi fraud")).toBeNull();
   });
 });
