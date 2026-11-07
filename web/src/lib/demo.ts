@@ -318,11 +318,18 @@ const sources: SourceInfo[] = [
   { id: "forta", name: "Forta", url: "https://forta.org", kind: "labels", count: 40_000, fetchedAt: now() - 3_600_000, error: null },
 ];
 
+/** Real figures of the first days (production, 2026-10-27 .. 2026-11-07), shifted so that the series always ends today. */
+export function demoRequests() {
+  const real = [0, 0, 64, 105, 39, 60, 19, 70, 14, 5, 24, 41, 48, 13];
+  const series = real.map((n, i) => ({ day: new Date(Date.now() - (real.length - 1 - i) * 86_400_000).toISOString().slice(0, 10), n }));
+  return { total: 502, last24h: 21, since: series[2].day, series };
+}
+
 export function demoMeta(): MetaInfo {
   return {
     networks: NETWORK_IDS.map((id) => ({ ...NETWORKS[id], configured: true })),
     sources,
-    stats: { labeledAddresses: 1_240_000, riskyAddresses: 38_400, sanctionedAddresses: 1_870, sanctionLists: 3 },
+    stats: { labeledAddresses: 110_874, riskyAddresses: 24_517, sanctionedAddresses: 1_078, sanctionLists: 3 },
     ethUsd: 3_200,
     registry: { chainId: 42161, name: "SpiderAML Registry", address: "0x000000000000000000000000000000000000dEaD" },
   };
@@ -481,6 +488,8 @@ export function demoCall(path: string, params: Record<string, string | number | 
       return { markets };
     case "/v1/meta":
       return demoMeta();
+    case "/v1/requests":
+      return demoRequests();
     case "/v1/frozen":
       return demoFrozen({ q: params.q as string | undefined, chain: params.chain as string | undefined, asset: params.asset as string | undefined, page: Number(params.page) || 1, pageSize: Number(params.pageSize) || 25 });
     case "/v1/sanctions":

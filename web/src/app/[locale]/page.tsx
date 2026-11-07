@@ -1,15 +1,18 @@
-import { ArrowRight, BookOpen, Check, Fish, Flag, Landmark, LineChart, Send, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, Check, ChevronDown, Fish, Flag, Gauge, Landmark, LineChart, ListChecks, Search, Send, ShieldCheck, type LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
-import type { MetaInfo } from "@/lib/api-types";
+import type { FrozenPage, RequestsInfo } from "@/lib/api-types";
+import { latestFrozenRows } from "@/lib/freezes";
 import { hasPosts } from "@/lib/blog";
-import { getMeta } from "@/lib/data";
-import { date, dateTime, plain } from "@/lib/format";
+import { getLatestFrozen, getRequests } from "@/lib/data";
+import { RequestCounter } from "@/components/RequestCounter";
+import { date, plain, short } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { seo, urlOf, SITE } from "@/lib/seo";
+import { SOCIALS } from "@/lib/socials";
 
 // Stats and source lists refresh every 6h on the data layer side; getMeta(21600) caches them for the same time.
 // The page itself is rendered per request: the Docker build has no data layer to read the stats from, and a page
@@ -34,8 +37,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const locale = rawLocale as Locale;
   const t = await getTranslations({ locale, namespace: "Home" });
   const tNav = await getTranslations({ locale, namespace: "Nav" });
-  const tSrc = await getTranslations({ locale, namespace: "Source" });
-  const tSrcName = await getTranslations({ locale, namespace: "SourceName" });
 
   const TOOLS: Tool[] = [
     { href: "/check", icon: ShieldCheck, tile: "bg-ok/10 text-ok", title: t("toolCheckTitle"), question: t("toolCheckQuestion") },
@@ -44,12 +45,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { href: "/sanctions", icon: Landmark, tile: "bg-crit/10 text-crit", title: t("toolSanctionsTitle"), question: t("toolSanctionsQuestion") },
   ];
 
-  const posts = await hasPosts();
+  // everything the page needs from outside, fetched at the same time
+  const [posts, frozenPage, requests]: [boolean, FrozenPage | null, RequestsInfo | null] = await Promise.all([
+    hasPosts(),
+    getLatestFrozen().catch(() => null),
+    getRequests().catch(() => null),
+  ]);
+
+  // the newest freezes, one row per address (an issuer often blocks one address on several networks at once)
+  const FROZEN = latestFrozenRows(frozenPage?.items ?? [], 5);
   const EXTRA = [
     { href: "/send", icon: Send, tile: "bg-ok/10 text-ok", title: t("extraSendTitle") },
     { href: "/report", icon: Flag, tile: "bg-warn/10 text-warn", title: t("extraReportTitle") },
     { href: "/blog", icon: BookOpen, tile: "bg-accent/10 text-accent", title: t("extraBlogTitle") },
   ].filter((x) => x.href !== "/blog" || posts);
+
+  const STEPS = [
+    { icon: Search, title: t("howStep1Title"), text: t("howStep1Text") },
+    { icon: Gauge, title: t("howStep2Title"), text: t("howStep2Text") },
+    { icon: ListChecks, title: t("howStep3Title"), text: t("howStep3Text") },
+  ];
 
   const LEVELS = [
     { range: "0–19", name: t("levelLow"), bar: "border-t-ok" },
@@ -58,22 +73,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { range: "80–100", name: t("levelCritical"), bar: "border-t-crit/60" },
   ];
 
-  const meta: MetaInfo | null = await getMeta(21600).catch(() => null);
-  const s = meta?.stats;
-
-  const STATS = s
-    ? [
-        [plain(s.riskyAddresses, locale), t("statsRiskLabel")],
-        [plain(s.sanctionedAddresses, locale), t("statsSanctionsLabel")],
-        [plain(s.labeledAddresses, locale), t("statsLabelsLabel")],
-        [t("statsNetworksValue"), t("statsNetworksLabelShort")],
-      ]
-    : [];
 
   const tMeta = await getTranslations({ locale, namespace: "Metadata" });
   // structured data: what the site is and that it has a search box (helps Google show the name and the description)
+  const FAQ_N = ["1", "2", "3", "4", "5", "6", "7"] as const;
   const ld = [
-    { "@context": "https://schema.org", "@type": "Organization", name: "SpiderAML", url: SITE, logo: `${SITE}/apple-icon.png` },
+    { "@context": "https://schema.org", "@type": "Organization", name: "SpiderAML", url: SITE, logo: `${SITE}/apple-icon.png`, sameAs: SOCIALS.map((so) => so.url) },
     { "@context": "https://schema.org", "@type": "WebSite", name: "SpiderAML", url: urlOf(locale, "/"), inLanguage: locale, description: tMeta("description") },
     {
       "@context": "https://schema.org",
@@ -85,6 +90,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       description: tMeta("description"),
     },
+    { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ_N.map((n) => ({ "@type": "Question", name: t(`faq${n}q`), acceptedAnswer: { "@type": "Answer", text: t(`faq${n}a`) } })) },
   ];
 
   return (
@@ -117,17 +123,47 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </section>
 
-      {/* stats */}
-      {STATS.length > 0 && (
-        <section aria-label={t("statsAria")} className="grid grid-cols-2 gap-6 text-center sm:grid-cols-4">
-          {STATS.map(([n, label]) => (
-            <div key={label}>
-              <div className="text-3xl font-semibold tabular-nums text-silver-1">{n}</div>
-              <div className="mt-1 text-sm text-silver-2">{label}</div>
-            </div>
-          ))}
+      {/* request counter: one public number for everything people ask the service */}
+      {requests && requests.total > 0 && (
+        <section aria-label={t("requestsAria")}>
+          <RequestCounter
+            total={requests.total}
+            last24h={requests.last24h}
+            series={requests.series}
+            locale={locale}
+            labels={{
+              title: t("requestsTitle"),
+              kinds: t("requestsKinds"),
+              today: t("requestsToday", { n: plain(requests.last24h, locale) }),
+              since: requests.since ? t("requestsSince", { date: date(Date.parse(requests.since), locale) }) : null,
+              chart: t("requestsChartAria"),
+              chartToday: t("requestsChartToday"),
+            }}
+          />
         </section>
       )}
+
+      {/* how to use: three steps and one safety tip */}
+      <section aria-labelledby="how-title">
+        <h2 id="how-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+          {t("howTitle")}
+        </h2>
+        <ol className="mt-6 grid gap-3 md:grid-cols-3">
+          {STEPS.map(({ icon: Icon, title, text }, i) => (
+            <li key={i} className="card flex flex-col gap-3 p-5">
+              <div className="flex items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center bg-ok/10 text-sm font-semibold tabular-nums text-ok" aria-hidden>
+                  {i + 1}
+                </span>
+                <Icon className="size-5 text-silver-3" aria-hidden />
+              </div>
+              <h3 className="text-base font-semibold">{title}</h3>
+              <p className="text-base leading-snug text-silver-2">{text}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-4 border border-line bg-surface px-4 py-3 text-center text-base text-silver-2">{t("howTip")}</p>
+      </section>
 
       {/* tools */}
       <section>
@@ -173,55 +209,60 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <p className="mt-3 text-center text-sm text-silver-2">{t("levelsNote")}</p>
       </section>
 
-      {/* sources */}
-      {meta?.sources && (
-        <section>
-          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">{t("sourcesTitle")}</h2>
-          <div className="mt-6 overflow-x-auto border border-line">
-            <table className="table min-w-[640px]">
-              <thead>
-                <tr>
-                  <th>{t("colSource")}</th>
-                  <th className="hidden md:table-cell">{t("colAbout")}</th>
-                  <th className="text-right">{t("colAddresses")}</th>
-                  <th className="hidden text-right md:table-cell">{t("colUpdated")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* a source with nothing in it yet (user reports, own lists) is not shown as a row of zeros */}
-                {meta.sources.filter((src) => src.count > 0).map((src) => (
-                  <tr key={src.id}>
-                    <td>
-                      {src.url ? (
-                        <a href={src.url} target="_blank" rel="noopener noreferrer" className="link">
-                          {tSrcName.has(src.id) ? tSrcName(src.id) : src.name}
-                        </a>
-                      ) : tSrcName.has(src.id) ? (
-                        tSrcName(src.id)
-                      ) : (
-                        src.name
-                      )}
-                      {src.kind === "sanctions" && <span className="ml-2 border border-line px-1.5 text-[11px] text-silver-2">{t("officialBadge")}</span>}
-                    </td>
-                    <td className="hidden text-silver-2 md:table-cell">{tSrc.has(src.id) ? tSrc(src.id) : ""}</td>
-                    <td className="text-right tabular-nums">{plain(src.count, locale)}</td>
-                    <td className={cn("hidden whitespace-nowrap text-right md:table-cell", src.asOf && Date.now() - src.asOf > 365 * 86_400_000 ? "text-warn" : "text-silver-2")}>
-                      {/* the date of the data, not of our download: a copy of a list nobody has updated since 2023 must not look fresh */}
-                      {src.asOf ? date(src.asOf, locale) : dateTime(src.fetchedAt, locale)}
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td>{t("goplusName")}</td>
-                  <td className="hidden text-silver-2 md:table-cell">{t("goplusAbout")}</td>
-                  <td className="text-right text-silver-2">{t("online")}</td>
-                  <td className="hidden text-right text-silver-2 md:table-cell">—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      {/* newest freezes: our own live data, and it is what a P2P trader needs to know before accepting USDT */}
+      {FROZEN.length > 0 && (
+        <section aria-labelledby="frozen-title">
+          <h2 id="frozen-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t("frozenTitle")}
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-base text-silver-2">{t("frozenText")}</p>
+          <ul className="card mt-6 divide-y divide-line">
+            {FROZEN.map((r) => (
+              <li key={`${r.address}:${r.asset}`}>
+                <Link href={`/check?address=${r.address}&network=${r.chain}`} data-track="home:frozen:check" className="group flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition hover:bg-surface-2/50">
+                  <span className="font-mono text-[13px] text-silver-1">{short(r.address)}</span>
+                  <span className="border border-line px-1.5 text-[11px] text-silver-2">{r.asset}</span>
+                  <span className="text-sm text-silver-2">
+                    {r.issuer} · {r.chains.length > 1 ? t("frozenNetworks", { n: r.chains.length }) : r.chains[0]}
+                  </span>
+                  <span className="ml-auto flex items-center gap-3 text-sm tabular-nums text-silver-3">
+                    {date(r.at, locale)}
+                    <ArrowRight className="size-4 transition group-hover:translate-x-0.5 group-hover:text-silver-1" aria-hidden />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-center text-sm">
+            <Link href="/frozen" data-track="home:frozen:all" className="link">
+              {t("frozenAll")}
+            </Link>
+          </p>
         </section>
       )}
+
+      {/* frequently asked questions: plain <details>, no JavaScript; the same text goes into the structured data */}
+      <section aria-labelledby="faq-title">
+        <h2 id="faq-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+          {t("faqTitle")}
+        </h2>
+        <div className="card mx-auto mt-6 max-w-3xl divide-y divide-line">
+          {FAQ_N.map((n) => (
+            <details key={n} className="group px-4 py-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-medium text-silver-1 [&::-webkit-details-marker]:hidden">
+                {t(`faq${n}q`)}
+                <ChevronDown className="size-4 shrink-0 text-silver-3 transition group-open:rotate-180" aria-hidden />
+              </summary>
+              <p className="mt-2 text-base leading-snug text-silver-2">{t(`faq${n}a`)}</p>
+            </details>
+          ))}
+        </div>
+        <p className="mt-3 text-center text-sm">
+          <Link href="/privacy" className="link">
+            {t("faqPrivacy")}
+          </Link>
+        </p>
+      </section>
 
       {/* CTA */}
       <section className="border border-line bg-surface px-6 py-10 text-center sm:px-10">

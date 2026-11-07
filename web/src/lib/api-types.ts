@@ -14,6 +14,8 @@ export interface Finding {
   sourceName: string;
   url: string | null;
   chain: string | null;
+  /** one issuer decision on several chains, shown as a single finding (see mergeFreezes) */
+  merged?: { chain: string; url: string | null }[];
 }
 
 export interface CheckReport {
@@ -113,6 +115,14 @@ export interface SanctionsPage {
   lists: { list: string; count: number }[];
   sources: (SourceInfo & { list: string })[];
   updatedAt: number | null;
+}
+
+/** Public aggregate counter of answered requests (address checks, token analyses, whales and sanctions searches). */
+export interface RequestsInfo {
+  total: number;
+  last24h: number;
+  since: string | null;
+  series: { day: string; n: number }[];
 }
 
 export interface MetaInfo {

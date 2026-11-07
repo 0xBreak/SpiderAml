@@ -62,7 +62,7 @@ export default async function SanctionedAddress({ params }: { params: Params }) 
     return <ErrorBox code={err.code} message={err.message} />;
   }
   if (!found.length) notFound();
-  trackEvent("sanctions_search", found[0].list, "/sanctions", { target: found[0].address, network: found[0].chain });
+  trackEvent("sanctions_search", found[0].list, "/sanctions", { target: found[0].address, network: found[0].chain, trusted: true });
 
   return (
     <div className="space-y-5">

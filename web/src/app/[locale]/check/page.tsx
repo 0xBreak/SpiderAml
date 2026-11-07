@@ -9,7 +9,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
 import { LinkGraph } from "@/components/LinkGraph";
-import { isBitcoinAddress } from "@/lib/action";
+import { cleanAddressInput, isBitcoinAddress } from "@/lib/action";
 import { DataError, getCheck, limit } from "@/lib/data";
 import { safeTarget, trackEvent } from "@/lib/metrics";
 import { date, dateTime, pct, short, usd } from "@/lib/format";
@@ -19,6 +19,8 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
 import { owners as readableOwners } from "@/lib/owner-tags";
+import { etherscanSite } from "@/lib/etherscan";
+import { chainName, mergeFreezes, parseFreezeLabel, withoutListedSanctions } from "@/lib/freezes";
 import { GaEvent } from "@/components/Analytics";
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
@@ -39,7 +41,8 @@ const TONE_OF_LEVEL: Record<CheckReport["level"], "ok" | "warn" | "crit"> = {
 };
 
 export default async function CheckPage({ searchParams }: { searchParams: SP }) {
-  const { address, network: rawNetwork } = await searchParams;
+  const { address: rawAddress, network: rawNetwork } = await searchParams;
+  const address = rawAddress === undefined ? undefined : cleanAddressInput(rawAddress); // spaces, zero-width characters, explorer links
   const network = rawNetwork === "tron" || rawNetwork === "bitcoin" ? rawNetwork : rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
 
   let report: CheckReport | null = null;
@@ -89,14 +92,14 @@ async function Report({ r }: { r: CheckReport }) {
   const advice = tLv.raw(`${r.level}.advice`) as string[];
   const net = r.kind === "evm" && isNetworkId(r.network) ? NETWORKS[r.network] : null;
   const explorer = net ? `${net.explorer}/address/${r.address}` : r.kind === "tron" ? `https://tronscan.org/#/address/${r.address}` : r.kind === "bitcoin" ? `https://mempool.space/address/${r.address}` : null;
-  const risky = r.findings.filter((f) => f.category !== "info");
+  const risky = mergeFreezes(withoutListedSanctions(r.findings, r.sanctions).filter((f) => f.category !== "info"));
   const ownerList = readableOwners(r.tags.map((x) => x.label));
   const owner = ownerList[0];
   const isContract = r.kind === "evm" && r.contract != null ? r.contract.isContract : null;
   const chainLabel = r.kind === "tron" || r.kind === "bitcoin" ? tChain(r.kind) : (net?.label ?? r.network);
   const frozen = r.findings.some((f) => f.category === "frozen");
   const hasBadges = r.sanctions.length > 0 || r.possibleScam || frozen || r.contract?.isContract;
-  const signals = risky.length + (r.counterparties?.flagged.length ?? 0);
+  const signals = risky.length + r.sanctions.length + (r.counterparties?.flagged.length ?? 0);
   // the on-chain registry matters to the visitor only when the address is recorded there
   const recorded = r.onchain && r.onchain.level > 0 ? r.onchain : null;
   const showSummary = signals > 0 || r.portfolio != null || r.counterparties != null;
@@ -232,7 +235,22 @@ async function Report({ r }: { r: CheckReport }) {
                   </ul>
                 )}
                 {isContract === true && <p className={cn("text-sm text-silver-2", ownerList.length > 0 && "mt-3")}>{t("ownerTypeContract")}</p>}
-                {ownerList.length > 0 && r.tags[0] && <p className="mt-3 text-sm text-silver-3">{t("sourceWord")}: {r.tags[0].sourceName}</p>}
+                {ownerList.length > 0 && r.tags[0] && (
+                  <p className="mt-3 text-sm text-silver-3">
+                    {etherscanSite(r.tags[0]) ? (
+                      <>
+                        {t("etherscanFound")}:{" "}
+                        <a href={etherscanSite(r.tags[0])!.url} target="_blank" rel="noopener noreferrer" className="link">
+                          {t("etherscanOpen", { site: etherscanSite(r.tags[0])!.name })}
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        {t("sourceWord")}: {r.tags[0].sourceName}
+                      </>
+                    )}
+                  </p>
+                )}
               </Card>
             )}
             {recorded && (
@@ -292,11 +310,19 @@ function Metric({
 
 async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] }) {
   const t = await getTranslations("Check");
+  const locale = (await getLocale()) as Locale;
+  // issuer blacklist lines are stored in English; the page says them in the visitor's language
+  const labelText = (label: string) => {
+    const z = parseFreezeLabel(label);
+    if (!z) return label;
+    const when = z.from === z.to ? date(Date.parse(z.from), locale) : `${date(Date.parse(z.from), locale)} – ${date(Date.parse(z.to), locale)}`;
+    return z.networks > 1 ? t("freezeMany", { issuer: z.issuer, asset: z.asset, n: z.networks, date: when }) : t("freezeOne", { issuer: z.issuer, asset: z.asset, chain: z.chain ?? "", date: when });
+  };
   const tCat = await getTranslations("Category");
   const parts = r.scoreParts ?? { sources: 0, counterparties: 0, token: 0 };
   const cp = r.counterparties;
   const rows: { name: string; result: string; points: number }[] = [
-    { name: t("partSources"), result: findings.length ? t("srcFound", { count: findings.length }) : t("srcNone"), points: parts.sources },
+    { name: t("partSources"), result: findings.length + r.sanctions.length ? t("srcFound", { count: findings.length + r.sanctions.length }) : t("srcNone"), points: parts.sources },
   ];
   // a token contract has no counterparties in the wallet sense
   if (!r.contract?.isContract)
@@ -351,8 +377,17 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
                       <ul className="flex flex-col gap-2">
                         {list.map((f, i) => (
                           <li key={i} className="text-base leading-snug text-silver-1">
-                            {f.label}
+                            {labelText(f.label)}
                             <span className="mt-0.5 block text-sm text-silver-2">
+                              {etherscanSite(f) ? (
+                                <>
+                                  {t("etherscanFound")}:{" "}
+                                  <a href={etherscanSite(f)!.url} target="_blank" rel="noopener noreferrer" className="link">
+                                    {t("etherscanOpen", { site: etherscanSite(f)!.name })}
+                                  </a>
+                                </>
+                              ) : (
+                                <>
                               {t("sourceWord")}:{" "}
                               {f.url ? (
                                 <a href={f.url} target="_blank" rel="noopener noreferrer" className="link">
@@ -361,7 +396,26 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
                               ) : (
                                 f.sourceName
                               )}
+                                </>
+                              )}
                             </span>
+                            {f.merged && (
+                              <span className="mt-0.5 block text-sm text-silver-2">
+                                {t("mergedNets")}{" "}
+                                {f.merged.map((m, k) => (
+                                  <span key={m.chain}>
+                                    {k > 0 && " · "}
+                                    {m.url ? (
+                                      <a href={m.url} target="_blank" rel="noopener noreferrer" className="link">
+                                        {chainName(m.chain)}
+                                      </a>
+                                    ) : (
+                                      chainName(m.chain)
+                                    )}
+                                  </span>
+                                ))}
+                              </span>
+                            )}
                             {r.kind === "evm" && f.chain && f.chain !== r.network && isNetworkId(f.chain) && (
                               <span className="mt-0.5 block text-sm text-silver-2">{t("otherNetwork", { net: NETWORKS[f.chain].label })}</span>
                             )}

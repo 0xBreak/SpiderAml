@@ -9,6 +9,7 @@ import { Badge, Card, CardSkeleton, Empty, ErrorBox, PageTitle, Stat } from "@/c
 import { GaEvent } from "@/components/Analytics";
 import { WhalesTable } from "./WhalesTable";
 import { DataError, getWhales, limit } from "@/lib/data";
+import { cleanAddressInput } from "@/lib/action";
 import { trackEvent } from "@/lib/metrics";
 import { dateTime, num, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId, type NetworkId } from "@/lib/networks";
@@ -76,7 +77,7 @@ export default async function WhalesPage({ searchParams }: { searchParams: SP })
       </SearchForm>
       {sp.address ? (
         <Suspense key={`${sp.address}-${network}-${threshold}-${window}`} fallback={<CardSkeleton title={t("loading")} lines={10} />}>
-          <Report address={sp.address.trim()} network={network} threshold={threshold} window={window} />
+          <Report address={cleanAddressInput(sp.address)} network={network} threshold={threshold} window={window} />
         </Suspense>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

@@ -2,6 +2,8 @@ import { Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { ConsentSettings } from "./Analytics";
 import { Logo } from "./Logo";
+import { SocialIcon } from "./SocialIcons";
+import { SOCIALS } from "@/lib/socials";
 import { visibleNav } from "./Header";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -21,6 +23,25 @@ export async function Footer({ locale }: { locale: Locale }) {
         <div className="space-y-3">
           <Logo />
           <p className="max-w-sm text-sm text-silver-3">{tC("disclaimer")}</p>
+          {SOCIALS.length > 0 && (
+            <ul className="flex flex-wrap gap-2 pt-1" aria-label={tF("socials")}>
+              {SOCIALS.map((so) => (
+                <li key={so.id}>
+                  <a
+                    href={so.url}
+                    target="_blank"
+                    rel="noopener noreferrer me"
+                    aria-label={so.label}
+                    title={so.label}
+                    data-track={`footer:social:${so.id}`}
+                    className="flex size-10 items-center justify-center border border-line text-silver-2 transition hover:border-silver-3 hover:text-silver-1"
+                  >
+                    <SocialIcon id={so.id} className="size-[18px]" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div>
@@ -58,7 +79,7 @@ export async function Footer({ locale }: { locale: Locale }) {
                 </a>
               </li>
             )}
-            {TELEGRAM && (
+            {TELEGRAM && !SOCIALS.some((so) => so.url.toLowerCase().endsWith(`/${TELEGRAM.toLowerCase()}`)) && (
               <li>
                 <a href={`https://t.me/${TELEGRAM}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-silver-2 hover:text-silver-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
