@@ -77,8 +77,8 @@ export const getFrozen = (p: { q?: string; chain?: string; asset?: string; page?
 
 export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number; pageSize?: number }) => call<SanctionsPage>("/v1/sanctions", p);
 
-/** The request counter on the home page: never cached on the website (the data layer keeps it for two seconds), so a new request shows up at once. */
-export const getRequests = () => call<RequestsInfo>("/v1/requests", {}, 5_000);
+/** The request counter on the home page: kept for 15 seconds on the website (and 2 seconds in the data layer), so a new request shows up within about 15 seconds. */
+export const getRequests = (revalidate = 15) => call<RequestsInfo>("/v1/requests", {}, 5_000, undefined, revalidate);
 
 export const getMeta = (revalidate?: number) => call<MetaInfo>("/v1/meta", {}, 10_000, undefined, revalidate);
 
