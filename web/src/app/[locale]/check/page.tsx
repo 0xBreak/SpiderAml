@@ -19,6 +19,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
 import { owners as readableOwners } from "@/lib/owner-tags";
+import { chainName, mergeFreezes } from "@/lib/freezes";
 import { GaEvent } from "@/components/Analytics";
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
@@ -89,7 +90,7 @@ async function Report({ r }: { r: CheckReport }) {
   const advice = tLv.raw(`${r.level}.advice`) as string[];
   const net = r.kind === "evm" && isNetworkId(r.network) ? NETWORKS[r.network] : null;
   const explorer = net ? `${net.explorer}/address/${r.address}` : r.kind === "tron" ? `https://tronscan.org/#/address/${r.address}` : r.kind === "bitcoin" ? `https://mempool.space/address/${r.address}` : null;
-  const risky = r.findings.filter((f) => f.category !== "info");
+  const risky = mergeFreezes(r.findings.filter((f) => f.category !== "info"));
   const ownerList = readableOwners(r.tags.map((x) => x.label));
   const owner = ownerList[0];
   const isContract = r.kind === "evm" && r.contract != null ? r.contract.isContract : null;
@@ -362,6 +363,23 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
                                 f.sourceName
                               )}
                             </span>
+                            {f.merged && (
+                              <span className="mt-0.5 block text-sm text-silver-2">
+                                {t("mergedNets")}{" "}
+                                {f.merged.map((m, k) => (
+                                  <span key={m.chain}>
+                                    {k > 0 && " · "}
+                                    {m.url ? (
+                                      <a href={m.url} target="_blank" rel="noopener noreferrer" className="link">
+                                        {chainName(m.chain)}
+                                      </a>
+                                    ) : (
+                                      chainName(m.chain)
+                                    )}
+                                  </span>
+                                ))}
+                              </span>
+                            )}
                             {r.kind === "evm" && f.chain && f.chain !== r.network && isNetworkId(f.chain) && (
                               <span className="mt-0.5 block text-sm text-silver-2">{t("otherNetwork", { net: NETWORKS[f.chain].label })}</span>
                             )}

@@ -61,8 +61,8 @@
       "about": "Hides where the money came from. Exchanges freeze such coins."
     },
     "frozen": {
-      "name": "Frozen by a stablecoin issuer",
-      "about": "Tether or Circle put this address on their blacklist and blocked its USDT or USDC. It is the issuer's decision, not proof of a crime."
+      "name": "On a stablecoin issuer's blacklist",
+      "about": "Tether or Circle put this address on their blacklist: its USDT or USDC is blocked. The block applies even to an empty address. It is the issuer's decision, not proof of a crime."
     },
     "other": {
       "name": "Other signals",
@@ -245,7 +245,8 @@
     "whatToDo": "What to do",
     "sanctionedBadge": "On a sanctions list",
     "scamBadge": "Fraud signals in databases",
-    "frozenBadge": "Frozen by a stablecoin issuer",
+    "frozenBadge": "On a stablecoin issuer's blacklist",
+    "mergedNets": "Networks and transactions:",
     "otherNetwork": "Flagged on {net}. The address is the same on every network, so it matters here too.",
     "contractBadge": "Contract",
     "recordedAs": "Registry: <b>{category}</b>, level {level}/3.",
@@ -325,7 +326,7 @@
       },
       "frozen": {
         "title": "Issuer freeze",
-        "note": "Tether or Circle blocked this address. Funds on it may be unavailable."
+        "note": "Tether or Circle blacklisted this address. USDT or USDC cannot move to or from it, even if it is empty now."
       },
       "weak": {
         "title": "Weak signals",

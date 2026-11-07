@@ -14,6 +14,8 @@ export interface Finding {
   sourceName: string;
   url: string | null;
   chain: string | null;
+  /** one issuer decision on several chains, shown as a single finding (see mergeFreezes) */
+  merged?: { chain: string; url: string | null }[];
 }
 
 export interface CheckReport {
