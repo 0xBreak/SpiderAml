@@ -35,3 +35,12 @@ export function mergeFreezes(findings: Finding[]): Finding[] {
   }
   return out;
 }
+
+// A sanctioned address is shown in its own "Sanctions" block; the same official-list entry must not appear a second time in the
+// list of findings (and be counted as one more signal). Matched exactly by "<list>: <name>", so another person of the same
+// OFAC entry, or another source (GoPlus, Etherscan labels), stays.
+export function withoutListedSanctions(findings: Finding[], sanctions: { list: string; name: string }[]): Finding[] {
+  if (sanctions.length === 0) return findings;
+  const shown = new Set(sanctions.map((s) => `${s.list}: ${s.name}`));
+  return findings.filter((f) => !(f.category === "sanctioned" && shown.has(f.label)));
+}

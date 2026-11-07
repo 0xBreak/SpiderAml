@@ -1,4 +1,4 @@
-// Addresses Tether and Circle have blocked in their own contracts right now (USDT: Ethereum, Tron; USDC: Ethereum, Arbitrum, Polygon).
+// Addresses Tether and Circle have blocked in their own contracts right now (USDT: Ethereum, Tron; USDC: Ethereum, Arbitrum, Base, Polygon, Avalanche, Optimism).
 // A freezing is the issuer's decision, not a finding of a crime, and an address can be released: the wording says so.
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";

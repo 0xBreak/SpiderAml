@@ -103,7 +103,7 @@ export function isTronAddress(v: unknown): v is string {
 }
 
 /** Bitcoin: legacy (1…), P2SH (3…) or bech32 (bc1…). Shape only; the data layer verifies the checksum. */
-export const BITCOIN_ADDRESS_RE = /^(?:[13][1-9A-HJ-NP-Za-km-z]{25,34}|bc1[02-9ac-hj-np-z]{8,87})$/i;
+export const BITCOIN_ADDRESS_RE = /^(?:[13][1-9A-HJ-NP-Za-km-z]{25,34}|bc1[02-9ac-hj-np-z]{8,87}|BC1[02-9AC-HJ-NP-Z]{8,87})$/; // bech32 is all lower or all upper case, never mixed
 
 export function isBitcoinAddress(v: unknown): v is string {
   return typeof v === "string" && BITCOIN_ADDRESS_RE.test(v.trim());
@@ -112,6 +112,36 @@ export function isBitcoinAddress(v: unknown): v is string {
 /** EVM (0x…), Tron (T…) or Bitcoin address. */
 export function isAnyAddress(v: unknown): v is string {
   return isEvmAddress(v) || isTronAddress(v) || isBitcoinAddress(v);
+}
+
+// ─── address input cleaning ───────────────────────────────────────
+
+/** Zero-width / invisible characters that sneak in when copying from a messenger or a web page. */
+const INVISIBLE = /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]/g;
+const ADDRESS_IN_PATH = /\/(?:address|token)\/(0x[0-9a-fA-F]{40}|T[1-9A-HJ-NP-Za-km-z]{33}|bc1[02-9ac-hj-np-z]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})(?![0-9A-Za-z])/;
+const EXPLORER_HOST = /(?:^|\.)(?:etherscan\.io|arbiscan\.io|bscscan\.com|polygonscan\.com|basescan\.org|optimistic\.etherscan\.io|snowtrace\.io|tronscan\.org|mempool\.space|blockchair\.com|blockstream\.info)$/i;
+
+/**
+ * Brings what a person pasted into the address field to a plain address: drops spaces, line breaks, tabs, NBSP and
+ * zero-width characters, turns "0X" into "0x", and takes the address out of an explorer link (etherscan, tronscan, ...).
+ * Anything that does not become an address this way is returned only trimmed, so the user still gets the normal error.
+ */
+export function cleanAddressInput(raw: string): string {
+  const trimmed = raw.replace(INVISIBLE, "").trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const u = new URL(trimmed);
+      const m = EXPLORER_HOST.test(u.hostname) ? ADDRESS_IN_PATH.exec(`${u.pathname} ${u.hash.replace(/^#/, "")}`) : null;
+      if (m) return m[1];
+    } catch {
+      /* not a URL */
+    }
+    return trimmed;
+  }
+  const compact = trimmed.replace(/\s+/g, "").replace(/^0X/, "0x");
+  if (/^0x[0-9a-fA-F]{40}$|^T[1-9A-HJ-NP-Za-km-z]{33}$|^[13][1-9A-HJ-NP-Za-km-z]{25,34}$/.test(compact)) return compact;
+  if (/^(?:bc1[02-9ac-hj-np-z]{8,87}|BC1[02-9AC-HJ-NP-Z]{8,87})$/.test(compact)) return compact; // one case only
+  return trimmed; // ENS names and everything else: only the ends are trimmed ("my name is x.eth" must not become a name)
 }
 
 export function isHttpsUrl(v: unknown): v is string {

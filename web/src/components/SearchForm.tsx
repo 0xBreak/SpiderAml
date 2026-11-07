@@ -36,7 +36,7 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
           name="address"
           defaultValue={address}
           required
-          maxLength={100}
+          maxLength={200}
           autoComplete="off"
           spellCheck={false}
           placeholder={placeholder ?? t("searchPlaceholder")}

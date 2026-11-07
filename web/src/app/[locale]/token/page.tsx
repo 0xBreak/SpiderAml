@@ -8,6 +8,7 @@ import { CardSkeleton, ErrorBox, Notice, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { GaEvent } from "@/components/Analytics";
 import { DataError, getMarkets, getSection, limit } from "@/lib/data";
+import { cleanAddressInput } from "@/lib/action";
 import { safeTarget, trackEvent } from "@/lib/metrics";
 import type { MarketsData } from "@/lib/api-types";
 import { NETWORKS, isNetworkId } from "@/lib/networks";
@@ -29,7 +30,8 @@ const EXAMPLES = [
 ];
 
 export default async function TokenPage({ searchParams }: { searchParams: SP }) {
-  const { address, network: raw } = await searchParams;
+  const { address: rawAddress, network: raw } = await searchParams;
+  const address = rawAddress === undefined ? undefined : cleanAddressInput(rawAddress);
   const network = raw && isNetworkId(raw) ? raw : "ethereum";
   const t = await getTranslations("Token");
   const tCheck = await getTranslations("Check");
