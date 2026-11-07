@@ -129,7 +129,7 @@
     }
   },
   "Note": {
-    "tron_limited": "Tron: lists and open databases only, no transfers.",
+    "tron_limited": "Tron: lists, open databases and the latest USDT transfers, no deep tracing.",
     "bitcoin_limited": "Bitcoin: lists, open databases and the latest 25 transactions, no deeper tracing.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
