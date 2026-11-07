@@ -15,7 +15,7 @@ interface Props {
 /**
  * One public number: how many requests the service has answered (address checks, token analyses, whales, sanctions searches).
  * The server renders the final number (works without JavaScript, readable by crawlers); in the browser it counts up,
- * unless the visitor asked for reduced motion, and an open tab refreshes it for 15 minutes.
+ * unless the visitor asked for reduced motion, and an open tab refreshes it for 10 minutes.
  */
 export function RequestCounter({ total, last24h, series, locale, labels }: Props) {
   const fmt = new Intl.NumberFormat(locale === "ru" ? "ru-RU" : "en-US");
@@ -49,17 +49,17 @@ export function RequestCounter({ total, last24h, series, locale, labels }: Props
     return () => cancelAnimationFrame(raf);
   }, [total]);
 
-  // an open tab keeps up, but only for its first 15 minutes (a forgotten tab must not load the server for ever), only while it is
-  // visible, and at 20-35 seconds with a random spread so that tabs do not all ask at the same moment. No JSON API: the server component is rendered again.
+  // an open tab keeps up, but only for its first 10 minutes (a forgotten tab must not load the server for ever), only while it is
+  // visible, and at 40-60 seconds with a random spread so that tabs do not all ask at the same moment. No JSON API: the server component is rendered again.
   useEffect(() => {
-    const until = Date.now() + 15 * 60_000;
+    const until = Date.now() + 10 * 60_000;
     let timer: ReturnType<typeof setTimeout>;
     const next = () => {
       if (Date.now() >= until) return;
       timer = setTimeout(() => {
         if (document.visibilityState === "visible") router.refresh();
         next();
-      }, 20_000 + Math.random() * 15_000);
+      }, 40_000 + Math.random() * 20_000);
     };
     next();
     return () => clearTimeout(timer);
