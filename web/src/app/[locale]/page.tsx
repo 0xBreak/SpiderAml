@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Check, Fish, Flag, Gauge, Landmark, LineChart, ListChecks, Search, Send, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, Check, ChevronDown, Fish, Flag, Gauge, Landmark, LineChart, ListChecks, Search, Send, ShieldCheck, type LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
 import type { FrozenPage, RequestsInfo } from "@/lib/api-types";
@@ -76,6 +76,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   const tMeta = await getTranslations({ locale, namespace: "Metadata" });
   // structured data: what the site is and that it has a search box (helps Google show the name and the description)
+  const FAQ_N = ["1", "2", "3", "4", "5", "6", "7"] as const;
   const ld = [
     { "@context": "https://schema.org", "@type": "Organization", name: "SpiderAML", url: SITE, logo: `${SITE}/apple-icon.png`, sameAs: SOCIALS.map((so) => so.url) },
     { "@context": "https://schema.org", "@type": "WebSite", name: "SpiderAML", url: urlOf(locale, "/"), inLanguage: locale, description: tMeta("description") },
@@ -89,6 +90,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       description: tMeta("description"),
     },
+    { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ_N.map((n) => ({ "@type": "Question", name: t(`faq${n}q`), acceptedAnswer: { "@type": "Answer", text: t(`faq${n}a`) } })) },
   ];
 
   return (
@@ -238,6 +240,29 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </p>
         </section>
       )}
+
+      {/* frequently asked questions: plain <details>, no JavaScript; the same text goes into the structured data */}
+      <section aria-labelledby="faq-title">
+        <h2 id="faq-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+          {t("faqTitle")}
+        </h2>
+        <div className="card mx-auto mt-6 max-w-3xl divide-y divide-line">
+          {FAQ_N.map((n) => (
+            <details key={n} className="group px-4 py-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-medium text-silver-1 [&::-webkit-details-marker]:hidden">
+                {t(`faq${n}q`)}
+                <ChevronDown className="size-4 shrink-0 text-silver-3 transition group-open:rotate-180" aria-hidden />
+              </summary>
+              <p className="mt-2 text-base leading-snug text-silver-2">{t(`faq${n}a`)}</p>
+            </details>
+          ))}
+        </div>
+        <p className="mt-3 text-center text-sm">
+          <Link href="/privacy" className="link">
+            {t("faqPrivacy")}
+          </Link>
+        </p>
+      </section>
 
       {/* CTA */}
       <section className="border border-line bg-surface px-6 py-10 text-center sm:px-10">
