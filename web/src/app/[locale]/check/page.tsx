@@ -19,6 +19,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { RiskContext } from "@/components/RiskContext";
 import { owners as readableOwners } from "@/lib/owner-tags";
+import { etherscanSite } from "@/lib/etherscan";
 import { chainName, mergeFreezes, withoutListedSanctions } from "@/lib/freezes";
 import { GaEvent } from "@/components/Analytics";
 
@@ -234,7 +235,22 @@ async function Report({ r }: { r: CheckReport }) {
                   </ul>
                 )}
                 {isContract === true && <p className={cn("text-sm text-silver-2", ownerList.length > 0 && "mt-3")}>{t("ownerTypeContract")}</p>}
-                {ownerList.length > 0 && r.tags[0] && <p className="mt-3 text-sm text-silver-3">{t("sourceWord")}: {r.tags[0].sourceName}</p>}
+                {ownerList.length > 0 && r.tags[0] && (
+                  <p className="mt-3 text-sm text-silver-3">
+                    {etherscanSite(r.tags[0]) ? (
+                      <>
+                        {t("etherscanFound")}:{" "}
+                        <a href={etherscanSite(r.tags[0])!.url} target="_blank" rel="noopener noreferrer" className="link">
+                          {t("etherscanOpen", { site: etherscanSite(r.tags[0])!.name })}
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        {t("sourceWord")}: {r.tags[0].sourceName}
+                      </>
+                    )}
+                  </p>
+                )}
               </Card>
             )}
             {recorded && (
@@ -355,6 +371,15 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
                           <li key={i} className="text-base leading-snug text-silver-1">
                             {f.label}
                             <span className="mt-0.5 block text-sm text-silver-2">
+                              {etherscanSite(f) ? (
+                                <>
+                                  {t("etherscanFound")}:{" "}
+                                  <a href={etherscanSite(f)!.url} target="_blank" rel="noopener noreferrer" className="link">
+                                    {t("etherscanOpen", { site: etherscanSite(f)!.name })}
+                                  </a>
+                                </>
+                              ) : (
+                                <>
                               {t("sourceWord")}:{" "}
                               {f.url ? (
                                 <a href={f.url} target="_blank" rel="noopener noreferrer" className="link">
@@ -362,6 +387,8 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
                                 </a>
                               ) : (
                                 f.sourceName
+                              )}
+                                </>
                               )}
                             </span>
                             {f.merged && (

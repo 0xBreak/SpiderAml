@@ -305,6 +305,8 @@
     "points": "{n} pts",
     "elsewhere": "The {symbol} token is known on {networks}. On {here} this address holds a different contract — the score below is about that contract, not about {symbol}.",
     "checkOn": "Check on {network} →",
+    "etherscanFound": "Found in the Etherscan database",
+    "etherscanOpen": "view the address on {site}",
     "sourceWord": "source",
     "tokenTotal": "Total: {points} of {max} points → {score}/100",
     "tokenPartial": "partial score: the issuer's reserves cannot be checked on-chain",

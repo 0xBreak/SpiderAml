@@ -305,6 +305,8 @@
     "points": "{n} балл.",
     "elsewhere": "Токен {symbol} известен в сети {networks}. В сети {here} по этому адресу другой контракт — оценка ниже относится к нему, а не к {symbol}.",
     "checkOn": "Проверить в {network} →",
+    "etherscanFound": "Найдено в базе Etherscan",
+    "etherscanOpen": "открыть адрес на {site}",
     "sourceWord": "источник",
     "tokenTotal": "Сумма: {points} из {max} баллов → {score}/100",
     "tokenPartial": "частичная оценка: резервы эмитента по блокчейну не проверить",
