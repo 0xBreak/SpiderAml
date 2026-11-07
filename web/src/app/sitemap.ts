@@ -18,8 +18,9 @@ const PAGES: { path: string; priority: number; changeFrequency: "daily" | "weekl
 ];
 
 // Last real change of the static pages (update it when a page changes in substance); the pages built from daily data say "today".
-const RELEASE = new Date("2026-11-04");
-const DAILY = new Set(["/sanctions", "/frozen"]);
+const RELEASE = new Date("2026-11-07");
+// the home page shows a live request counter and the newest freezes, so it changes every day too
+const DAILY = new Set(["/", "/sanctions", "/frozen"]);
 
 export const dynamic = "force-dynamic";
 
