@@ -73,6 +73,9 @@ export const getSection = <K extends SectionName>(name: K, address: string, netw
 export const getWhales = (address: string, network: string, whaleUsd: number, window: string) =>
   call<WhaleReport & { labels: LabelMap }>("/v1/whales", { address, network, whaleUsd, window }, 90_000);
 
+/** The newest freezes for the home page, kept for ten minutes (they change a few times a day). */
+export const getLatestFrozen = (revalidate = 600) => call<FrozenPage>("/v1/frozen", { page: 1, pageSize: 40 }, 10_000, undefined, revalidate);
+
 export const getFrozen = (p: { q?: string; chain?: string; asset?: string; page?: number; pageSize?: number }) => call<FrozenPage>("/v1/frozen", p);
 
 export const getSanctions = (p: { q?: string; chain?: string; list?: string; page?: number; pageSize?: number }) => call<SanctionsPage>("/v1/sanctions", p);

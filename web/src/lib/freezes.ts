@@ -44,3 +44,24 @@ export function withoutListedSanctions(findings: Finding[], sanctions: { list: s
   const shown = new Set(sanctions.map((s) => `${s.list}: ${s.name}`));
   return findings.filter((f) => !(f.category === "sanctioned" && shown.has(f.label)));
 }
+
+export interface LatestFrozenRow {
+  address: string;
+  asset: string;
+  issuer: string;
+  chain: string;
+  chains: string[];
+  /** ms */
+  at: number;
+}
+
+/** The newest freezes as rows for the home page: one row per address and asset (an issuer often blocks one address on several networks at once), at most `max` rows, newest first as given. */
+export function latestFrozenRows(items: { address: string; chain: string; asset: string; issuer: string; frozenAt: number }[], max = 5): LatestFrozenRow[] {
+  const rows: LatestFrozenRow[] = [];
+  for (const it of items) {
+    const row = rows.find((r) => r.address.toLowerCase() === it.address.toLowerCase() && r.asset === it.asset);
+    if (row) row.chains.push(chainName(it.chain));
+    else if (rows.length < max) rows.push({ address: it.address, asset: it.asset, issuer: it.issuer, chain: it.chain, chains: [chainName(it.chain)], at: it.frozenAt * 1000 });
+  }
+  return rows;
+}

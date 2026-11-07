@@ -1,11 +1,12 @@
 import { ArrowRight, BookOpen, Check, Fish, Flag, Gauge, Landmark, LineChart, ListChecks, Search, Send, ShieldCheck, type LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
-import type { MetaInfo, RequestsInfo } from "@/lib/api-types";
+import type { FrozenPage, RequestsInfo } from "@/lib/api-types";
+import { latestFrozenRows } from "@/lib/freezes";
 import { hasPosts } from "@/lib/blog";
-import { getMeta, getRequests } from "@/lib/data";
+import { getLatestFrozen, getRequests } from "@/lib/data";
 import { RequestCounter } from "@/components/RequestCounter";
-import { date, dateTime, plain } from "@/lib/format";
+import { date, plain, short } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -36,8 +37,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const locale = rawLocale as Locale;
   const t = await getTranslations({ locale, namespace: "Home" });
   const tNav = await getTranslations({ locale, namespace: "Nav" });
-  const tSrc = await getTranslations({ locale, namespace: "Source" });
-  const tSrcName = await getTranslations({ locale, namespace: "SourceName" });
 
   const TOOLS: Tool[] = [
     { href: "/check", icon: ShieldCheck, tile: "bg-ok/10 text-ok", title: t("toolCheckTitle"), question: t("toolCheckQuestion") },
@@ -47,11 +46,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ];
 
   // everything the page needs from outside, fetched at the same time
-  const [posts, meta, requests]: [boolean, MetaInfo | null, RequestsInfo | null] = await Promise.all([
+  const [posts, frozenPage, requests]: [boolean, FrozenPage | null, RequestsInfo | null] = await Promise.all([
     hasPosts(),
-    getMeta(21600).catch(() => null),
+    getLatestFrozen().catch(() => null),
     getRequests().catch(() => null),
   ]);
+
+  // the newest freezes, one row per address (an issuer often blocks one address on several networks at once)
+  const FROZEN = latestFrozenRows(frozenPage?.items ?? [], 5);
   const EXTRA = [
     { href: "/send", icon: Send, tile: "bg-ok/10 text-ok", title: t("extraSendTitle") },
     { href: "/report", icon: Flag, tile: "bg-warn/10 text-warn", title: t("extraReportTitle") },
@@ -205,50 +207,35 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <p className="mt-3 text-center text-sm text-silver-2">{t("levelsNote")}</p>
       </section>
 
-      {/* sources */}
-      {meta?.sources && (
-        <section>
-          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">{t("sourcesTitle")}</h2>
-          <div className="mt-6 overflow-x-auto border border-line">
-            <table className="table min-w-[640px]">
-              <thead>
-                <tr>
-                  <th>{t("colSource")}</th>
-                  <th className="hidden md:table-cell">{t("colAbout")}</th>
-                  <th className="hidden text-right md:table-cell">{t("colUpdated")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* a source with nothing in it yet (user reports, own lists) is not shown as a row of zeros */}
-                {meta.sources.filter((src) => src.count > 0).map((src) => (
-                  <tr key={src.id}>
-                    <td>
-                      {src.url ? (
-                        <a href={src.url} target="_blank" rel="noopener noreferrer" className="link">
-                          {tSrcName.has(src.id) ? tSrcName(src.id) : src.name}
-                        </a>
-                      ) : tSrcName.has(src.id) ? (
-                        tSrcName(src.id)
-                      ) : (
-                        src.name
-                      )}
-                      {src.kind === "sanctions" && <span className="ml-2 border border-line px-1.5 text-[11px] text-silver-2">{t("officialBadge")}</span>}
-                    </td>
-                    <td className="hidden text-silver-2 md:table-cell">{tSrc.has(src.id) ? tSrc(src.id) : ""}</td>
-                    <td className={cn("hidden whitespace-nowrap text-right md:table-cell", src.asOf && Date.now() - src.asOf > 365 * 86_400_000 ? "text-warn" : "text-silver-2")}>
-                      {/* the date of the data, not of our download: a copy of a list nobody has updated since 2023 must not look fresh */}
-                      {src.asOf ? date(src.asOf, locale) : dateTime(src.fetchedAt, locale)}
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td>{t("goplusName")}</td>
-                  <td className="hidden text-silver-2 md:table-cell">{t("goplusAbout")}</td>
-                  <td className="hidden text-right text-silver-2 md:table-cell">—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      {/* newest freezes: our own live data, and it is what a P2P trader needs to know before accepting USDT */}
+      {FROZEN.length > 0 && (
+        <section aria-labelledby="frozen-title">
+          <h2 id="frozen-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t("frozenTitle")}
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-base text-silver-2">{t("frozenText")}</p>
+          <ul className="card mt-6 divide-y divide-line">
+            {FROZEN.map((r) => (
+              <li key={`${r.address}:${r.asset}`}>
+                <Link href={`/check?address=${r.address}&network=${r.chain}`} data-track="home:frozen:check" className="group flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 transition hover:bg-surface-2/50">
+                  <span className="font-mono text-[13px] text-silver-1">{short(r.address)}</span>
+                  <span className="border border-line px-1.5 text-[11px] text-silver-2">{r.asset}</span>
+                  <span className="text-sm text-silver-2">
+                    {r.issuer} · {r.chains.length > 1 ? t("frozenNetworks", { n: r.chains.length }) : r.chains[0]}
+                  </span>
+                  <span className="ml-auto flex items-center gap-3 text-sm tabular-nums text-silver-3">
+                    {date(r.at, locale)}
+                    <ArrowRight className="size-4 transition group-hover:translate-x-0.5 group-hover:text-silver-1" aria-hidden />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-center text-sm">
+            <Link href="/frozen" data-track="home:frozen:all" className="link">
+              {t("frozenAll")}
+            </Link>
+          </p>
         </section>
       )}
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Finding } from "./api-types";
-import { mergeFreezes, withoutListedSanctions } from "./freezes";
+import { latestFrozenRows, mergeFreezes, withoutListedSanctions } from "./freezes";
 
 const f = (chain: string, label: string, category: Finding["category"] = "frozen"): Finding => ({ category, severity: 2, label, source: "stablecoin-freezes", sourceName: "Stablecoin issuer freezes (Tether, Circle)", url: `https://x/${chain}`, chain });
 
@@ -31,5 +31,24 @@ describe("withoutListedSanctions", () => {
   it("changes nothing without sanctions", () => {
     const rows = [s("OFAC SDN: A")];
     expect(withoutListedSanctions(rows, [])).toBe(rows);
+  });
+});
+
+describe("latestFrozenRows", () => {
+  const fz = (address: string, chain: string, asset: string, frozenAt: number) => ({ address, chain, asset, issuer: asset === "USDC" ? "Circle" : "Tether", frozenAt });
+  it("makes one row per address and asset, with all its networks, newest first as given", () => {
+    const rows = latestFrozenRows([fz("0xAA", "base", "USDC", 300), fz("0xaa", "ethereum", "USDC", 300), fz("0xBB", "tron", "USDT", 200), fz("0xaa", "ethereum", "USDT", 100)]);
+    expect(rows.map((r) => [r.address, r.asset, r.chains])).toEqual([
+      ["0xAA", "USDC", ["Base", "Ethereum"]],
+      ["0xBB", "USDT", ["Tron"]],
+      ["0xaa", "USDT", ["Ethereum"]],
+    ]);
+    expect(rows[0].at).toBe(300_000);
+  });
+  it("stops at the maximum number of rows but still adds networks to rows already shown", () => {
+    const items = [fz("0x1", "base", "USDC", 5), fz("0x2", "base", "USDC", 4), fz("0x3", "base", "USDC", 3), fz("0x1", "polygon", "USDC", 2)];
+    const rows = latestFrozenRows(items, 2);
+    expect(rows).toHaveLength(2);
+    expect(rows[0].chains).toEqual(["Base", "Polygon"]);
   });
 });
