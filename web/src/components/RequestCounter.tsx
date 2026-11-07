@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp } from "lucide-react";
 
@@ -13,30 +14,48 @@ interface Props {
 
 /**
  * One public number: how many requests the service has answered (address checks, token analyses, whales, sanctions searches).
- * The server renders the final number (works without JavaScript, readable by crawlers); in the browser it counts up once,
- * unless the visitor asked for reduced motion.
+ * The server renders the final number (works without JavaScript, readable by crawlers); in the browser it counts up,
+ * unless the visitor asked for reduced motion, and an open tab refreshes it every 20 seconds.
  */
 export function RequestCounter({ total, last24h, series, locale, labels }: Props) {
   const fmt = new Intl.NumberFormat(locale === "ru" ? "ru-RU" : "en-US");
   const [shown, setShown] = useState(total);
-  const ran = useRef(false);
+  const shownRef = useRef(total);
+  const first = useRef(true);
+  const router = useRouter();
 
+  // the number counts up to its value: from 85% of it when the page opens, from the previous value when a newer one arrives
   useEffect(() => {
-    if (ran.current || total < 20 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    ran.current = true;
-    const from = Math.floor(total * 0.85);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const wasFirst = first.current;
+    first.current = false;
+    const from = wasFirst ? Math.floor(total * 0.85) : shownRef.current;
+    if (reduced || total < 20 || from === total) {
+      shownRef.current = total;
+      setShown(total);
+      return;
+    }
     const start = performance.now();
+    const duration = wasFirst ? 1100 : 700;
     let raf = 0;
     const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / 1100);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setShown(Math.round(from + (total - from) * eased));
+      const t = Math.min(1, (now - start) / duration);
+      const value = Math.round(from + (total - from) * (1 - Math.pow(1 - t, 3)));
+      shownRef.current = value;
+      setShown(value);
       if (t < 1) raf = requestAnimationFrame(tick);
     };
-    setShown(from);
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [total]);
+
+  // an open tab keeps up: every 20 seconds, while it is visible, the server component is rendered again (no JSON API involved)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh();
+    }, 20_000);
+    return () => clearInterval(id);
+  }, [router]);
 
   const max = Math.max(1, ...series.map((d) => d.n));
   const W = 224;

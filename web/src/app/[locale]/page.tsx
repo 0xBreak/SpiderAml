@@ -49,7 +49,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const [posts, meta, requests]: [boolean, MetaInfo | null, RequestsInfo | null] = await Promise.all([
     hasPosts(),
     getMeta(21600).catch(() => null),
-    getRequests(30).catch(() => null),
+    getRequests().catch(() => null),
   ]);
   const EXTRA = [
     { href: "/send", icon: Send, tile: "bg-ok/10 text-ok", title: t("extraSendTitle") },
