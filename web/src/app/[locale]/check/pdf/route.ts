@@ -24,7 +24,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ locale: 
     return new NextResponse(bytes, {
       headers: {
         "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="spideraml-${address.slice(0, 10)}${id ? `-${id}` : ""}.pdf"`,
+        "content-disposition": `attachment; filename="spideraml-${address.replace(/[^A-Za-z0-9]/g, "").slice(0, 10)}${/^[\w-]{1,32}$/.test(id) ? `-${id}` : ""}.pdf"`,
         "cache-control": "no-store",
       },
     });

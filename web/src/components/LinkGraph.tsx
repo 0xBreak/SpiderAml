@@ -10,7 +10,7 @@ import { cn, date, short } from "@/lib/format";
 import { ringLayout, strokeOf, trim } from "@/lib/graph";
 
 const SHOWN = 16; // nodes on the picture; the list below has all of them
-const W = 640;
+const W = 760; // wider than the ring needs, so the names beside the outer nodes are not cut at the edge
 const H = 420;
 const R_CENTER = 30;
 const R_NODE = 18;
@@ -25,7 +25,7 @@ const stroke = (severity: number) => (severity >= 3 ? "stroke-crit" : severity =
 /** "Tornado.Cash: 10 ETH (OFAC sanctions)" → "Tornado.Cash: 10 ETH"; long names are cut. */
 const shortName = (label: string) => {
   const base = label.split(" (")[0].trim();
-  return base.length > 22 ? `${base.slice(0, 21)}…` : base;
+  return base.length > 20 ? `${base.slice(0, 19)}…` : base;
 };
 const isVictimLink = (l: CheckLink) => l.direction === "out" && (l.category === "phishing" || l.category === "scam" || l.category === "frozen");
 
@@ -55,7 +55,7 @@ export async function LinkGraph({ links, network, explorer, service = false }: {
 
   return (
     <Card title={t("title")} hint={t("hint")}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("aria")} className="mx-auto h-auto w-full max-w-[640px]">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("aria")} className="mx-auto h-auto w-full max-w-[760px]">
         <defs>
           {[["crit", "var(--color-crit)"], ["warn", "var(--color-warn)"], ["muted", "var(--color-silver-3)"]].map(([id, color]) => (
             <marker key={id} id={`arrow-${id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">

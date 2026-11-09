@@ -394,7 +394,7 @@
       "other": "known address",
       "unknown": "address with no label in our database"
     },
-    "walletNote": "Read from the first transactions on the network. The source of the first funding counts in the score only when it is a mixer, a sanctioned or a flagged address.",
+    "walletNote": "Read from the first transactions on the network. The source of the first funding counts in the score when it is a mixer, a sanctioned or a flagged address (by amount); a bridge or a DEX adds only a few points.",
     "pdfButton": "Download the detailed report",
     "cpLinks": "{count, plural, one {# link} other {# links}} with flagged addresses",
     "linkBadge": "Linked to {name}"
