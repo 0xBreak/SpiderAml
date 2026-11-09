@@ -134,7 +134,7 @@
     "bitcoin_limited": "Bitcoin: lists, open databases and the latest 25 transactions, no deeper tracing.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
-    "contract_unavailable": "Contract could not be analyzed.",
+    "contract_unavailable": "Could not tell whether this is a wallet or a contract: the token score was not calculated, all other checks were done.",
     "reviewed_clear": "The SpiderAML team reviewed this address and removed wrong flags from public databases. Official sanctions lists still apply."
   },
   "Chain": {
@@ -208,7 +208,7 @@
     "faq2q": "If the score is low, is it safe to send?",
     "faq2a": "A low score means there are no known signals. It is not a guarantee of safety: new schemes and new addresses may not be known yet. Compare the address character by character and send a small test amount first.",
     "faq3q": "Where does the data come from?",
-    "faq3a": "From open sources: the US (OFAC), UK and EU sanctions lists, Tether and Circle blocking events read from the blockchains themselves, explorer labels (Etherscan and similar), Forta, ScamSniffer, MyEtherWallet and other open datasets, plus a GoPlus check at the moment of the request. Every label on a check page shows its source with a link.",
+    "faq3a": "From open sources: the US (OFAC), UK and EU sanctions lists, Tether and Circle blocking events read from the blockchains themselves, labels of hacks, phishing and scams from open datasets, plus our own database and a check at the moment of the request. Every label on a check page shows its source with a link.",
     "faq4q": "Which networks are supported?",
     "faq4a": "Ethereum, Arbitrum, Base, Polygon, Optimism, BNB Chain, Avalanche, Tron and Bitcoin. Tron and Bitcoin are checked in a reduced scope: lists, open databases and the latest transfers, without deep tracing.",
     "faq5q": "What if I already sent money to a risky address?",
@@ -322,7 +322,7 @@
     "howSanctionsTitle": "Sanctions",
     "howSanctionsText": "US, UK and EU lists.",
     "howExploitTitle": "Hacks and phishing",
-    "howExploitText": "ScamSniffer, Etherscan, Forta, GoPlus.",
+    "howExploitText": "Open databases of hacks, phishing and scams.",
     "howCpTitle": "Address connections",
     "howCpText": "Who it moved money with.",
     "howTokensTitle": "Tokens",
@@ -330,7 +330,7 @@
     "whyTitle": "What the score is made of",
     "whyHint": "The final score is the largest of the parts",
     "partSources": "Sanctions lists and risk databases",
-    "partCps": "Counterparties",
+    "partCps": "Counterparties and links",
     "partToken": "Token design",
     "srcNone": "not found",
     "srcFound": "{count} signal(s) found",
@@ -373,7 +373,31 @@
     },
     "pageTitle": "Free AML check of a USDT wallet",
     "freezeOne": "Blacklisted by {issuer} ({asset}) on {chain}, {date}",
-    "freezeMany": "Blacklisted by {issuer} ({asset}) on {n, plural, one {# network} other {# networks}}, {date}"
+    "freezeMany": "Blacklisted by {issuer} ({asset}) on {n, plural, one {# network} other {# networks}}, {date}",
+    "walletTitle": "Wallet",
+    "firstTx": "First transaction",
+    "accountAge": "Address age",
+    "ageYears": "{count} y",
+    "ageMonths": "{count} mo",
+    "ageDays": "{count} d",
+    "firstFunding": "First funding",
+    "fundingLine": "{amount} {asset} · {kind}",
+    "fundingKind": {
+      "exchange": "exchange",
+      "mixer": "mixer",
+      "bridge": "bridge or cross-chain swap",
+      "dex": "DEX",
+      "sanctioned": "sanctioned address",
+      "exploit": "hack address",
+      "scam": "scam address",
+      "phishing": "phishing address",
+      "other": "known address",
+      "unknown": "address with no label in our database"
+    },
+    "walletNote": "Read from the first transactions on the network. The source of the first funding counts in the score only when it is a mixer, a sanctioned or a flagged address.",
+    "pdfButton": "Download the detailed report",
+    "cpLinks": "{count, plural, one {# link} other {# links}} with flagged addresses",
+    "linkBadge": "Linked to {name}"
   },
   "Blog": {
     "title": "Blog",
@@ -880,7 +904,8 @@
     "explorer": "Open in explorer",
     "more": "The diagram shows the first {shown}; {count} more links are in the list only.",
     "victimNote": "Dashed: the address sent funds to a phishing, scam or frozen address. That is most often a victim or an ordinary payment, so such links are drawn neutral.",
-    "notInScore": "Links are shown for information and are not part of the risk score."
+    "inScore": "Links count in the risk score: the weight depends on the kind of address the transfer was with (sanctions, hack, mixer, phishing), the amount and the direction. Transfers of victims and ordinary payments are shown neutrally and barely change the score.",
+    "serviceNote": "This is a service (an exchange, protocol or token) with its own label: funds of many different addresses pass through it, so its links are shown for information and do not count in the score."
   },
   "Frozen": {
     "title": "Frozen USDT and USDC addresses",

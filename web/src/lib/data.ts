@@ -67,6 +67,22 @@ export async function limit(bucket: string, perMinute: number) {
 
 export const getCheck = (address: string, network: string) => call<CheckReport>("/v1/check", { address, network });
 
+/** The detailed report as a PDF. The data layer makes the check again (its caches keep this cheap) and draws the file. */
+export async function getCheckPdf(address: string, network: string, lang: "ru" | "en"): Promise<{ bytes: ArrayBuffer; id: string }> {
+  if (demoEnabled()) throw new DataError("UNAVAILABLE", "The PDF report needs the data layer.", 503);
+  let res: Response;
+  try {
+    res = await fetch(`${URL_}/v1/check/pdf?${new URLSearchParams({ address, network, lang })}`, { headers: { "x-spider-key": SECRET }, cache: "no-store", signal: AbortSignal.timeout(90_000) });
+  } catch {
+    throw new DataError("UNAVAILABLE", "Сервис данных временно недоступен.", 503);
+  }
+  if (!res.ok) {
+    const out = (await res.json().catch(() => null)) as ApiErrorBody | null;
+    throw new DataError(out?.error?.code ?? "UPSTREAM", out?.error?.message ?? "Ошибка сервиса данных.", res.status);
+  }
+  return { bytes: await res.arrayBuffer(), id: res.headers.get("x-report-id") ?? "" };
+}
+
 export const getSection = <K extends SectionName>(name: K, address: string, network: string, extra: Record<string, string | number> = {}) =>
   call<SectionMap[K] & { labels?: LabelMap }>("/v1/aml", { address, network, section: name, ...extra });
 

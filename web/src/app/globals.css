@@ -109,6 +109,34 @@
   .btn-ghost {
     @apply inline-flex h-11 items-center justify-center gap-2 border border-line px-5 text-sm font-semibold text-silver-1 transition hover:border-silver-3 disabled:cursor-not-allowed disabled:opacity-50;
   }
+  /* The verdict card: translucent, tinted by the risk level. The colour only supports the written level, it is never the only signal. */
+  .verdict {
+    --tint: var(--color-ok);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklab, var(--tint) 32%, transparent);
+    background:
+      linear-gradient(135deg, color-mix(in oklab, var(--tint) 12%, transparent), transparent 55%),
+      color-mix(in oklab, var(--color-surface) 78%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--tint) 6%, transparent), 0 18px 48px -24px color-mix(in oklab, var(--tint) 45%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .verdict::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -4rem;
+    top: -5rem;
+    width: 22rem;
+    height: 22rem;
+    background: radial-gradient(closest-side, color-mix(in oklab, var(--tint) 24%, transparent), transparent);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+  .verdict-ok { --tint: var(--color-ok); }
+  .verdict-warn { --tint: var(--color-warn); }
+  .verdict-crit { --tint: var(--color-crit); }
   .link {
     @apply text-accent underline-offset-2 hover:underline;
   }

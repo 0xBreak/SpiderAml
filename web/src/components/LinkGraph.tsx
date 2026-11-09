@@ -22,9 +22,14 @@ const stroke = (severity: number) => (severity >= 3 ? "stroke-crit" : severity =
  * culprit (most flagged addresses a random wallet touches are of this kind), so the link is drawn neutral. Money sent to a
  * sanctioned, exploit or mixer address, and anything received from a flagged address, keeps its colour.
  */
+/** "Tornado.Cash: 10 ETH (OFAC sanctions)" → "Tornado.Cash: 10 ETH"; long names are cut. */
+const shortName = (label: string) => {
+  const base = label.split(" (")[0].trim();
+  return base.length > 22 ? `${base.slice(0, 21)}…` : base;
+};
 const isVictimLink = (l: CheckLink) => l.direction === "out" && (l.category === "phishing" || l.category === "scam" || l.category === "frozen");
 
-export async function LinkGraph({ links, network, explorer }: { links: CheckLink[]; network: string; explorer: string | null }) {
+export async function LinkGraph({ links, network, explorer, service = false }: { links: CheckLink[]; network: string; explorer: string | null; service?: boolean }) {
   const t = await getTranslations("Links");
   const tCat = await getTranslations("Category");
   const locale = (await getLocale()) as Locale;
@@ -33,6 +38,14 @@ export async function LinkGraph({ links, network, explorer }: { links: CheckLink
   const pts = ringLayout(shown.length, W, H);
   const centre = { x: W / 2, y: H / 2 };
   const anyVictim = links.some(isVictimLink);
+  /** where the name goes: on the far side of the node from the centre */
+  const label = (p: { x: number; y: number }) => {
+    const vx = p.x - centre.x, vy = p.y - centre.y;
+    const len = Math.hypot(vx, vy) || 1;
+    const ux = vx / len, uy = vy / len;
+    const anchor = ux > 0.35 ? "start" : ux < -0.35 ? "end" : "middle";
+    return { dx: ux * (R_NODE + 8) + (anchor === "start" ? 4 : anchor === "end" ? -4 : 0), dy: uy * (R_NODE + 10) + (uy > 0 ? 6 : 0), anchor: anchor as "start" | "end" | "middle" };
+  };
 
   const assetText = (l: CheckLink) =>
     l.assets
@@ -82,6 +95,15 @@ export async function LinkGraph({ links, network, explorer }: { links: CheckLink
             <text x={pts[i].x} y={pts[i].y + 6} textAnchor="middle" className="fill-bg text-[18px] font-bold">
               {i + 1}
             </text>
+            {/* a short name outside the node, away from the centre so it never sits on the arrow */}
+            <text
+              x={pts[i].x + label(pts[i]).dx}
+              y={pts[i].y + label(pts[i]).dy}
+              textAnchor={label(pts[i]).anchor}
+              className="fill-silver-2 text-[11px]"
+            >
+              {shortName(l.label)}
+            </text>
           </g>
         ))}
       </svg>
@@ -120,7 +142,7 @@ export async function LinkGraph({ links, network, explorer }: { links: CheckLink
       {links.length > SHOWN && <p className="mt-3 text-sm text-silver-3">{t("more", { shown: SHOWN, count: links.length - SHOWN })}</p>}
       {anyVictim && <p className="mt-3 text-sm text-silver-3">{t("victimNote")}</p>}
       <div className="mt-4">
-        <Notice>{t("notInScore")}</Notice>
+        <Notice>{t(service ? "serviceNote" : "inScore")}</Notice>
       </div>
     </Card>
   );
