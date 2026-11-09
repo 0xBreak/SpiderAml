@@ -10,6 +10,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { pickLocale } from "./i18n/detect";
 import { routing } from "./i18n/routing";
 import { OWNER_COOKIE } from "./lib/owner";
+import { visitorHints } from "./lib/hints";
 
 export const config = {
   matcher: ["/((?!api|trpc|_next|_vercel|brand|apple-icon|opengraph-image|.*\\..*).*)"],
@@ -66,6 +67,7 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
         ip: h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local",
         ua,
         country: h.get("cf-ipcountry"),
+        hints: visitorHints(h),
         events: [{ kind, path: req.nextUrl.pathname.replace(/^\/en(?=\/|$)/, "") || "/" }],
       };
       ev.waitUntil(
