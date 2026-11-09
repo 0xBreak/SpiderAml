@@ -121,9 +121,11 @@ addresses".
 |---|---|
 | strongest direct finding | severity 3 → 100, 2 → 60, 1 → 25 |
 | flagged counterparties (serious labels) in the last 50 transactions (Ethereum-style), the last 25 (Bitcoin) or the last 50 USDT transfers (Tron) | up to 40 (more flagged and critical ones weigh more) |
+| transfer history with flagged addresses (Ethereum addresses, built offline): the kind of the other address (sanctions, hack, mixer, phishing, scam), the size of the contact and the direction decide | up to 95 (sanctions 20–85, hack 15–80, mixer 20–75, phishing and scam 10–55, by size); a victim or an ordinary payment counts as context, 5–10 |
+| source of the first funding (a mixer, sanctioned, hack, scam or phishing sender scores like a link; a bridge or a DEX adds 5; an exchange or an unlabelled sender adds nothing) | up to the same table |
 | token heuristics, only if the address is a real token (has decimals and a total supply); routers, multisigs and exchange wallets are not scored as tokens | 70% of the token risk score |
 
-The final score is the maximum of the three. Counterparty rules: a scam, phishing or hack address that the checked wallet only *paid* is not a signal (victims pay scammers), while sanctions, freezes and mixers count in both directions; an incoming transfer below the dust limit (1 USD, 3,000 satoshi, 1 USDT) does not make its sender a counterparty (address poisoning and dusting attacks); a freeze recorded for a token contract's address on another network is not a counterparty signal. Levels: **80+ critical**, **50+ high**, **20+ medium**, below 20 low.
+The counterparty, history and funding rows form one part (the largest of the three); a service with its own label (exchange, protocol, token) and an address the team cleared get nothing from that part. The final score is the maximum of the parts. Counterparty rules: a scam, phishing or hack address that the checked wallet only *paid* is not a signal (victims pay scammers), while sanctions, freezes and mixers count in both directions; an incoming transfer below the dust limit (1 USD, 3,000 satoshi, 1 USDT) does not make its sender a counterparty (address poisoning and dusting attacks); a freeze recorded for a token contract's address on another network is not a counterparty signal. Levels: **80+ critical**, **50+ high**, **20+ medium**, below 20 low.
 Taking the maximum instead of a sum keeps one strong, sourced reason from being diluted and avoids inflating scores
 from many weak ones.
 
