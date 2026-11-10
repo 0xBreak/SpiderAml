@@ -134,6 +134,7 @@
     "bitcoin_limited": "Bitcoin: lists, open databases and the latest 25 transactions, no deeper tracing.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
+    "burn_address": "This is a burn (or zero) address: nobody owns it and anything sent there is gone. It is not a wallet, so a risk score does not apply to it.",
     "history_unavailable": "Wallet history (age, first funding) is unavailable right now and is not in the score.",
     "contract_unavailable": "Could not tell whether this is a wallet or a contract: the token score was not calculated, all other checks were done.",
     "reviewed_clear": "The SpiderAML team reviewed this address and removed wrong flags from public databases. Official sanctions lists still apply."
@@ -173,6 +174,7 @@
     "DESCRIPTION_LONG": "The description is too long (2000 characters max).",
     "INVALID_LINK": "The link must start with https://",
     "UPSTREAM": "The data service is temporarily unavailable. Please try again later.",
+    "UNSUPPORTED_NETWORK": "This looks like an address of a network we do not check yet (for example Solana, Litecoin, XRP, TON). Supported now: EVM networks (0x…), Tron and Bitcoin.",
     "INVALID_PARAMS": "The request is malformed: the address is too long or a parameter is unknown. Paste the address again."
   },
   "Home": {
