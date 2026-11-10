@@ -93,10 +93,14 @@ export function Notice({ tone = "info", children }: { tone?: Tone; children: Rea
   );
 }
 
+/**
+ * An error the visitor can act on. A code is shown in words only when it has a translation; any other code (validation details,
+ * provider messages, internal errors) gets the generic text, so no internal wording or variable name reaches the page.
+ * `message` is used only when there is no code at all: it is the caller's own translated text, never one from the data layer.
+ */
 export async function ErrorBox({ code, message }: { code?: string; message?: string }) {
   const t = await getTranslations("Errors");
-  // messages from the data layer are in Russian: show them only when we have no translation and the page is Russian
-  return <Notice tone="warn">{(code && t.has(code) ? t(code) : null) ?? message ?? t("fallback")}</Notice>;
+  return <Notice tone="warn">{code ? (t.has(code) ? t(code) : t("fallback")) : (message ?? t("fallback"))}</Notice>;
 }
 
 export function Skeleton({ className }: { className?: string }) {

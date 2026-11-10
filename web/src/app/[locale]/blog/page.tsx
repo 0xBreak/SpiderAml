@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Badge, PageTitle } from "@/components/ui";
-import { allPosts } from "@/lib/blog";
+import { allPosts, langOf } from "@/lib/blog";
 import { date } from "@/lib/format";
 import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
@@ -19,15 +19,18 @@ export default async function Blog({ params }: { params: Promise<{ locale: strin
   const { locale: rawLocale } = await params;
   const locale = rawLocale as Locale;
   const t = await getTranslations({ locale, namespace: "Blog" });
-  const posts = await allPosts();
+  // the list is in the reader's language; an English reader sees the Russian articles only while there is nothing in English
+  let posts = await allPosts(locale);
+  const russianOnly = locale === "en" && posts.length === 0;
+  if (russianOnly) posts = await allPosts("ru");
   return (
     <div className="space-y-5">
       <PageTitle eyebrow={t("eyebrow")} title={t("title")} sub={t("sub")} />
-      {locale === "en" && posts.length > 0 && <p className="text-sm text-silver-2">{t("russianOnly")}</p>}
+      {russianOnly && posts.length > 0 && <p className="text-sm text-silver-2">{t("russianOnly")}</p>}
       {posts.length === 0 && <p className="card p-5 text-sm text-silver-2">{t("empty")}</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         {posts.map((p) => (
-          <Link key={p.slug} href={`/blog/${p.slug}`} className="card flex flex-col gap-2 p-5 transition hover:border-silver-3">
+          <Link key={p.slug} href={`/blog/${p.slug}`} locale={langOf(p.meta) === locale ? undefined : langOf(p.meta)} className="card flex flex-col gap-2 p-5 transition hover:border-silver-3">
             <div className="flex items-center gap-2 text-xs text-silver-3">
               {date(p.meta.date, locale)}
               {p.meta.draft && <Badge tone="warn">{t("draft")}</Badge>}

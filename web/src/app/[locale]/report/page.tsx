@@ -3,6 +3,7 @@ import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { Card, PageTitle } from "@/components/ui";
 import { isNetworkId } from "@/lib/networks";
+import { one } from "@/lib/action";
 import { ReportForm } from "./ReportForm";
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | undefined>> }): Promise<Metadata> {
@@ -14,7 +15,8 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
 type SP = Promise<{ address?: string; network?: string; category?: string }>;
 
 export default async function ReportPage({ searchParams }: { searchParams: SP }) {
-  const { address, network, category } = await searchParams;
+  const sp = await searchParams;
+  const [address, network, category] = [one(sp.address), one(sp.network), one(sp.category)];
   const t = await getTranslations("Report");
   return (
     <div className="space-y-6">

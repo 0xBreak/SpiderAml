@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { allPosts } from "@/lib/blog";
+import { allPosts, langOf, postPaths } from "@/lib/blog";
 import { urlOf } from "@/lib/seo";
 
 // Tool pages and static pages in both languages, every entry with its translation as an alternate.
@@ -18,7 +18,7 @@ const PAGES: { path: string; priority: number; changeFrequency: "daily" | "weekl
 ];
 
 // Last real change of the static pages (update it when a page changes in substance); the pages built from daily data say "today".
-const RELEASE = new Date("2026-11-07");
+const RELEASE = new Date("2026-11-10");
 // the home page shows a live request counter and the newest freezes, so it changes every day too
 const DAILY = new Set(["/", "/sanctions", "/frozen"]);
 
@@ -30,9 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...PAGES.map((p) => ({ ...p, lastModified: (DAILY.has(p.path) ? new Date() : RELEASE) as Date | undefined })),
     // /blog is listed once it has an article to show
     ...(posts.length ? [{ path: "/blog", priority: 0.7, changeFrequency: "weekly" as const, lastModified: undefined as Date | undefined }] : []),
-    ...posts.map((p) => ({ path: `/blog/${p.slug}`, priority: 0.6, changeFrequency: "monthly" as const, lastModified: new Date(p.meta.date) })),
   ];
-  return entries.flatMap(({ path, priority, changeFrequency, lastModified }) =>
+  const pages = entries.flatMap(({ path, priority, changeFrequency, lastModified }) =>
     (["ru", "en"] as const).map((locale) => ({
       url: urlOf(locale, path),
       priority,
@@ -41,4 +40,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       alternates: { languages: { ru: urlOf("ru", path), en: urlOf("en", path) } },
     })),
   );
+  // an article is listed once, under the language it is written in, with its translation (when there is one) as the alternate
+  const articles = await Promise.all(
+    posts.map(async (p) => {
+      const paths = await postPaths(p);
+      const languages: Record<string, string> = {};
+      for (const l of ["ru", "en"] as const) if (paths[l]) languages[l] = urlOf(l, paths[l]!);
+      return { url: urlOf(langOf(p.meta), `/blog/${p.slug}`), priority: 0.6, changeFrequency: "monthly" as const, lastModified: new Date(p.meta.date), alternates: { languages } };
+    }),
+  );
+  return [...pages, ...articles];
 }

@@ -10,6 +10,7 @@ import { SanctionsFilters } from "./Filters";
 import type { SanctionsPage } from "@/lib/api-types";
 import { DataError, getSanctions } from "@/lib/data";
 import { trackEvent } from "@/lib/metrics";
+import { one } from "@/lib/action";
 import { cn, date, dateTime } from "@/lib/format";
 import type { Locale } from "@/i18n/routing";
 
@@ -49,7 +50,9 @@ const TD = "px-3 py-3.5 align-middle first:pl-4 last:pr-4 sm:first:pl-5 sm:last:
 const LINK = "inline-flex items-center gap-1.5 text-silver-1 underline decoration-line underline-offset-4 transition hover:decoration-silver-2";
 
 export default async function Sanctions({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
+  const raw = await searchParams;
+  // a repeated query parameter arrives as an array: only its first value is used
+  const sp = { q: one(raw.q), chain: one(raw.chain), list: one(raw.list), page: one(raw.page), pageSize: one(raw.pageSize) };
   const t = await getTranslations("Sanctions");
   const tChain = await getTranslations("Chain");
   const locale = (await getLocale()) as Locale;

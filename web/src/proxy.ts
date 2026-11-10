@@ -11,6 +11,7 @@ import { pickLocale } from "./i18n/detect";
 import { routing } from "./i18n/routing";
 import { OWNER_COOKIE } from "./lib/owner";
 import { visitorHints } from "./lib/hints";
+import { clientIp } from "./lib/ip";
 
 export const config = {
   matcher: ["/((?!api|trpc|_next|_vercel|brand|apple-icon|opengraph-image|.*\\..*).*)"],
@@ -64,7 +65,7 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
     const kind = preview && sitePage ? "pageview" : !browser || !sitePage ? "probe" : null;
     if (kind) {
       const body = {
-        ip: h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local",
+        ip: clientIp(h),
         ua,
         country: h.get("cf-ipcountry"),
         hints: visitorHints(h),

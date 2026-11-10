@@ -171,7 +171,8 @@
     "DESCRIPTION_SHORT": "Describe what happened in a couple of sentences at least.",
     "DESCRIPTION_LONG": "The description is too long (2000 characters max).",
     "INVALID_LINK": "The link must start with https://",
-    "UPSTREAM": "The data service is temporarily unavailable. Please try again later."
+    "UPSTREAM": "The data service is temporarily unavailable. Please try again later.",
+    "INVALID_PARAMS": "The request is malformed: the address is too long or a parameter is unknown. Paste the address again."
   },
   "Home": {
     "heroTitle": "Check an address before you send",
@@ -406,6 +407,7 @@
     "draft": "Draft",
     "back": "All articles",
     "eyebrow": "Materials",
+    "otherLanguage": "Read in Russian",
     "russianOnly": "The articles are in Russian for now. Your browser can translate the page."
   },
   "NotFound": {

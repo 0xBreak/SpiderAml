@@ -180,7 +180,13 @@
     @apply text-silver-1;
   }
   .prose-spider blockquote {
-    @apply my-4 border-l-2 border-accent/60 pl-4 text-silver-2;
+    @apply my-4 border-l-2 border-crit/60 bg-crit/5 py-3 pl-4 pr-4 text-silver-1;
+  }
+  .prose-spider blockquote > :first-child {
+    @apply mt-0;
+  }
+  .prose-spider blockquote > :last-child {
+    @apply mb-0;
   }
   .prose-spider code {
     @apply bg-surface-2 px-1 py-0.5 font-mono text-[13px];

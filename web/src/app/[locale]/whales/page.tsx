@@ -9,7 +9,7 @@ import { Badge, Card, CardSkeleton, Empty, ErrorBox, PageTitle, Stat } from "@/c
 import { GaEvent } from "@/components/Analytics";
 import { WhalesTable } from "./WhalesTable";
 import { DataError, getWhales, limit } from "@/lib/data";
-import { cleanAddressInput } from "@/lib/action";
+import { cleanAddressInput, one } from "@/lib/action";
 import { trackEvent } from "@/lib/metrics";
 import { dateTime, num, usd } from "@/lib/format";
 import { NETWORKS, isNetworkId, type NetworkId } from "@/lib/networks";
@@ -43,7 +43,9 @@ const TYPE: Record<WhaleTransferKind, { key: "typeBuy" | "typeSell" | "typeTrans
 };
 
 export default async function WhalesPage({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
+  const raw = await searchParams;
+  // a repeated query parameter arrives as an array: only its first value is used
+  const sp = { address: one(raw.address), network: one(raw.network), usd: one(raw.usd), window: one(raw.window) };
   const network = sp.network && isNetworkId(sp.network) ? sp.network : "ethereum";
   const threshold = Math.min(1e9, Math.max(100, Number(sp.usd) || 50_000));
   const window: Window = (WINDOWS as readonly string[]).includes(sp.window ?? "") ? (sp.window as Window) : "24h";

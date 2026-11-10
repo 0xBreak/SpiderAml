@@ -9,7 +9,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
 import { LinkGraph } from "@/components/LinkGraph";
-import { cleanAddressInput, isBitcoinAddress } from "@/lib/action";
+import { cleanAddressInput, isBitcoinAddress, one } from "@/lib/action";
 import { DataError, getCheck, limit } from "@/lib/data";
 import { safeTarget, trackEvent } from "@/lib/metrics";
 import { date, dateTime, pct, short, usd } from "@/lib/format";
@@ -41,7 +41,9 @@ const TONE_OF_LEVEL: Record<CheckReport["level"], "ok" | "warn" | "crit"> = {
 };
 
 export default async function CheckPage({ searchParams }: { searchParams: SP }) {
-  const { address: rawAddress, network: rawNetwork } = await searchParams;
+  const sp = await searchParams;
+  const rawAddress = one(sp.address);
+  const rawNetwork = one(sp.network);
   const address = rawAddress === undefined ? undefined : cleanAddressInput(rawAddress); // spaces, zero-width characters, explorer links
   const network = rawNetwork === "tron" || rawNetwork === "bitcoin" ? rawNetwork : rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
 
@@ -70,7 +72,7 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
         <p className="max-w-2xl text-base leading-relaxed text-silver-2">{t("sub")}</p>
       </header>
       <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
-      {error && <ErrorBox message={tErr.has(error.code) ? tErr(error.code) : error.message || tErr("fallback")} />}
+      {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
       {!address && <HowItWorks />}
     </div>

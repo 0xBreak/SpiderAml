@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import type { ApiErrorBody, SectionMap, SectionName, WhaleReport } from "./types";
 import type { FrozenPage, CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, RequestsInfo, SanctionsPage } from "./api-types";
 import { demoCall, demoEnabled } from "./demo";
+import { clientIp } from "./ip";
 
 export class DataError extends Error {
   constructor(
@@ -52,9 +53,7 @@ const hits = new Map<string, number[]>();
 /** Sliding one-minute window per client IP. Throws a DataError the page renders like any other error. */
 export async function limit(bucket: string, perMinute: number) {
   if (demoEnabled()) return;
-  const h = await headers();
-  const ip = h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  const key = `${bucket}:${ip}`;
+  const key = `${bucket}:${clientIp(await headers())}`;
   const now = Date.now();
   const recent = (hits.get(key) ?? []).filter((t) => now - t < 60_000);
   if (recent.length >= perMinute) throw new DataError("RATE_LIMITED", "Слишком много запросов. Подождите минуту.", 429);

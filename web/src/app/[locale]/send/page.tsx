@@ -3,6 +3,7 @@ import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
 import { PageTitle } from "@/components/ui";
 import { getMeta } from "@/lib/data";
+import { one } from "@/lib/action";
 import { WalletProvider } from "@/components/Wallet";
 import { SendForm } from "./SendForm";
 
@@ -16,7 +17,7 @@ export const dynamic = "force-dynamic";
 type SP = Promise<{ to?: string }>;
 
 export default async function SendPage({ searchParams }: { searchParams: SP }) {
-  const { to } = await searchParams;
+  const to = one((await searchParams).to);
   const t = await getTranslations("Send");
   const ethUsd = await getMeta()
     .then((m) => m.ethUsd)
