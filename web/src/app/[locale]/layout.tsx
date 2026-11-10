@@ -25,7 +25,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     metadataBase: new URL("https://spideraml.com"),
     title: { default: t("title"), template: "%s · SpiderAML" },
     description: t("description"),
-    openGraph: { siteName: "SpiderAML", locale: locale === "en" ? "en_US" : "ru_RU", type: "website" },
+    // the social image is named here because this openGraph object replaces the root one (where app/opengraph-image.jpg would be picked up)
+    openGraph: { siteName: "SpiderAML", locale: locale === "en" ? "en_US" : "ru_RU", type: "website", images: ["/opengraph-image.jpg"] },
+    twitter: { card: "summary_large_image" },
   };
 }
 

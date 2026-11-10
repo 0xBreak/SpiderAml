@@ -18,6 +18,14 @@ export interface Finding {
   merged?: { chain: string; url: string | null }[];
 }
 
+export type FundingKind = "exchange" | "mixer" | "bridge" | "dex" | "sanctioned" | "exploit" | "scam" | "phishing" | "other" | "unknown";
+
+export interface WalletHistory {
+  firstTxAt: number | null;
+  firstTxHash: string | null;
+  firstFunding: { at: number; from: string; amount: number; asset: string; hash: string; kind: FundingKind; label: string | null } | null;
+}
+
 export interface CheckReport {
   address: string;
   ensName?: string | null;
@@ -35,6 +43,10 @@ export interface CheckReport {
   counterparties: { checked: number; flagged: { address: string; category: Category; severity: Severity; label: string }[] } | null;
   /** transfers with flagged addresses from the offline history; missing on an older data layer */
   links?: CheckLink[];
+  /** 'service': an exchange, protocol or token with its own label; its links are information and are not scored */
+  linksNote?: "service" | null;
+  /** when the address first appeared and who funded it first (Etherscan networks); null when unknown */
+  history?: WalletHistory | null;
   portfolio: { totalUsd: number | null; change1dPct: number | null } | null;
   contract: { isContract: boolean; name: string | null; symbol: string | null; kind: string | null; risk: Omit<RiskData, "meta"> | null } | null;
   onchain: { chainId: number; registry: string; category: string; level: number; explorer: string } | null;

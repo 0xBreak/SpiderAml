@@ -10,6 +10,8 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { pickLocale } from "./i18n/detect";
 import { routing } from "./i18n/routing";
 import { OWNER_COOKIE } from "./lib/owner";
+import { visitorHints } from "./lib/hints";
+import { clientIp } from "./lib/ip";
 
 export const config = {
   matcher: ["/((?!api|trpc|_next|_vercel|brand|apple-icon|opengraph-image|.*\\..*).*)"],
@@ -20,7 +22,7 @@ const handleI18nRouting = createMiddleware(routing);
 /** Messenger and social preview fetchers: the data layer turns their visit into "the link was shared". */
 const SHARE_BOT = /TelegramBot|WhatsApp|facebookexternalhit|Facebot|Twitterbot|Discordbot|Slackbot|vkShare|LinkedInBot|Viber|SkypeUriPreview/i;
 /** Pages that exist (with or without the /en prefix); anything else is a scanner guessing paths. */
-const SITE_PAGES = /^(?:\/en)?(?:\/(?:check|token|whales|sanctions(?:\/(?:frozen|[A-Za-z0-9]{20,100}))?|send|report(?:\/status)?|terms|privacy|blog(?:\/[a-z0-9-]+)?))?\/?$/;
+const SITE_PAGES = /^(?:\/en)?(?:\/(?:check(?:\/pdf)?|token|whales|sanctions(?:\/(?:frozen|[A-Za-z0-9]{20,100}))?|send|report(?:\/status)?|terms|privacy|support|blog(?:\/[a-z0-9-]+)?))?\/?$/;
 const CRAWLER = /bot|crawl|spider|slurp|preview|headless|wget|curl|python|go-http|httpclient/i;
 
 /** spideraml.com in production (set in docker-compose); empty locally, so dev on localhost is untouched. */
@@ -63,9 +65,10 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
     const kind = preview && sitePage ? "pageview" : !browser || !sitePage ? "probe" : null;
     if (kind) {
       const body = {
-        ip: h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local",
+        ip: clientIp(h),
         ua,
         country: h.get("cf-ipcountry"),
+        hints: visitorHints(h),
         events: [{ kind, path: req.nextUrl.pathname.replace(/^\/en(?=\/|$)/, "") || "/" }],
       };
       ev.waitUntil(

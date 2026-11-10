@@ -114,6 +114,15 @@ export function isAnyAddress(v: unknown): v is string {
   return isEvmAddress(v) || isTronAddress(v) || isBitcoinAddress(v);
 }
 
+/**
+ * A query parameter as one string. Next hands a repeated parameter (`?address=a&address=b`) over as an array, and
+ * string methods on an array crash the page: the first value is taken, anything else is treated as absent.
+ */
+export function one(v: unknown): string | undefined {
+  if (Array.isArray(v)) v = v[0];
+  return typeof v === "string" ? v : undefined;
+}
+
 // ─── address input cleaning ───────────────────────────────────────
 
 /** Zero-width / invisible characters that sneak in when copying from a messenger or a web page. */

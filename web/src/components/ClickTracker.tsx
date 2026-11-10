@@ -12,7 +12,7 @@ const send = (body: string) => {
 /** Where the visit came from, sent with the first page only: a ?src= / utm_source label beats the browser's referrer. */
 function origin() {
   const q = new URLSearchParams(location.search);
-  return { src: q.get("src") ?? q.get("utm_source") ?? q.get("ref"), ref: document.referrer || null };
+  return { src: q.get("src") || q.get("utm_source") || q.get("ref"), ref: document.referrer || null };
 }
 
 let firstSent = false;

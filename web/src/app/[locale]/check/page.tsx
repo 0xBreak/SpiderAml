@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { seo } from "@/lib/seo";
 import type { ReactNode } from "react";
-import { ExternalLink, Send } from "lucide-react";
+import { ExternalLink, FileText, Send } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Addr } from "@/components/Addr";
 import { Gauge } from "@/components/Gauge";
@@ -9,7 +9,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { Badge, Bar, Card, ErrorBox, Notice, toneOfSeverity } from "@/components/ui";
 import type { CheckReport, Finding } from "@/lib/api-types";
 import { LinkGraph } from "@/components/LinkGraph";
-import { cleanAddressInput, isBitcoinAddress } from "@/lib/action";
+import { cleanAddressInput, isBitcoinAddress, one } from "@/lib/action";
 import { DataError, getCheck, limit } from "@/lib/data";
 import { safeTarget, trackEvent } from "@/lib/metrics";
 import { date, dateTime, pct, short, usd } from "@/lib/format";
@@ -41,7 +41,9 @@ const TONE_OF_LEVEL: Record<CheckReport["level"], "ok" | "warn" | "crit"> = {
 };
 
 export default async function CheckPage({ searchParams }: { searchParams: SP }) {
-  const { address: rawAddress, network: rawNetwork } = await searchParams;
+  const sp = await searchParams;
+  const rawAddress = one(sp.address);
+  const rawNetwork = one(sp.network);
   const address = rawAddress === undefined ? undefined : cleanAddressInput(rawAddress); // spaces, zero-width characters, explorer links
   const network = rawNetwork === "tron" || rawNetwork === "bitcoin" ? rawNetwork : rawNetwork && isNetworkId(rawNetwork) ? rawNetwork : "ethereum";
 
@@ -70,7 +72,7 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
         <p className="max-w-2xl text-base leading-relaxed text-silver-2">{t("sub")}</p>
       </header>
       <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
-      {error && <ErrorBox message={tErr.has(error.code) ? tErr(error.code) : error.message || tErr("fallback")} />}
+      {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
       {!address && <HowItWorks />}
     </div>
@@ -98,16 +100,26 @@ async function Report({ r }: { r: CheckReport }) {
   const isContract = r.kind === "evm" && r.contract != null ? r.contract.isContract : null;
   const chainLabel = r.kind === "tron" || r.kind === "bitcoin" ? tChain(r.kind) : (net?.label ?? r.network);
   const frozen = r.findings.some((f) => f.category === "frozen");
-  const hasBadges = r.sanctions.length > 0 || r.possibleScam || frozen || r.contract?.isContract;
+  // the names of the flagged addresses this wallet has transfers with (the part of the label before the colon), so the red field says who they are
+  const linkNames = [
+    ...new Map(
+      (r.links ?? [])
+        .filter((l) => l.severity >= 2 && !(l.direction === "out" && (l.category === "phishing" || l.category === "scam" || l.category === "frozen")))
+        .map((l) => [l.label.split(" (")[0].split(":")[0].trim(), l.severity] as const),
+    ),
+  ].slice(0, 3);
+  const hasBadges = r.sanctions.length > 0 || r.possibleScam || frozen || r.contract?.isContract || (r.linksNote !== "service" && linkNames.length > 0);
   const signals = risky.length + r.sanctions.length + (r.counterparties?.flagged.length ?? 0);
   // the on-chain registry matters to the visitor only when the address is recorded there
   const recorded = r.onchain && r.onchain.level > 0 ? r.onchain : null;
   const showSummary = signals > 0 || r.portfolio != null || r.counterparties != null;
   // shown only when there is something to say: a known owner, or a smart contract; an ordinary wallet with no label gets no empty card
   const hasOwnerCard = ownerList.length > 0 || isContract === true;
-  const hasAside = showSummary || hasOwnerCard || recorded != null;
+  const hasAside = showSummary || hasOwnerCard || recorded != null || r.history?.firstTxAt != null;
   const elsewhere = (r.listedElsewhere ?? []).filter((x) => isNetworkId(x.network));
   const netLabel = (n: string) => NETWORKS[n as keyof typeof NETWORKS].label;
+  const pdfHref = `${locale === "en" ? "/en" : ""}/check/pdf?${new URLSearchParams({ address: r.address, network: r.kind === "evm" ? r.network : r.kind })}`;
+  const wallet = r.history?.firstTxAt ? r.history : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -131,7 +143,7 @@ async function Report({ r }: { r: CheckReport }) {
         </Notice>
       )}
       {/* verdict */}
-      <section className="border border-line bg-surface">
+      <section className={cn("verdict", tone === "crit" ? "verdict-crit" : tone === "warn" ? "verdict-warn" : "verdict-ok")}>
         <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[13rem_minmax(0,1fr)] md:items-center md:gap-8">
           <div className="[&>svg]:w-44 md:[&>svg]:w-52">
             <Gauge score={r.score} tone={tone} />
@@ -142,6 +154,12 @@ async function Report({ r }: { r: CheckReport }) {
                 {r.sanctions.length > 0 && <Badge tone="crit">{t("sanctionedBadge")}</Badge>}
                 {r.possibleScam && r.sanctions.length === 0 && <Badge tone="crit">{t("scamBadge")}</Badge>}
                 {frozen && <Badge tone="warn">{t("frozenBadge")}</Badge>}
+                {r.linksNote !== "service" &&
+                  linkNames.map(([name, severity]) => (
+                    <Badge key={name} tone={severity >= 3 ? "crit" : "warn"} className={severity >= 3 ? "border-crit/70 bg-crit/30 text-silver-1" : "border-warn/70 bg-warn/25 text-silver-1"}>
+                      {t("linkBadge", { name })}
+                    </Badge>
+                  ))}
                 {r.contract?.isContract && (
                   <Badge tone="muted">
                     {t("contractBadge")}
@@ -173,13 +191,16 @@ async function Report({ r }: { r: CheckReport }) {
               <li key={a}>{a}</li>
             ))}
           </ul>
-          {r.level !== "critical" && r.kind === "evm" && (
-            <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a href={pdfHref} data-track="check:pdf" rel="nofollow" className="btn-ghost h-11 text-base">
+              <FileText className="size-4" /> {t("pdfButton")}
+            </a>
+            {r.level !== "critical" && r.kind === "evm" && (
               <Link href={`/send?to=${r.address}`} data-track="check:send" className="btn-ghost h-11 text-base">
                 <Send className="size-4" /> {t("sendCta")}
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
@@ -193,7 +214,7 @@ async function Report({ r }: { r: CheckReport }) {
           {r.sanctions.length > 0 && <Sanctions r={r} />}
           {r.contract?.isContract && r.contract.risk && <TokenRisk r={r} />}
           {r.counterparties && <Counterparties r={r} />}
-          {r.links && r.links.length > 0 && <LinkGraph links={r.links} network={r.network} explorer={explorer && r.kind === "evm" ? net?.explorer ?? null : null} />}
+          {r.links && r.links.length > 0 && <LinkGraph links={r.links} service={r.linksNote === "service"} network={r.network} explorer={explorer && r.kind === "evm" ? net?.explorer ?? null : null} />}
         </div>
         {hasAside && (
           <div className="flex flex-col gap-5">
@@ -218,6 +239,7 @@ async function Report({ r }: { r: CheckReport }) {
                 </dl>
               </Card>
             )}
+            {wallet && <WalletCard r={r} history={wallet} />}
             {hasOwnerCard && (
               <Card title={t("ownerTitle")}>
                 {ownerList.length > 0 && (
@@ -279,6 +301,45 @@ async function Report({ r }: { r: CheckReport }) {
   );
 }
 
+async function WalletCard({ r, history }: { r: CheckReport; history: NonNullable<CheckReport["history"]> }) {
+  const t = await getTranslations("Check");
+  const locale = (await getLocale()) as Locale;
+  const first = history.firstTxAt! * 1000;
+  const days = Math.max(0, Math.floor((Date.parse(r.checkedAt) - first) / 86_400_000));
+  const months = Math.floor(days / 30.4375);
+  const age =
+    days < 60 ? t("ageDays", { count: days }) : months < 12 ? t("ageMonths", { count: months }) : `${t("ageYears", { count: Math.floor(months / 12) })}${months % 12 ? ` ${t("ageMonths", { count: months % 12 })}` : ""}`;
+  const f = history.firstFunding;
+  const net = r.kind === "evm" && isNetworkId(r.network) ? NETWORKS[r.network] : null;
+  const amount = f ? (f.amount >= 100 ? Math.round(f.amount) : Number(f.amount.toFixed(f.amount < 1 ? 4 : 2))).toLocaleString(locale === "en" ? "en-US" : "ru-RU") : "";
+  return (
+    <Card title={t("walletTitle")}>
+      <dl className="flex flex-col gap-4">
+        <div>
+          <dt className="text-base text-silver-2">{t("firstTx")}</dt>
+          <dd className="mt-0.5 text-lg font-semibold text-silver-1">
+            {date(first, locale)} <span className="text-sm font-normal text-silver-2">· {age}</span>
+          </dd>
+        </div>
+        {f && (
+          <div>
+            <dt className="text-base text-silver-2">{t("firstFunding")}</dt>
+            <dd className="mt-0.5 text-base text-silver-1">
+              {date(f.at * 1000, locale)}
+              <span className="block text-sm text-silver-2">{t("fundingLine", { amount, asset: f.asset, kind: t(`fundingKind.${f.kind}`) })}</span>
+              {f.label && <span className="block text-sm text-silver-3">{f.label}</span>}
+              <span className="mt-1 block">
+                <Addr value={f.from} href={net ? `${net.explorer}/address/${f.from}` : r.kind === "tron" ? `https://tronscan.org/#/address/${f.from}` : r.kind === "bitcoin" ? `https://mempool.space/address/${f.from}` : null} />
+              </span>
+            </dd>
+          </div>
+        )}
+      </dl>
+      <p className="mt-3 text-sm text-silver-3">{t("walletNote")}</p>
+    </Card>
+  );
+}
+
 function Metric({
   label,
   value,
@@ -328,7 +389,14 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
   if (!r.contract?.isContract)
     rows.push({
       name: t("partCps"),
-      result: !cp ? t("cpSkipped") : cp.flagged.length ? t("cpSummaryFound", { flagged: cp.flagged.length, checked: cp.checked }) : t("cpSummaryNone", { checked: cp.checked }),
+      // the points come from the recent counterparties and from the transfer history with flagged addresses: say which of them exist
+      result:
+        [
+          cp ? (cp.flagged.length ? t("cpSummaryFound", { flagged: cp.flagged.length, checked: cp.checked }) : t("cpSummaryNone", { checked: cp.checked })) : null,
+          r.links && r.links.length ? t("cpLinks", { count: r.links.length }) : null,
+        ]
+          .filter(Boolean)
+          .join("; ") || t("cpSkipped"),
       points: parts.counterparties,
     });
   if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : r.contract.risk.context?.includes("skip_concentration") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenIncomplete")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });

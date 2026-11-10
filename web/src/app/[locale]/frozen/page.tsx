@@ -12,6 +12,7 @@ import type { FrozenPage } from "@/lib/api-types";
 import { DataError, getFrozen, limit } from "@/lib/data";
 import { cn, date, dateTime } from "@/lib/format";
 import { safeTarget, trackEvent } from "@/lib/metrics";
+import { one } from "@/lib/action";
 import { seo } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -42,14 +43,16 @@ const TD = "px-3 py-3.5 align-middle first:pl-4 last:pr-4 sm:first:pl-5 sm:last:
 const LINK = "inline-flex items-center gap-1.5 text-silver-1 underline decoration-line underline-offset-4 transition hover:decoration-silver-2";
 
 export default async function Frozen({ searchParams }: { searchParams: SP }) {
-  const sp = await searchParams;
+  const raw = await searchParams;
+  // a repeated query parameter arrives as an array: only its first value is used
+  const sp = { q: one(raw.q), chain: one(raw.chain), asset: one(raw.asset), page: one(raw.page) };
   const t = await getTranslations("Frozen");
   const locale = (await getLocale()) as Locale;
   const fmt = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "ru-RU");
   const chain = (CHAINS as readonly string[]).includes(sp.chain ?? "") ? sp.chain : undefined;
   const asset = sp.asset === "USDT" || sp.asset === "USDC" ? sp.asset : undefined;
   const q = sp.q?.trim().slice(0, 100) || undefined;
-  const page = Math.max(1, Number(sp.page) || 1);
+  const page = Math.min(10_000, Math.max(1, Number(sp.page) || 1));
 
   let data: FrozenPage | null = null;
   let error: DataError | null = null;

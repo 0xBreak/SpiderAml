@@ -12,3 +12,4 @@ frontend/
 relayer/
 shared/
 contracts/deployments/
+__pycache__/

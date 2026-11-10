@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import type { ApiErrorBody, SectionMap, SectionName, WhaleReport } from "./types";
 import type { FrozenPage, CheckReport, LabelMap, MarketsData, MetaInfo, ReportCategory, RequestsInfo, SanctionsPage } from "./api-types";
 import { demoCall, demoEnabled } from "./demo";
+import { clientIp } from "./ip";
 
 export class DataError extends Error {
   constructor(
@@ -52,9 +53,7 @@ const hits = new Map<string, number[]>();
 /** Sliding one-minute window per client IP. Throws a DataError the page renders like any other error. */
 export async function limit(bucket: string, perMinute: number) {
   if (demoEnabled()) return;
-  const h = await headers();
-  const ip = h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  const key = `${bucket}:${ip}`;
+  const key = `${bucket}:${clientIp(await headers())}`;
   const now = Date.now();
   const recent = (hits.get(key) ?? []).filter((t) => now - t < 60_000);
   if (recent.length >= perMinute) throw new DataError("RATE_LIMITED", "Слишком много запросов. Подождите минуту.", 429);
@@ -66,6 +65,22 @@ export async function limit(bucket: string, perMinute: number) {
 // ---------------------------------------------------------------- endpoints
 
 export const getCheck = (address: string, network: string) => call<CheckReport>("/v1/check", { address, network });
+
+/** The detailed report as a PDF. The data layer makes the check again (its caches keep this cheap) and draws the file. */
+export async function getCheckPdf(address: string, network: string, lang: "ru" | "en"): Promise<{ bytes: ArrayBuffer; id: string }> {
+  if (demoEnabled()) throw new DataError("UNAVAILABLE", "The PDF report needs the data layer.", 503);
+  let res: Response;
+  try {
+    res = await fetch(`${URL_}/v1/check/pdf?${new URLSearchParams({ address, network, lang })}`, { headers: { "x-spider-key": SECRET }, cache: "no-store", signal: AbortSignal.timeout(90_000) });
+  } catch {
+    throw new DataError("UNAVAILABLE", "Сервис данных временно недоступен.", 503);
+  }
+  if (!res.ok) {
+    const out = (await res.json().catch(() => null)) as ApiErrorBody | null;
+    throw new DataError(out?.error?.code ?? "UPSTREAM", out?.error?.message ?? "Ошибка сервиса данных.", res.status);
+  }
+  return { bytes: await res.arrayBuffer(), id: res.headers.get("x-report-id") ?? "" };
+}
 
 export const getSection = <K extends SectionName>(name: K, address: string, network: string, extra: Record<string, string | number> = {}) =>
   call<SectionMap[K] & { labels?: LabelMap }>("/v1/aml", { address, network, section: name, ...extra });

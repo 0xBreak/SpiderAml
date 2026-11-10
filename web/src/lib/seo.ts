@@ -24,3 +24,15 @@ export function seo(locale: string, path: string, searchParams?: Record<string, 
     ...(query ? { robots: { index: false, follow: true } } : {}),
   };
 }
+
+/**
+ * Metadata for a page that exists in one language only, or whose translation has its own path (a blog article):
+ * canonical is its own URL, hreflang lists only the languages that really have a page, x-default is the Russian one when it exists.
+ */
+export function seoOwn(locale: string, paths: Partial<Record<"ru" | "en", string>>): Pick<Metadata, "alternates"> {
+  const own = paths[locale as "ru" | "en"];
+  const languages: Record<string, string> = {};
+  for (const l of ["ru", "en"] as const) if (paths[l]) languages[l] = urlOf(l, paths[l]!);
+  if (paths.ru) languages["x-default"] = urlOf("ru", paths.ru);
+  return { alternates: { ...(own ? { canonical: urlOf(locale, own) } : {}), languages } };
+}

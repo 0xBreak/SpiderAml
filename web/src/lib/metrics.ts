@@ -4,6 +4,8 @@ import "server-only";
 import { headers } from "next/headers";
 import { cleanAddressInput } from "./action";
 import { OWNER_COOKIE } from "./owner";
+import { visitorHints } from "./hints";
+import { clientIp } from "./ip";
 
 export type EventKind = "pageview" | "click" | "check" | "token" | "whales" | "sanctions_search" | "report" | "send_screen";
 
@@ -29,7 +31,7 @@ export async function trackEvent(kind: EventKind, label: string | null, path: st
   if (!secret) return;
   const h = await headers();
   if (h.get("cookie")?.includes(`${OWNER_COOKIE}=1`)) return; // the owner's own browser
-  const ip = h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const ip = clientIp(h);
   // at most 60 events a minute per IP, so nobody can flood the table
   const now = Date.now();
   const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
@@ -41,7 +43,7 @@ export async function trackEvent(kind: EventKind, label: string | null, path: st
   fetch(`${process.env.DATA_URL ?? "http://127.0.0.1:8787"}/v1/events`, {
     method: "POST",
     headers: { "x-spider-key": secret, "content-type": "application/json" },
-    body: JSON.stringify({ ip, ua: h.get("user-agent") ?? "", country: h.get("cf-ipcountry"), events: [{ kind, path, label, ...safe }] }),
+    body: JSON.stringify({ ip, ua: h.get("user-agent") ?? "", country: h.get("cf-ipcountry"), hints: visitorHints(h), events: [{ kind, path, label, ...safe }] }),
     signal: AbortSignal.timeout(3000),
   }).catch(() => {});
 }

@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Heart, Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { ConsentSettings } from "./Analytics";
 import { Logo } from "./Logo";
@@ -70,6 +70,11 @@ export async function Footer({ locale }: { locale: Locale }) {
             <li>
               <Link href="/report" className="text-silver-2 hover:text-silver-1">
                 {tF("reportAddress")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/support" data-track="footer:support" className="inline-flex items-center gap-2 text-silver-2 hover:text-silver-1">
+                <Heart className="size-4 text-crit" aria-hidden /> {tF("support")}
               </Link>
             </li>
             {EMAIL && (
