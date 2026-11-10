@@ -318,4 +318,5 @@ npm run dev                    # http://localhost:3000
 
 Проблемы сайта и предложения: [workzero02@gmail.com](mailto:workzero02@gmail.com) ·
 сообщить об адресе мошенника: [spideraml.com/report](https://spideraml.com/report) ·
+поддержать проект: [spideraml.com/support](https://spideraml.com/support) ·
 [Telegram](https://t.me/spiderAml) · [X](https://x.com/SpiderAml) · [Instagram](https://www.instagram.com/spideraml) · [LinkedIn](https://www.linkedin.com/company/spideraml)

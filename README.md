@@ -319,4 +319,5 @@ Scores are produced automatically from public data. They are not legal advice an
 
 Site issues and suggestions: [workzero02@gmail.com](mailto:workzero02@gmail.com) ·
 report a scam address: [spideraml.com/report](https://spideraml.com/report) ·
+support the project: [spideraml.com/support](https://spideraml.com/support) ·
 [Telegram](https://t.me/spiderAml) · [X](https://x.com/SpiderAml) · [Instagram](https://www.instagram.com/spideraml) · [LinkedIn](https://www.linkedin.com/company/spideraml)

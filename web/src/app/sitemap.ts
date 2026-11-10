@@ -15,6 +15,7 @@ const PAGES: { path: string; priority: number; changeFrequency: "daily" | "weekl
   { path: "/report", priority: 0.5, changeFrequency: "monthly" },
   { path: "/terms", priority: 0.2, changeFrequency: "monthly" },
   { path: "/privacy", priority: 0.2, changeFrequency: "monthly" },
+  { path: "/support", priority: 0.3, changeFrequency: "monthly" },
 ];
 
 // Last real change of the static pages (update it when a page changes in substance); the pages built from daily data say "today".

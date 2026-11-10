@@ -22,6 +22,7 @@
     "socials": "Follow us",
     "reportBug": "Report a site bug",
     "reportBugSubject": "SpiderAML: site bug",
+    "support": "Support the project",
     "reportAddress": "Report a scam address",
     "tagline": "Crypto address screening from open and official data",
     "terms": "Terms of use",
@@ -412,6 +413,21 @@
     "eyebrow": "Materials",
     "otherLanguage": "Read in Russian",
     "russianOnly": "The articles are in Russian for now. Your browser can translate the page."
+  },
+  "Support": {
+    "eyebrow": "Support",
+    "title": "Support the project",
+    "metaDescription": "SpiderAML is free and needs no sign-up. If a check helped you, you can voluntarily help pay for servers and data.",
+    "sub": "SpiderAML is free and needs no sign-up. If a check helped you, you can voluntarily help pay for servers and data.",
+    "addressTitle": "Address",
+    "networks": "This is a plain wallet, and the same address works on every EVM network: {list}.",
+    "assets": "You can send ETH (or BNB, POL, AVAX on its own network), USDT, USDC and other well-known tokens. For stablecoins Arbitrum, Base or Polygon are the cheapest.",
+    "careful": "Compare the address on this screen with the one in your wallet (the first and last characters) and send a small amount first. A blockchain transfer cannot be reversed. Do not send tokens from networks that are not listed above (Bitcoin, Tron, Solana) to this address: they will be lost.",
+    "whyTitle": "Where the money goes",
+    "why": "Servers, paid data sources (transfer history, token markets, on-chain queries) and the time spent reviewing reports. The free address check stays free either way.",
+    "terms": "Support is voluntary: it gives no priority, special rights or services, and we do not promise a refund.",
+    "selfCheck": "The address is public, so you can check it with our own tool.",
+    "selfCheckLink": "Check this address"
   },
   "NotFound": {
     "title": "Page not found",
