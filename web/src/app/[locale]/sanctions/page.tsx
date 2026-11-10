@@ -9,7 +9,7 @@ import { GaEvent } from "@/components/Analytics";
 import { SanctionsFilters } from "./Filters";
 import type { SanctionsPage } from "@/lib/api-types";
 import { DataError, getSanctions } from "@/lib/data";
-import { trackEvent } from "@/lib/metrics";
+import { safeTarget, trackEvent } from "@/lib/metrics";
 import { one } from "@/lib/action";
 import { cn, date, dateTime } from "@/lib/format";
 import type { Locale } from "@/i18n/routing";
@@ -57,13 +57,13 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
   const tChain = await getTranslations("Chain");
   const locale = (await getLocale()) as Locale;
   const chainName = (c: string) => (tChain.has(c) ? tChain(c) : c);
-  const page = Math.max(1, Number(sp.page) || 1);
+  const page = Math.min(10_000, Math.max(1, Number(sp.page) || 1));
   const pageSize = (PAGE_SIZES as readonly number[]).includes(Number(sp.pageSize)) ? Number(sp.pageSize) : 10;
   let data: SanctionsPage | null = null;
   let error: DataError | null = null;
   try {
     data = await getSanctions({ q: sp.q?.slice(0, 100), chain: sp.chain, list: sp.list, page, pageSize });
-    if (sp.q || sp.chain || sp.list) trackEvent("sanctions_search", sp.list ?? sp.chain ?? "search", "/sanctions", { target: sp.q ?? null, network: sp.chain ?? null });
+    if (sp.q || sp.chain || sp.list) trackEvent("sanctions_search", sp.list ?? sp.chain ?? "search", "/sanctions", { target: sp.q ? safeTarget(sp.q) : null, network: sp.chain ?? null });
   } catch (e) {
     error = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);
   }

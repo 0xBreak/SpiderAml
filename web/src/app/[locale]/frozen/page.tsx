@@ -52,7 +52,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
   const chain = (CHAINS as readonly string[]).includes(sp.chain ?? "") ? sp.chain : undefined;
   const asset = sp.asset === "USDT" || sp.asset === "USDC" ? sp.asset : undefined;
   const q = sp.q?.trim().slice(0, 100) || undefined;
-  const page = Math.max(1, Number(sp.page) || 1);
+  const page = Math.min(10_000, Math.max(1, Number(sp.page) || 1));
 
   let data: FrozenPage | null = null;
   let error: DataError | null = null;

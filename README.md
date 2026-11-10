@@ -120,7 +120,7 @@ addresses".
 | Input | Contribution |
 |---|---|
 | strongest direct finding | severity 3 → 100, 2 → 60, 1 → 25 |
-| flagged counterparties (serious labels) in the last 50 transactions (Ethereum-style), the last 25 (Bitcoin) or the last 50 USDT transfers (Tron) | up to 40 (more flagged and critical ones weigh more) |
+| flagged counterparties (serious labels) in the latest transfers (up to 100 per provider, 50 at Zerion; Ethereum-style), the last 25 (Bitcoin) or the last 50 USDT transfers (Tron) | up to 40 (more flagged and critical ones weigh more) |
 | transfer history with flagged addresses (Ethereum addresses, built offline): the kind of the other address (sanctions, hack, mixer, phishing, scam), the size of the contact and the direction decide | up to 95 (sanctions 20–85, hack 15–80, mixer 20–75, phishing and scam 10–55, by size); a victim or an ordinary payment counts as context, 5–10 |
 | source of the first funding (a mixer, sanctioned, hack, scam or phishing sender scores like a link; a bridge or a DEX adds 5; an exchange or an unlabelled sender adds nothing) | up to the same table |
 | token heuristics, only if the address is a real token (has decimals and a total supply); routers, multisigs and exchange wallets are not scored as tokens | 70% of the token risk score |
@@ -143,8 +143,8 @@ decision, not proof of a crime. The issuers' own contracts are left out.
 checked one has dealt with. Rules: a link needs a real amount (ETH from 0.01, stablecoins from 100; far less for sanctioned,
 exploit and mixer addresses; dust, zero-value spam and look-alike tokens never count); an address linked to over a hundred flagged
 ones is infrastructure (a token, an exchange) and shows nothing; sending money to a phishing, scam or frozen address is
-drawn neutral, because that is far more often a victim or an ordinary payment. Links are shown for information and are
-not part of the score.
+drawn neutral, because that is far more often a victim or an ordinary payment. Links count in the score (see the table above):
+the base depends on the other side and on the size of the contact, a weak (severity 1) label is context only, and a service with its own label gets nothing.
 
 **Token risk factors.** Holder concentration excluding pools and burn addresses (30 points), liquidity depth against
 market cap (20), source verification (20), upgradeability and owner type (14), market coverage (10). A factor that

@@ -134,6 +134,7 @@
     "bitcoin_limited": "Bitcoin: lists, open databases and the latest 25 transactions, no deeper tracing.",
     "goplus_unavailable": "One source did not respond.",
     "counterparties_unavailable": "Transfer history unavailable.",
+    "history_unavailable": "Wallet history (age, first funding) is unavailable right now and is not in the score.",
     "contract_unavailable": "Could not tell whether this is a wallet or a contract: the token score was not calculated, all other checks were done.",
     "reviewed_clear": "The SpiderAML team reviewed this address and removed wrong flags from public databases. Official sanctions lists still apply."
   },
