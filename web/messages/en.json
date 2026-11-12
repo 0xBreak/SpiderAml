@@ -1105,7 +1105,7 @@
   },
   "Links": {
     "title": "Linked addresses",
-    "hint": "Transfers between this address and addresses from our databases, from the Ethereum blockchain history. Updated monthly.",
+    "hint": "Transfers between this address and the addresses in our databases, from the {network} blockchain history collected in advance from open sources.",
     "centre": "address",
     "aria": "Diagram of the checked address and the flagged addresses it exchanged transfers with",
     "legend": "Arrow towards the centre: the address received from it. Arrow away from the centre: the address sent to it. A thicker line means more transfers.",
