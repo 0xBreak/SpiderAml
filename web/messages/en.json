@@ -23,6 +23,7 @@
     "reportBug": "Report a site bug",
     "reportBugSubject": "SpiderAML: site bug",
     "support": "Support the project",
+    "services": "Services",
     "reportAddress": "Report a scam address",
     "tagline": "Crypto address screening from open and official data",
     "terms": "Terms of use",
@@ -413,6 +414,74 @@
     "eyebrow": "Materials",
     "otherLanguage": "Read in Russian",
     "russianOnly": "The articles are in Russian for now. Your browser can translate the page."
+  },
+  "Services": {
+    "eyebrow": "Services",
+    "title": "Services: investigations and consulting",
+    "metaDescription": "Fund tracing, project investigations, address dossiers, incident support, team training, blockchain data and consulting. Contact by email or Telegram.",
+    "sub": "The address check on the site is free and stays free. When the task is bigger than one check, we help with hands-on work: tracing the movement of funds, preparing reports and training teams.",
+    "resultLabel": "What you get",
+    "whoLabel": "Who it is for",
+    "discuss": "Discuss",
+    "items": {
+      "tracing": {
+        "title": "Fund tracing",
+        "text": "We follow where stolen or scam-bound money went: transfer chains, bridges between networks, mixers and the exchanges the funds reached.",
+        "result": "A map of the movement of funds, a list of addresses and exchanges, a table of transfers with amounts. A pack of material for a request to an exchange or to law enforcement.",
+        "who": "Scam victims, projects after a hack, lawyers."
+      },
+      "project": {
+        "title": "Project or organisation investigation",
+        "text": "We look into a project: who stands behind it, what its contracts and wallets look like, where the team's money comes from and goes, whether there are links to sanctioned addresses, hacks and scam schemes.",
+        "result": "A report with findings and evidence for each point. Neutral wording, no accusations.",
+        "who": "Investors, exchanges and listing teams, partners before a deal."
+      },
+      "dossier": {
+        "title": "Address or wallet dossier",
+        "text": "We gather everything publicly known about an address: labels in databases, mentions in open sources, transfer history, links to flagged addresses.",
+        "result": "A PDF report with links to sources and archived copies of the pages.",
+        "who": "Compliance teams, lawyers, journalists."
+      },
+      "incident": {
+        "title": "Incident support",
+        "text": "We help in the first days after a hack or a scam: we record the traces, follow the movement of the withdrawn funds and prepare letters to exchanges and statements.",
+        "result": "One picture of the events, monitoring of the withdrawn funds, texts of the requests.",
+        "who": "Projects and individuals who lost funds."
+      },
+      "training": {
+        "title": "Staff training",
+        "text": "We teach teams to work with blockchain data and AML tools: reading transfer chains, using label and sanctions databases, assessing the risk of an address and a token, writing reports.",
+        "result": "A practical course with real cases and materials for the team.",
+        "who": "Compliance, security and support teams."
+      },
+      "data": {
+        "title": "Blockchain data and private databases",
+        "text": "We run our own network nodes and extract the data you need: transactions, contract events, address history. We build private AML databases for your task: your own lists and internal blacklists.",
+        "result": "A ready dataset or database with a description of its structure and how it is updated.",
+        "who": "Exchanges, wallets, analytics teams."
+      },
+      "consulting": {
+        "title": "Blockchain technology consulting",
+        "text": "We advise on how networks and smart contracts work, product risks, the architecture of screening systems and the choice of data sources.",
+        "result": "A review of your task and concrete recommendations: a call or a written opinion.",
+        "who": "Product teams and startups."
+      }
+    },
+    "howTitle": "How it works",
+    "steps": [
+      "You write by email or Telegram: the task in short, the addresses and the deadline.",
+      "We estimate the scope and name the time and the price before the work starts.",
+      "We do the work and hand over the report. If needed, we answer questions from lawyers and exchanges."
+    ],
+    "honestTitle": "What we can and cannot do",
+    "honest": "We do not promise to return money and we do not take a prepayment for a \"recovery\". Tracing shows where the funds went, and getting them back is possible only through an exchange, a platform or a court. Beware of people who write to a victim first and promise to get the funds back for a fee: that is a scam of its own.",
+    "honestLink": "How such schemes work",
+    "scope": "Reports are informational: they are not a legal opinion and not an accusation against the owner of an address. We work with open and official data, and the details of your task stay confidential.",
+    "contactTitle": "Get in touch",
+    "contactText": "Describe the task in a few lines and we will suggest a way to work.",
+    "emailBtn": "Write by email",
+    "telegramBtn": "Write on Telegram",
+    "emailSubject": "SpiderAML: services"
   },
   "Support": {
     "eyebrow": "Support",

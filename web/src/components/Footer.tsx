@@ -73,6 +73,11 @@ export async function Footer({ locale }: { locale: Locale }) {
               </Link>
             </li>
             <li>
+              <Link href="/services" data-track="footer:services" className="text-silver-2 hover:text-silver-1">
+                {tF("services")}
+              </Link>
+            </li>
+            <li>
               <Link href="/support" data-track="footer:support" className="inline-flex items-center gap-2 text-silver-2 hover:text-silver-1">
                 <Heart className="size-4 text-crit" aria-hidden /> {tF("support")}
               </Link>
