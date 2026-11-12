@@ -1037,7 +1037,8 @@
     "src_gpl": "лицензия GPL-3.0",
     "src_ccby": "лицензия CC-BY 4.0; автор: Ishmukhamedov, 2025, DOI 10.57967/hf/6373; снимок данных на июль 2025",
     "src_cg": "рыночные данные: Data provided by CoinGecko",
-    "src_etherscan": "Powered by Etherscan.io APIs: история адресов и переводов в момент запроса"
+    "src_etherscan": "Powered by Etherscan.io APIs: история адресов и переводов в момент запроса",
+    "src_pig": "лицензия CC BY-NC-ND 4.0; авторы: Griffin, J. и Mei, K., 2026, DOI 10.5281/zenodo.23379590; метки бирж и адреса из жалоб пользователей"
   },
   "Privacy": {
     "title": "Конфиденциальность",

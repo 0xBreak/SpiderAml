@@ -26,6 +26,7 @@ const SOURCES = [
   { links: [{ name: "Ethereum Fraud Dataset by Activity (Ishmukhamedov, 2025)", url: "https://doi.org/10.57967/hf/6373" }], terms: "src_ccby" },
   { links: [{ name: "CoinGecko", url: "https://www.coingecko.com" }], terms: "src_cg" },
   { links: [{ name: "Etherscan APIs", url: "https://etherscan.io" }], terms: "src_etherscan" },
+  { links: [{ name: "The Crypto Economics of Pig Butchering, Data and Code (Griffin and Mei, 2026)", url: "https://doi.org/10.5281/zenodo.23379590" }], terms: "src_pig" },
 ] as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
