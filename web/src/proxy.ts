@@ -29,8 +29,18 @@ const CRAWLER = /bot|crawl|spider|slurp|preview|headless|wget|curl|python|go-htt
 const CANONICAL_HOST = process.env.CANONICAL_HOST ?? "";
 const INTERNAL = /^(localhost|127\.0\.0\.1|web)(:\d+)?$/;
 
+/** Crawlers that ignore robots.txt as often as not: refused before any page is rendered. */
+const GREEDY_BOT = /GPTBot|ClaudeBot|anthropic-ai|CCBot|Bytespider|Amazonbot|meta-externalagent|PetalBot|DotBot|MJ12bot|AhrefsBot|SemrushBot|DataForSeoBot|ImagesiftBot|cohere-ai|PerplexityBot|omgili|Diffbot|Timpibot/i;
+/** Pages where a request runs a real check or query: a robot that says so in its user agent does not get them (a browser without Sec-Fetch headers, an old Safari, still does). */
+const COSTLY = /^(?:\/en)?\/(?:check|token|whales|sanctions)(?:\/pdf)?\/?$/;
+
 export function proxy(req: NextRequest, ev: NextFetchEvent) {
   const h = req.headers;
+  const uaIn = h.get("user-agent") ?? "";
+  if (GREEDY_BOT.test(uaIn)) return new NextResponse("Forbidden", { status: 403, headers: { "cache-control": "no-store" } });
+  if (req.method === "GET" && req.nextUrl.search && COSTLY.test(req.nextUrl.pathname) && !INTERNAL.test(h.get("host") ?? "") && !SHARE_BOT.test(uaIn) && CRAWLER.test(uaIn)) {
+    return new NextResponse("Too Many Requests", { status: 429, headers: { "retry-after": "3600", "cache-control": "no-store" } });
+  }
   const host = h.get("host") ?? "";
   const fromInside = INTERNAL.test(host);
 

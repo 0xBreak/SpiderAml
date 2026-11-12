@@ -1,3 +1,4 @@
+import { cache } from "react";
 // One address from an official sanctions list: what the regulator published, with a link to the record.
 // Search-engine landing page for people who look up a specific address; wording stays factual (a regulator's entry, not our verdict).
 import type { Metadata } from "next";
@@ -25,10 +26,12 @@ const EXPLORER: Record<string, (a: string) => string> = {
 };
 
 /** Every entry for this exact address (it can sit on several lists); case does not matter for hex addresses only. */
-async function entries(address: string): Promise<SanctionItem[]> {
+const entries = cache(async (address: string): Promise<SanctionItem[]> => {
+  // one lookup and one rate-limit hit per request: the metadata and the page share the cached result
+  await limit("sanction-address", 30);
   const page = await getSanctions({ q: address, pageSize: 20 });
   return page.items.filter((s) => s.address.toLowerCase() === address.toLowerCase());
-}
+});
 
 type Params = Promise<{ locale: string; address: string }>;
 
@@ -55,7 +58,6 @@ export default async function SanctionedAddress({ params }: { params: Params }) 
 
   let found: SanctionItem[] = [];
   try {
-    await limit("sanction-address", 30);
     found = await entries(address);
   } catch (e) {
     const err = e instanceof DataError ? e : new DataError("UPSTREAM", "", 500);

@@ -8,7 +8,7 @@ import { Card, Empty, ErrorBox, Notice, PageTitle } from "@/components/ui";
 import { GaEvent } from "@/components/Analytics";
 import { SanctionsFilters } from "./Filters";
 import type { SanctionsPage } from "@/lib/api-types";
-import { DataError, getSanctions } from "@/lib/data";
+import { DataError, getSanctions, limit } from "@/lib/data";
 import { safeTarget, trackEvent } from "@/lib/metrics";
 import { one } from "@/lib/action";
 import { cn, date, dateTime } from "@/lib/format";
@@ -62,6 +62,8 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
   let data: SanctionsPage | null = null;
   let error: DataError | null = null;
   try {
+    // the plain list is cheap; a search, a filter or a deep page is a query of its own and counts against the per-visitor limit
+    if (sp.q || sp.chain || sp.list || page > 1) await limit("sanctions", 30);
     data = await getSanctions({ q: sp.q?.slice(0, 100), chain: sp.chain, list: sp.list, page, pageSize });
     if (sp.q || sp.chain || sp.list) trackEvent("sanctions_search", sp.list ?? sp.chain ?? "search", "/sanctions", { target: sp.q ? safeTarget(sp.q) : null, network: sp.chain ?? null });
   } catch (e) {

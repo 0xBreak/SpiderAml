@@ -42,6 +42,10 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // a check, a query or a PDF is for one person: never an index entry
+      { source: "/:path*", has: [{ type: "query", key: "address" }], headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      { source: "/:path*", has: [{ type: "query", key: "q" }], headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      { source: "/:path*/pdf", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
       {
         source: "/(.*)",
         headers: [

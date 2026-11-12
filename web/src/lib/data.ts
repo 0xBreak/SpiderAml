@@ -53,8 +53,14 @@ const hits = new Map<string, number[]>();
 /** Sliding one-minute window per client IP. Throws a DataError the page renders like any other error. */
 export async function limit(bucket: string, perMinute: number) {
   if (demoEnabled()) return;
-  const key = `${bucket}:${clientIp(await headers())}`;
+  const h = await headers();
+  const key = `${bucket}:${clientIp(h)}`;
   const now = Date.now();
+  // a ceiling for the whole site as well: a crawler that comes from a thousand addresses is stopped by the sum, not by its parts
+  const all = (hits.get(`all:${bucket}`) ?? []).filter((x) => now - x < 60_000);
+  if (all.length >= perMinute * 6) throw new DataError("RATE_LIMITED", "Слишком много запросов. Подождите минуту.", 429);
+  all.push(now);
+  hits.set(`all:${bucket}`, all);
   const recent = (hits.get(key) ?? []).filter((t) => now - t < 60_000);
   if (recent.length >= perMinute) throw new DataError("RATE_LIMITED", "Слишком много запросов. Подождите минуту.", 429);
   recent.push(now);
