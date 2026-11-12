@@ -49,10 +49,10 @@ export async function Header({ locale }: { locale: Locale }) {
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-page items-center gap-6 px-4">
         <Logo />
-        <div className="hidden lg:block">
+        <div className="hidden flex-1 justify-center lg:flex">
           <NavDesktop groups={groups} />
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 lg:ml-0">
           <LanguageSwitcher />
           <Link href="/check" className="btn-primary hidden h-9 px-4 text-[13px] sm:inline-flex">
             <Search className="size-4" aria-hidden /> {t("checkCta")}
