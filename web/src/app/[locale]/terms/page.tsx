@@ -26,6 +26,8 @@ const SOURCES = [
   { links: [{ name: "Ethereum Fraud Dataset by Activity (Ishmukhamedov, 2025)", url: "https://doi.org/10.57967/hf/6373" }], terms: "src_ccby" },
   { links: [{ name: "CoinGecko", url: "https://www.coingecko.com" }], terms: "src_cg" },
   { links: [{ name: "Etherscan APIs", url: "https://etherscan.io" }], terms: "src_etherscan" },
+  { links: [{ name: "Real-CATS (Southeast University)", url: "https://github.com/sjdseu/Real-CATS" }], terms: "src_mit" },
+  { links: [{ name: "eth-labels (dawsbot)", url: "https://github.com/dawsbot/eth-labels" }], terms: "src_mit" },
   { links: [{ name: "The Crypto Economics of Pig Butchering, Data and Code (Griffin and Mei, 2026)", url: "https://doi.org/10.5281/zenodo.23379590" }], terms: "src_pig" },
 ] as const;
 
