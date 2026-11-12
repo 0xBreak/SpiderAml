@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       { userAgent: GREEDY, disallow: "/" },
       // every parameterised URL runs a real check or a database query: a crawler gets the static pages only
-      { userAgent: "*", allow: "/", disallow: ["/api/", "/report/status", "/cdn-cgi/", "/*?address=", "/*?q=", "/*?page=", "/*?network=", "/check/pdf", "/en/check/pdf"], crawlDelay: 10 },
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/report/status", "/en/report/status", "/cdn-cgi/", "/*?address=", "/*&address=", "/*?q=", "/*&q=", "/*?page=", "/*?network=", "/check/pdf", "/en/check/pdf"], crawlDelay: 10 },
     ],
     sitemap: `${SITE}/sitemap.xml`,
   };

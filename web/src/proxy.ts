@@ -41,6 +41,8 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
   const uaIn = h.get("user-agent") ?? "";
   if (GREEDY_BOT.test(uaIn)) return new NextResponse("Forbidden", { status: 403, headers: { "cache-control": "no-store" } });
   if (req.method === "GET" && req.nextUrl.search && COSTLY.test(req.nextUrl.pathname) && !INTERNAL.test(h.get("host") ?? "") && !SHARE_BOT.test(uaIn) && ROBOT.test(uaIn)) {
+    // a search engine is told "forbidden" (robots.txt already says so): a 429 would make it slow down on the whole site
+    if (/Googlebot|bingbot|DuckDuckBot|YandexBot|Baiduspider|Applebot/i.test(uaIn)) return new NextResponse("Forbidden", { status: 403, headers: { "cache-control": "no-store" } });
     return new NextResponse("Too Many Requests", { status: 429, headers: { "retry-after": "3600", "cache-control": "no-store" } });
   }
   const host = h.get("host") ?? "";
