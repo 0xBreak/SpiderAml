@@ -325,6 +325,9 @@
     "cpTitle": "Connections",
     "cpHint": "Addresses: {count}",
     "cpEmpty": "None of the recent counterparties carries a risk label.",
+    "cpEmptyDirect": "None of the recent counterparties carries a risk label itself.",
+    "cpIndirect": "These counterparties have no label, but our transfer history links them to flagged addresses. It is a hint, worth at most 10 points in total.",
+    "cpIndirectScore": "link score {score}",
     "cpFound": "Some counterparties are in risk databases. This counts in the score but does not by itself make the address risky.",
     "explorerLabel": "Explorer",
     "stepLabel": "Step {n}",
@@ -1050,6 +1053,10 @@
       [
         "In short",
         "There is no sign-up. We do not ask for your name, email or phone, do not store IP addresses and use no advertising cookies. We turn on Google Analytics only if you agree in the banner; until then nothing from Google is loaded."
+      ],
+      [
+        "Telegram bot",
+        "If you use our Telegram bot, we store your numeric Telegram ID (not your name or username), the interface language and, for each check, the address, the network and the result, to count usage and to protect the paid lookups from abuse. This is a link between an ID and an address, kept for a limited time. Write to us to have it deleted."
       ],
       [
         "Visit statistics",
