@@ -1034,13 +1034,9 @@
     "src_eu": "© European Union, reuse authorised with acknowledgement of the source",
     "src_mit": "MIT licence",
     "src_gpl": "GPL-3.0 licence",
-    "src_labels": "open set of explorer labels (MIT)",
-    "src_goplus": "checked at the time of the request through an open API; the flags it returns are kept in our database with the source named",
-    "src_chain": "public blockchain data: blacklist events of the USDT and USDC contracts",
-    "src_btc": "Bitcoin transactions at the time of the request, through a public API",
     "src_ccby": "licence CC-BY 4.0; author: Ishmukhamedov, 2025, DOI 10.57967/hf/6373; data snapshot of July 2025",
     "src_cg": "market data: Data provided by CoinGecko",
-    "src_zerion": "balances, prices and transaction history"
+    "src_etherscan": "Powered by Etherscan.io APIs: address and transfer history at the time of the request"
   },
   "Privacy": {
     "title": "Privacy",
