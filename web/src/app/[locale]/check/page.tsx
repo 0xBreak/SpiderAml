@@ -574,8 +574,10 @@ async function Counterparties({ r }: { r: CheckReport }) {
   const explorer = isNetworkId(r.network) ? NETWORKS[r.network].explorer : null;
   return (
     <Card title={t("cpTitle")}>
-      {c.flagged.length === 0 ? (
+      {c.flagged.length === 0 && !c.indirect?.length ? (
         <p className="text-base text-silver-2">{t("cpEmpty")}</p>
+      ) : c.flagged.length === 0 ? (
+        <p className="text-base text-silver-2">{t("cpEmptyDirect")}</p>
       ) : (
         <>
           <p className="text-base leading-relaxed text-silver-2">{t("cpFound")}</p>
@@ -611,6 +613,21 @@ async function Counterparties({ r }: { r: CheckReport }) {
             ))}
           </ul>
         </>
+      )}
+          {(c.indirect?.length ?? 0) > 0 && (
+        <div className="mt-5 border-t border-line/60 pt-4">
+          <p className="text-base leading-relaxed text-silver-2">{t("cpIndirect")}</p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {c.indirect!.map((x) => (
+              <li key={x.address} className="flex flex-wrap items-center gap-3">
+                <Link href={`/check?address=${x.address}&network=${r.network}`} className="font-mono text-sm text-silver-1 hover:underline">
+                  {short(x.address)}
+                </Link>
+                <span className="text-sm text-silver-3">{t("cpIndirectScore", { score: x.score })}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </Card>
   );

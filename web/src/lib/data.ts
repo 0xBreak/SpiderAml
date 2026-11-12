@@ -53,14 +53,28 @@ const hits = new Map<string, number[]>();
 /** Sliding one-minute window per client IP. Throws a DataError the page renders like any other error. */
 export async function limit(bucket: string, perMinute: number) {
   if (demoEnabled()) return;
-  const key = `${bucket}:${clientIp(await headers())}`;
+  const h = await headers();
+  const key = `${bucket}:${clientIp(h)}`;
   const now = Date.now();
+  const tooMany = () => new DataError("RATE_LIMITED", "Слишком много запросов. Подождите минуту.", 429);
+  // 1. the person's own limit first: a refused request must not use up the shared ceiling
   const recent = (hits.get(key) ?? []).filter((t) => now - t < 60_000);
-  if (recent.length >= perMinute) throw new DataError("RATE_LIMITED", "Слишком много запросов. Подождите минуту.", 429);
+  if (recent.length >= perMinute) throw tooMany();
+  // 2. a ceiling for the whole site: a crawler that comes from a thousand addresses is stopped by the sum, not by its parts.
+  // It is generous (20 times the personal limit) so that a mention in a chat or a post does not lock out real visitors.
+  const all = (hits.get(`all:${bucket}`) ?? []).filter((x) => now - x < 60_000);
+  if (all.length >= perMinute * 20) throw tooMany();
   recent.push(now);
   hits.set(key, recent);
-  if (hits.size > 5000) for (const [k, v] of hits) if (v.every((t) => now - t >= 60_000)) hits.delete(k);
+  all.push(now);
+  hits.set(`all:${bucket}`, all);
+  // clean up at most twice a minute, whatever the size: a map of thousands of idle keys must not be walked on every request
+  if (now - lastSweep > 30_000) {
+    lastSweep = now;
+    for (const [k, v] of hits) if (v.every((t) => now - t >= 60_000)) hits.delete(k);
+  }
 }
+let lastSweep = 0;
 
 // ---------------------------------------------------------------- endpoints
 

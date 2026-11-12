@@ -8,7 +8,7 @@ export interface Social {
 
 export const SOCIALS: Social[] = [
   { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/company/spideraml" },
-  { id: "telegram", label: "Telegram @spiderAml", url: "https://t.me/spiderAml" },
+  { id: "telegram", label: "Telegram channel @spiderAml", url: "https://t.me/spiderAml" },
   { id: "x", label: "X", url: "https://x.com/SpiderAml" },
   { id: "instagram", label: "Instagram", url: "https://www.instagram.com/spideraml" },
 ];

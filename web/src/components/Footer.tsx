@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { ConsentSettings } from "./Analytics";
 import { Logo } from "./Logo";
 import { SocialIcon } from "./SocialIcons";
+import { TELEGRAM_HANDLE, TELEGRAM_URL } from "@/lib/contact";
 import { SOCIALS } from "@/lib/socials";
 import { visibleNav } from "./Header";
 import { Link } from "@/i18n/navigation";
@@ -10,7 +11,6 @@ import type { Locale } from "@/i18n/routing";
 
 // Contacts are shown only when configured (build args in docker-compose), so a dead address never reaches the site.
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
-const TELEGRAM = process.env.NEXT_PUBLIC_TELEGRAM?.trim().replace(/^@/, "");
 
 export async function Footer({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Nav" });
@@ -84,14 +84,12 @@ export async function Footer({ locale }: { locale: Locale }) {
                 </a>
               </li>
             )}
-            {TELEGRAM && !SOCIALS.some((so) => so.url.toLowerCase().endsWith(`/${TELEGRAM.toLowerCase()}`)) && (
               <li>
-                <a href={`https://t.me/${TELEGRAM}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-silver-2 hover:text-silver-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/brand/telegram.svg" alt="" aria-hidden="true" className="size-4" /> @{TELEGRAM}
-                </a>
+              <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-silver-2 hover:text-silver-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/telegram.svg" alt="" aria-hidden="true" className="size-4" /> @{TELEGRAM_HANDLE}
+              </a>
               </li>
-            )}
           </ul>
         </div>
       </div>

@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/routing";
 import type { CheckLink } from "@/lib/api-types";
 import { cn, date, short } from "@/lib/format";
 import { ringLayout, strokeOf, trim } from "@/lib/graph";
+import { NETWORKS } from "@/lib/networks";
 
 const SHOWN = 16; // nodes on the picture; the list below has all of them
 const W = 760; // wider than the ring needs, so the names beside the outer nodes are not cut at the edge
@@ -33,6 +34,7 @@ export async function LinkGraph({ links, network, explorer, service = false }: {
   const t = await getTranslations("Links");
   const tCat = await getTranslations("Category");
   const locale = (await getLocale()) as Locale;
+  const networkName = network === "tron" ? "Tron" : network === "bitcoin" ? "Bitcoin" : (NETWORKS as Record<string, { label: string }>)[network]?.label ?? network;
   const nf = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const shown = links.slice(0, SHOWN);
   const pts = ringLayout(shown.length, W, H);
@@ -54,7 +56,7 @@ export async function LinkGraph({ links, network, explorer, service = false }: {
       .join(" · ");
 
   return (
-    <Card title={t("title")} hint={t("hint")}>
+    <Card title={t("title")} hint={t("hint", { network: networkName })}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("aria")} className="mx-auto h-auto w-full max-w-[760px]">
         <defs>
           {[["crit", "var(--color-crit)"], ["warn", "var(--color-warn)"], ["muted", "var(--color-silver-3)"]].map(([id, color]) => (

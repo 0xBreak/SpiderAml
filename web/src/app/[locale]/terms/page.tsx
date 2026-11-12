@@ -8,20 +8,27 @@ import { PageTitle } from "@/components/ui";
 const UPDATED = "2026-11-03";
 const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
 
+// Only the sources whose licence or terms ask for a credit (or that the owner chose to credit). Services used only through an API whose terms ask for no credit are not listed.
 const SOURCES = [
-  { name: "OFAC SDN List (US Treasury)", url: "https://ofac.treasury.gov/sanctions-list-service", terms: "src_ofac" },
-  { name: "UK Sanctions List (FCDO)", url: "https://www.gov.uk/government/publications/the-uk-sanctions-list", terms: "src_uk" },
-  { name: "EU Financial Sanctions Files", url: "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions", terms: "src_eu" },
-  { name: "MyEtherWallet ethereum-lists", url: "https://github.com/MyEtherWallet/ethereum-lists", terms: "src_mit" },
-  { name: "ScamSniffer scam-database", url: "https://github.com/scamsniffer/scam-database", terms: "src_gpl" },
-  { name: "Forta labelled-datasets", url: "https://github.com/forta-network/labelled-datasets", terms: "src_mit" },
-  { name: "etherscan-labels", url: "https://github.com/brianleect/etherscan-labels", terms: "src_labels" },
-  { name: "GoPlus Security", url: "https://gopluslabs.io", terms: "src_goplus" },
-  { name: "Tether and Circle: USDT and USDC contracts (Etherscan, TronGrid)", url: "https://tether.to/en/transparency/", terms: "src_chain" },
-  { name: "mempool.space and Blockstream", url: "https://mempool.space", terms: "src_btc" },
-  { name: "Ethereum Fraud Dataset by Activity (Ishmukhamedov, 2025)", url: "https://doi.org/10.57967/hf/6373", terms: "src_ccby" },
-  { name: "CoinGecko", url: "https://www.coingecko.com", terms: "src_cg" },
-  { name: "Zerion", url: "https://zerion.io", terms: "src_zerion" },
+  { links: [{ name: "OFAC SDN List (US Treasury)", url: "https://ofac.treasury.gov/sanctions-list-service" }], terms: "src_ofac" },
+  { links: [{ name: "UK Sanctions List (FCDO)", url: "https://www.gov.uk/government/publications/the-uk-sanctions-list" }], terms: "src_uk" },
+  { links: [{ name: "EU Financial Sanctions Files", url: "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions" }], terms: "src_eu" },
+  {
+    links: [
+      { name: "MyEtherWallet ethereum-lists", url: "https://github.com/MyEtherWallet/ethereum-lists" },
+      { name: "Forta labelled-datasets", url: "https://github.com/forta-network/labelled-datasets" },
+      { name: "etherscan-labels", url: "https://github.com/brianleect/etherscan-labels" },
+    ],
+    terms: "src_mit",
+  },
+  { links: [{ name: "GraphSense TagPacks", url: "https://github.com/graphsense/graphsense-tagpacks" }], terms: "src_graphsense" },
+  { links: [{ name: "ScamSniffer scam-database", url: "https://github.com/scamsniffer/scam-database" }], terms: "src_gpl" },
+  { links: [{ name: "Ethereum Fraud Dataset by Activity (Ishmukhamedov, 2025)", url: "https://doi.org/10.57967/hf/6373" }], terms: "src_ccby" },
+  { links: [{ name: "CoinGecko", url: "https://www.coingecko.com" }], terms: "src_cg" },
+  { links: [{ name: "Etherscan APIs", url: "https://etherscan.io" }], terms: "src_etherscan" },
+  { links: [{ name: "Real-CATS (Southeast University)", url: "https://github.com/sjdseu/Real-CATS" }], terms: "src_mit" },
+  { links: [{ name: "eth-labels (dawsbot)", url: "https://github.com/dawsbot/eth-labels" }], terms: "src_mit" },
+  { links: [{ name: "The Crypto Economics of Pig Butchering, Data and Code (Griffin and Mei, 2026)", url: "https://doi.org/10.5281/zenodo.23379590" }], terms: "src_pig" },
 ] as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -46,10 +53,15 @@ export default async function Terms() {
         <h2 className="text-lg font-semibold text-silver-1">{t("sources")}</h2>
         <ul className="mt-2 flex flex-col gap-1.5 text-sm">
           {SOURCES.map((s) => (
-            <li key={s.name}>
-              <a href={s.url} target="_blank" rel="noopener noreferrer" className="link">
-                {s.name}
-              </a>
+            <li key={s.terms}>
+              {s.links.map((l, i) => (
+                <span key={l.url}>
+                  {i > 0 && ", "}
+                  <a href={l.url} target="_blank" rel="noopener noreferrer" className="link">
+                    {l.name}
+                  </a>
+                </span>
+              ))}
               <span className="text-silver-3"> — {t(s.terms)}</span>
             </li>
           ))}

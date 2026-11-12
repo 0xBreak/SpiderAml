@@ -39,8 +39,8 @@ export interface CheckReport {
   possibleScam: boolean;
   findings: Finding[];
   tags: Finding[];
-  sanctions: { list: string; name: string; program: string | null; asset: string; url: string; firstSeen: number; checkedAt: number }[];
-  counterparties: { checked: number; flagged: { address: string; category: Category; severity: Severity; label: string }[] } | null;
+  sanctions: { list: string; name: string; program: string | null; asset: string; url: string; firstSeen: number; checkedAt: number; listedAt?: string | null }[];
+  counterparties: { checked: number; flagged: { address: string; category: Category; severity: Severity; label: string }[]; indirect?: { address: string; score: number }[] } | null;
   /** transfers with flagged addresses from the offline history; missing on an older data layer */
   links?: CheckLink[];
   /** 'service': an exchange, protocol or token with its own label; its links are information and are not scored */
