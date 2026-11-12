@@ -21,6 +21,7 @@ const SOURCES = [
     ],
     terms: "src_mit",
   },
+  { links: [{ name: "GraphSense TagPacks", url: "https://github.com/graphsense/graphsense-tagpacks" }], terms: "src_graphsense" },
   { links: [{ name: "ScamSniffer scam-database", url: "https://github.com/scamsniffer/scam-database" }], terms: "src_gpl" },
   { links: [{ name: "Ethereum Fraud Dataset by Activity (Ishmukhamedov, 2025)", url: "https://doi.org/10.57967/hf/6373" }], terms: "src_ccby" },
   { links: [{ name: "CoinGecko", url: "https://www.coingecko.com" }], terms: "src_cg" },
