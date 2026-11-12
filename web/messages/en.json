@@ -15,7 +15,10 @@
     "checkCta": "Check an address",
     "menu": "Menu",
     "sections": "Sections",
-    "frozen": "Frozen"
+    "frozen": "Frozen",
+    "tools": "Tools",
+    "data": "Databases",
+    "services": "Services"
   },
   "Footer": {
     "contact": "Contact",
@@ -417,69 +420,192 @@
   },
   "Services": {
     "eyebrow": "Services",
-    "title": "Services: investigations and consulting",
-    "metaDescription": "Fund tracing, project investigations, address dossiers, incident support, team training, blockchain data and consulting. Contact by email or Telegram.",
-    "sub": "The address check on the site is free and stays free. When the task is bigger than one check, we help with hands-on work: tracing the movement of funds, preparing reports and training teams.",
+    "title": "Crypto fund tracing, investigations and consulting",
+    "sub": "We trace funds, prepare dossiers on addresses and projects, train teams and set up private databases. We work with Ethereum and other EVM networks, Tron and Bitcoin.",
+    "metaDescription": "Tracing of stolen funds, address dossiers, project investigations, incident support, staff training, blockchain data and consulting. Contact on Telegram or by e-mail.",
+    "cta": "Discuss your task",
+    "ctaNote": "One address or a transaction hash and a few lines about the situation are enough.",
+    "audience": [
+      "Scam victims",
+      "Projects and exchanges",
+      "Lawyers",
+      "Compliance and security",
+      "Investors"
+    ],
+    "servicesTitle": "What we do",
+    "includesLabel": "What is included",
     "resultLabel": "What you get",
-    "whoLabel": "Who it is for",
+    "inputLabel": "What we need from you",
+    "termLabel": "Timeline",
     "discuss": "Discuss",
     "items": {
       "tracing": {
         "title": "Fund tracing",
-        "text": "We follow where stolen or scam-bound money went: transfer chains, bridges between networks, mixers and the exchanges the funds reached.",
-        "result": "A map of the movement of funds, a list of addresses and exchanges, a table of transfers with amounts. A pack of material for a request to an exchange or to law enforcement.",
-        "who": "Scam victims, projects after a hack, lawyers."
+        "lead": "We show where the money went after a scam or a hack.",
+        "includes": [
+          "The chain of transfers from the victim's address to an exchange or to the point where the trail ends",
+          "Passing through bridges between networks, swaps and mixers (Tornado Cash and similar are marked)",
+          "Identifying the exchanges and services the funds reached, from our labels",
+          "Checking whether Tether or Circle froze part of the funds"
+        ],
+        "result": [
+          "A PDF report: a map of the flow, a table of transfers (date, amount, addresses, hashes), conclusions",
+          "The table as Excel or CSV",
+          "The text of a request for an exchange or for law enforcement"
+        ],
+        "input": "An address or a transaction hash, the date and the amount lost.",
+        "term": "Usually 3-7 working days; urgent cases by agreement."
       },
       "project": {
         "title": "Project or organisation investigation",
-        "text": "We look into a project: who stands behind it, what its contracts and wallets look like, where the team's money comes from and goes, whether there are links to sanctioned addresses, hacks and scam schemes.",
-        "result": "A report with findings and evidence for each point. Neutral wording, no accusations.",
-        "who": "Investors, exchanges and listing teams, partners before a deal."
+        "lead": "We check a project before an investment, a listing or a deal.",
+        "includes": [
+          "Contracts: owner rights, the ability to mint and block tokens, proxies and upgrades, whether the source code is published",
+          "Token holders: concentration, links between large wallets",
+          "Liquidity and trading: pools, volumes, signs of artificial turnover",
+          "Team money: where it came from and went, links to sanctioned addresses, hacks and mixers",
+          "Earlier contracts of the people who deployed the current ones"
+        ],
+        "result": [
+          "A report with the sections \"confirmed facts\", \"red flags\" and \"could not be established\"",
+          "Appendices: tables of addresses and transfers with links to the sources"
+        ],
+        "input": "The project name, contract addresses, website and social accounts.",
+        "term": "Usually 5-10 working days, depending on the scope."
       },
       "dossier": {
         "title": "Address or wallet dossier",
-        "text": "We gather everything publicly known about an address: labels in databases, mentions in open sources, transfer history, links to flagged addresses.",
-        "result": "A PDF report with links to sources and archived copies of the pages.",
-        "who": "Compliance teams, lawyers, journalists."
+        "lead": "Everything publicly known about an address, in one report.",
+        "includes": [
+          "Labels in databases: US, EU and UK sanctions, Tether and Circle freezes, hacks, phishing",
+          "The age of the address, the first deposit and its source",
+          "Main counterparties, turnover and links to flagged addresses",
+          "Mentions in open sources with archived copies of the pages"
+        ],
+        "result": [
+          "A 2-5 page PDF with sources, neutral wording",
+          "On request: an extended version with a link graph"
+        ],
+        "input": "An address (EVM, Tron or Bitcoin).",
+        "term": "From one working day."
       },
       "incident": {
         "title": "Incident support",
-        "text": "We help in the first days after a hack or a scam: we record the traces, follow the movement of the withdrawn funds and prepare letters to exchanges and statements.",
-        "result": "One picture of the events, monitoring of the withdrawn funds, texts of the requests.",
-        "who": "Projects and individuals who lost funds."
+        "lead": "We help in the first days, when speed matters.",
+        "includes": [
+          "Recording the traces: transactions, addresses, screenshots, a timeline",
+          "Watching the attacker's addresses and notifying you when they move",
+          "Requests to exchanges, Tether and Circle (a freeze request) and a police report",
+          "Advice on the next steps and an honest estimate of the chances"
+        ],
+        "result": [
+          "A timeline of the event and a pack of material for the requests",
+          "Notifications of fund movements to an agreed contact"
+        ],
+        "input": "What happened, when, and which addresses and hashes are already known.",
+        "term": "We start the day you contact us; the monitoring period is agreed."
       },
       "training": {
         "title": "Staff training",
-        "text": "We teach teams to work with blockchain data and AML tools: reading transfer chains, using label and sanctions databases, assessing the risk of an address and a token, writing reports.",
-        "result": "A practical course with real cases and materials for the team.",
-        "who": "Compliance, security and support teams."
+        "lead": "We teach teams to work with blockchain data and AML tools on real cases.",
+        "includes": [
+          "Basics: addresses, transactions, tokens, bridges, mixers",
+          "Reading transfer chains in explorers and in our tool",
+          "Label databases, sanctions lists, stablecoin freezes",
+          "Assessing the risk of an address and a token, writing a report",
+          "A workshop on anonymised cases"
+        ],
+        "result": [
+          "A programme for your team: 1-2 days, online or in person",
+          "Working materials and a review of your own examples"
+        ],
+        "input": "The size of the team, the level of preparation and the tasks.",
+        "term": "Format and dates by agreement."
       },
       "data": {
         "title": "Blockchain data and private databases",
-        "text": "We run our own network nodes and extract the data you need: transactions, contract events, address history. We build private AML databases for your task: your own lists and internal blacklists.",
-        "result": "A ready dataset or database with a description of its structure and how it is updated.",
-        "who": "Exchanges, wallets, analytics teams."
+        "lead": "We collect the data you need from our own nodes and keep it with you.",
+        "includes": [
+          "Running network nodes (Ethereum and EVM, Tron, Bitcoin) and extracting transactions, contract events and address history",
+          "A graph of links between addresses and indicators by your rules",
+          "Private label databases: your own lists, internal blacklists and whitelists, an import of open sources",
+          "Data updates and access by API or straight into your database"
+        ],
+        "result": [
+          "A working database or dataset on your side",
+          "A description of the structure and the update scripts"
+        ],
+        "input": "Which networks, which data and what it is for.",
+        "term": "Project work; we name the estimate after a discussion."
       },
       "consulting": {
         "title": "Blockchain technology consulting",
-        "text": "We advise on how networks and smart contracts work, product risks, the architecture of screening systems and the choice of data sources.",
-        "result": "A review of your task and concrete recommendations: a call or a written opinion.",
-        "who": "Product teams and startups."
+        "lead": "We go through your task and name concrete steps.",
+        "includes": [
+          "The architecture of address screening and transaction monitoring systems",
+          "Choosing data sources and judging their quality",
+          "Smart contracts and on-chain registries (Solidity), a review of product risks",
+          "A risk scoring method: thresholds, weights, false positives"
+        ],
+        "result": [
+          "A one-hour call with notes",
+          "Or a written opinion with recommendations"
+        ],
+        "input": "A description of the product or the question.",
+        "term": "A call within a few days of your request."
       }
     },
-    "howTitle": "How it works",
-    "steps": [
-      "You write by email or Telegram: the task in short, the addresses and the deadline.",
-      "We estimate the scope and name the time and the price before the work starts.",
-      "We do the work and hand over the report. If needed, we answer questions from lawyers and exchanges."
+    "toolsTitle": "What we work with",
+    "toolsLead": "This is the same data layer that stands behind the free check on the site, and we extend it for your task.",
+    "tools": [
+      "US, EU and UK sanctions lists and Tether and Circle freezes",
+      "Hack, phishing and scam labels from open sources; more than a million addresses with a history of links",
+      "Networks: Ethereum, Arbitrum, Base, Optimism, Polygon, BNB Chain, Avalanche, Tron and Bitcoin; others on request",
+      "Every label has a source and a link, so any conclusion in a report can be checked"
     ],
-    "honestTitle": "What we can and cannot do",
-    "honest": "We do not promise to return money and we do not take a prepayment for a \"recovery\". Tracing shows where the funds went, and getting them back is possible only through an exchange, a platform or a court. Beware of people who write to a victim first and promise to get the funds back for a fee: that is a scam of its own.",
-    "honestLink": "How such schemes work",
-    "scope": "Reports are informational: they are not a legal opinion and not an accusation against the owner of an address. We work with open and official data, and the details of your task stay confidential.",
-    "contactTitle": "Get in touch",
-    "contactText": "Describe the task in a few lines and we will suggest a way to work.",
-    "emailBtn": "Write by email",
+    "toolsLink": "Try the free check",
+    "howTitle": "How we work",
+    "steps": [
+      "You describe the task: addresses, dates, amounts and what you need.",
+      "We reply, clarify the details and name the price and the timeline before the work starts.",
+      "We work and tell you about important findings along the way.",
+      "We hand over the report and answer questions from lawyers and exchanges afterwards."
+    ],
+    "faqTitle": "Frequently asked questions",
+    "faq": [
+      {
+        "q": "Where do we start?",
+        "a": "Usually one address or a transaction hash and a short description of the situation are enough. We clarify the rest in the correspondence."
+      },
+      {
+        "q": "Will you get my money back?",
+        "a": "No. We do not recover funds and we do not take a prepayment for a \"recovery\". We show where the money went and prepare material for a request to an exchange, a platform or a court. Beware of people who write to a victim first and promise to get the money back for a fee: that is a scam of its own."
+      },
+      {
+        "q": "Can the report be attached to a complaint or a claim?",
+        "a": "The report is written so that a lawyer can use it easily: every conclusion has a source. It is an informational document, and whether it is admissible as evidence is up to a lawyer and the court."
+      },
+      {
+        "q": "How much does it cost?",
+        "a": "We name the price before the work starts, after a short discussion of the task. A dossier on an address and the tracing of a small amount cost less than a project investigation or a private database."
+      },
+      {
+        "q": "Is it confidential?",
+        "a": "We do not publish the details of your task. If needed, we will sign a non-disclosure agreement."
+      },
+      {
+        "q": "Do you reveal who owns an address?",
+        "a": "No. We work with open and official data and do not promise to establish an identity. If there is public information about an address (an ENS name, mentions, labels), we give it with sources and neutral wording."
+      },
+      {
+        "q": "Which networks are supported?",
+        "a": "Ethereum, Arbitrum, Base, Optimism, Polygon, BNB Chain, Avalanche, Tron and Bitcoin. Other networks by agreement."
+      }
+    ],
+    "scope": "Reports are informational: they are not a legal opinion and not an accusation against the owner of an address.",
+    "contactTitle": "Discuss your task",
+    "contactText": "Describe the task in a few lines: addresses, dates and what you need. We will reply and suggest a way to work.",
+    "emailBtn": "Write by e-mail",
     "telegramBtn": "Write on Telegram",
     "emailSubject": "SpiderAML: services"
   },
