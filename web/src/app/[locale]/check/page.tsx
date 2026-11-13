@@ -399,6 +399,8 @@ async function Reasons({ r, findings }: { r: CheckReport; findings: Finding[] })
           .join("; ") || t("cpSkipped"),
       points: parts.counterparties,
     });
+  if ((parts.behaviour ?? 0) > 0 && r.flow)
+    rows.push({ name: t("partBehaviour"), result: t("behaviourResult", { inUsd: Math.round(r.flow.inUsd).toLocaleString(locale === "ru" ? "ru-RU" : "en-US"), outUsd: Math.round(r.flow.outUsd).toLocaleString(locale === "ru" ? "ru-RU" : "en-US"), hours: r.flow.medianHoldHours == null ? 0 : Math.round(r.flow.medianHoldHours * 10) / 10 }), points: parts.behaviour ?? 0 });
   if (r.contract?.risk) rows.push({ name: t("partToken"), result: r.contract.risk.context?.includes("stablecoin") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenPartial")}` : r.contract.risk.context?.includes("skip_concentration") ? `${t("tokenScore", { score: r.contract.risk.score })}; ${t("tokenIncomplete")}` : t("tokenScore", { score: r.contract.risk.score }), points: parts.token });
 
   // three separate blocks instead of one pile: serious risks, a freeze by a stablecoin issuer, and weak (unconfirmed) signals

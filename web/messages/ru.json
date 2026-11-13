@@ -344,6 +344,8 @@
     "partSources": "Санкционные списки и базы рисков",
     "partCps": "Контрагенты и связи",
     "partToken": "Устройство токена",
+    "partBehaviour": "Поведение кошелька",
+    "behaviourResult": "транзит: пришло ${inUsd}, ушло ${outUsd}, деньги остаются около {hours} ч",
     "srcNone": "адрес не найден",
     "srcFound": "найдено сигналов: {count}",
     "cpSummaryNone": "проверено {checked}, адресов из баз рисков нет",

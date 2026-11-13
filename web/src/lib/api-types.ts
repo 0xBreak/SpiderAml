@@ -29,7 +29,9 @@ export interface WalletHistory {
 export interface CheckReport {
   address: string;
   ensName?: string | null;
-  scoreParts?: { sources: number; counterparties: number; token: number };
+  scoreParts?: { sources: number; counterparties: number; token: number; behaviour?: number };
+  /** how stablecoins move through the wallet; present only when it looks like a transit wallet */
+  flow?: { inUsd: number; outUsd: number; transfers: number; outInRatio: number; medianHoldHours: number | null; roundShare: number; fromTs: number; toTs: number } | null;
   /** the address is a known token on these networks but not on the checked one */
   listedElsewhere?: { network: string; symbol: string }[];
   kind: "evm" | "tron" | "bitcoin";

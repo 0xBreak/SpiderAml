@@ -344,6 +344,8 @@
     "partSources": "Sanctions lists and risk databases",
     "partCps": "Counterparties and links",
     "partToken": "Token design",
+    "partBehaviour": "Behaviour of the wallet",
+    "behaviourResult": "transit: ${inUsd} in, ${outUsd} out, the money stays about {hours} h",
     "srcNone": "not found",
     "srcFound": "{count} signal(s) found",
     "cpSummaryNone": "{checked} checked, none in risk databases",
