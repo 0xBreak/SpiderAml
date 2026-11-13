@@ -28,3 +28,40 @@ describe("proxy: greedy bots and robots on costly pages", () => {
     expect(proxy(req("/check?address=0xabc", "Mozilla/5.0 (Linux; Android 11; Cubot X30) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36"), ev).status).not.toBe(429);
   });
 });
+
+describe("proxy: the logo is the proof of a browser", () => {
+  it("the logo request passes through untouched (no redirect, no language switch) and the matcher includes it", async () => {
+    const { config } = await import("./proxy");
+    expect(config.matcher).toContain("/brand/icon-64.png");
+    const res = proxy(req("/brand/icon-64.png", CHROME), ev);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+  });
+  it("a greedy bot may fetch the logo (a static file) but it is never counted as a browser", () => {
+    expect(proxy(req("/brand/icon-64.png", "GPTBot/1.0"), ev).status).toBe(200);
+  });
+});
+
+describe("proxy: the logo posts a render event", () => {
+  it("one event per browser per minute; none for greedy bots, for the owner or for a POST", async () => {
+    process.env.DATA_SECRET = "test-secret";
+    const calls: { events: { kind: string }[] }[] = [];
+    const pending: Promise<unknown>[] = [];
+    const evw = { waitUntil: (p: Promise<unknown>) => pending.push(p) } as never;
+    const real = globalThis.fetch;
+    globalThis.fetch = (async (_u: unknown, init: { body: string }) => (calls.push(JSON.parse(init.body)), new Response("{}"))) as never;
+    try {
+      const mk = (ip: string, ua = CHROME, method = "GET") => new NextRequest("https://spideraml.com/brand/icon-64.png", { method, headers: { "user-agent": ua, "cf-connecting-ip": ip, host: "spideraml.com" } });
+      proxy(mk("9.9.9.9"), evw);
+      proxy(mk("9.9.9.9"), evw); // the same browser within a minute
+      expect(calls).toHaveLength(1);
+      expect(calls[0].events[0].kind).toBe("render");
+      proxy(mk("9.9.9.8", "GPTBot/1.0"), evw);
+      proxy(mk("9.9.9.7", CHROME, "HEAD"), evw);
+      expect(calls).toHaveLength(1);
+    } finally {
+      globalThis.fetch = real;
+      delete process.env.DATA_SECRET;
+    }
+  });
+});

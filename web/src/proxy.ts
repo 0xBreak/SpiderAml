@@ -14,8 +14,13 @@ import { visitorHints } from "./lib/hints";
 import { clientIp } from "./lib/ip";
 
 export const config = {
-  matcher: ["/((?!api|trpc|_next|_vercel|brand|apple-icon|opengraph-image|.*\\..*).*)"],
+  // every page, and the one file that tells us a browser showed a page: the logo (see LOGO below)
+  matcher: ["/((?!api|trpc|_next|_vercel|brand|apple-icon|opengraph-image|.*\\..*).*)", "/brand/icon-64.png"],
 };
+
+/** The logo in the header. Every browser that shows a page asks for it (no script needed, no blocker stops a file of the site itself): that is the proof of a person's browser. */
+const LOGO = "/brand/icon-64.png";
+const renderSeen = new Map<string, number>();
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -38,6 +43,26 @@ const COSTLY = /^(?:\/en)?\/(?:check|token|whales|sanctions)(?:\/pdf)?\/?$/;
 
 export function proxy(req: NextRequest, ev: NextFetchEvent) {
   const h = req.headers;
+  if (req.nextUrl.pathname === LOGO) {
+    const ua0 = h.get("user-agent") ?? "";
+    const ip = clientIp(h);
+    const key = `${ip}|${ua0}`;
+    const now = Date.now();
+    // once a minute per browser is enough: the data layer keeps one row per visitor and day
+    if (req.method === "GET" && process.env.DATA_SECRET && !GREEDY_BOT.test(ua0) && now - (renderSeen.get(key) ?? 0) > 60_000 && !h.get("cookie")?.includes(`${OWNER_COOKIE}=1`)) {
+      renderSeen.set(key, now);
+      if (renderSeen.size > 5000) renderSeen.clear();
+      ev.waitUntil(
+        fetch(`${process.env.DATA_URL ?? "http://127.0.0.1:8787"}/v1/events`, {
+          method: "POST",
+          headers: { "x-spider-key": process.env.DATA_SECRET, "content-type": "application/json" },
+          body: JSON.stringify({ ip, ua: ua0, country: h.get("cf-ipcountry"), hints: visitorHints(h), events: [{ kind: "render", path: "/" }] }),
+          signal: AbortSignal.timeout(3000),
+        }).catch(() => {}),
+      );
+    }
+    return NextResponse.next();
+  }
   const uaIn = h.get("user-agent") ?? "";
   if (GREEDY_BOT.test(uaIn)) return new NextResponse("Forbidden", { status: 403, headers: { "cache-control": "no-store" } });
   if (req.method === "GET" && req.nextUrl.search && COSTLY.test(req.nextUrl.pathname) && !INTERNAL.test(h.get("host") ?? "") && !SHARE_BOT.test(uaIn) && ROBOT.test(uaIn)) {
