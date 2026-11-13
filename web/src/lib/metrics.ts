@@ -21,6 +21,9 @@ export const safeTarget = (text: string) => {
   return ADDRESS_LIKE.test(clean) ? clean : `[not an address, ${text.trim().length} chars]`;
 };
 
+/** The request is a browser navigating to a page (not a script, not a fetch from a library). */
+export const browserNavigation = (h: Headers) => h.get("sec-fetch-dest") === "document" && h.get("sec-fetch-mode") === "navigate";
+
 const hits = new Map<string, number[]>();
 
 export async function trackEvent(kind: EventKind, label: string | null, path: string, extra: { target?: string | null; network?: string | null; ref?: string | null; trusted?: boolean } = {}) {
@@ -43,7 +46,9 @@ export async function trackEvent(kind: EventKind, label: string | null, path: st
   fetch(`${process.env.DATA_URL ?? "http://127.0.0.1:8787"}/v1/events`, {
     method: "POST",
     headers: { "x-spider-key": secret, "content-type": "application/json" },
-    body: JSON.stringify({ ip, ua: h.get("user-agent") ?? "", country: h.get("cf-ipcountry"), hints: visitorHints(h), events: [{ kind, path, label, ...safe }] }),
+    // a browser that opened this page itself says so in headers a page script cannot set (Sec-Fetch-*); a robot library usually sends none: that is a sign of a browser
+    // as good as the logo, and it arrives in the same request (no cache, no blocker, no second request to lose)
+    body: JSON.stringify({ ip, ua: h.get("user-agent") ?? "", country: h.get("cf-ipcountry"), hints: visitorHints(h), events: [{ kind, path, label, ...safe }, ...(browserNavigation(h) && kind !== "pageview" ? [{ kind: "render" as const, path }] : [])] }),
     signal: AbortSignal.timeout(3000),
   }).catch(() => {});
 }
