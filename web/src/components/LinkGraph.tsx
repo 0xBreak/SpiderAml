@@ -56,7 +56,7 @@ export async function LinkGraph({ links, network, explorer, service = false }: {
       .join(" · ");
 
   return (
-    <Card title={t("title")} hint={t("hint", { network: networkName })}>
+    <Card title={t("title")} hint={network === "tron" || network === "bitcoin" ? t("hint", { network: networkName }) : t("hintEvm")}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("aria")} className="mx-auto h-auto w-full max-w-[760px]">
         <defs>
           {[["crit", "var(--color-crit)"], ["warn", "var(--color-warn)"], ["muted", "var(--color-silver-3)"]].map(([id, color]) => (
