@@ -42,6 +42,8 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // the logo is asked for again on every page: that request tells us a browser showed the page (see src/proxy.ts)
+      { source: "/brand/icon-64.png", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }] },
       // a check, a query or a PDF is for one person: never an index entry
       { source: "/:path*", has: [{ type: "query", key: "address" }], headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
       { source: "/:path*", has: [{ type: "query", key: "q" }], headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },

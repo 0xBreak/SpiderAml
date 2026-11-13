@@ -7,7 +7,7 @@ import { OWNER_COOKIE } from "./owner";
 import { visitorHints } from "./hints";
 import { clientIp } from "./ip";
 
-export type EventKind = "pageview" | "click" | "check" | "token" | "whales" | "sanctions_search" | "report" | "send_screen";
+export type EventKind = "pageview" | "render" | "click" | "check" | "token" | "whales" | "sanctions_search" | "report" | "send_screen";
 
 const ADDRESS_LIKE = /^(?:0x[0-9a-fA-F]{40}|T[1-9A-HJ-NP-Za-km-z]{33}|[13][1-9A-HJ-NP-Za-km-z]{25,34}|(?:bc1[02-9ac-hj-np-z]{8,87}|BC1[02-9AC-HJ-NP-Z]{8,87})|[^\s/:@]{1,100}\.[eE][tT][hH])$/;
 

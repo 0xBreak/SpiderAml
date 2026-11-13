@@ -28,3 +28,16 @@ describe("proxy: greedy bots and robots on costly pages", () => {
     expect(proxy(req("/check?address=0xabc", "Mozilla/5.0 (Linux; Android 11; Cubot X30) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36"), ev).status).not.toBe(429);
   });
 });
+
+describe("proxy: the logo is the proof of a browser", () => {
+  it("the logo request passes through untouched (no redirect, no language switch) and the matcher includes it", async () => {
+    const { config } = await import("./proxy");
+    expect(config.matcher).toContain("/brand/icon-64.png");
+    const res = proxy(req("/brand/icon-64.png", CHROME), ev);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+  });
+  it("a greedy bot may fetch the logo (a static file) but it is never counted as a browser", () => {
+    expect(proxy(req("/brand/icon-64.png", "GPTBot/1.0"), ev).status).toBe(200);
+  });
+});
