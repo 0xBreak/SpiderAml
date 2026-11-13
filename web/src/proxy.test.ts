@@ -41,3 +41,27 @@ describe("proxy: the logo is the proof of a browser", () => {
     expect(proxy(req("/brand/icon-64.png", "GPTBot/1.0"), ev).status).toBe(200);
   });
 });
+
+describe("proxy: the logo posts a render event", () => {
+  it("one event per browser per minute; none for greedy bots, for the owner or for a POST", async () => {
+    process.env.DATA_SECRET = "test-secret";
+    const calls: { events: { kind: string }[] }[] = [];
+    const pending: Promise<unknown>[] = [];
+    const evw = { waitUntil: (p: Promise<unknown>) => pending.push(p) } as never;
+    const real = globalThis.fetch;
+    globalThis.fetch = (async (_u: unknown, init: { body: string }) => (calls.push(JSON.parse(init.body)), new Response("{}"))) as never;
+    try {
+      const mk = (ip: string, ua = CHROME, method = "GET") => new NextRequest("https://spideraml.com/brand/icon-64.png", { method, headers: { "user-agent": ua, "cf-connecting-ip": ip, host: "spideraml.com" } });
+      proxy(mk("9.9.9.9"), evw);
+      proxy(mk("9.9.9.9"), evw); // the same browser within a minute
+      expect(calls).toHaveLength(1);
+      expect(calls[0].events[0].kind).toBe("render");
+      proxy(mk("9.9.9.8", "GPTBot/1.0"), evw);
+      proxy(mk("9.9.9.7", CHROME, "HEAD"), evw);
+      expect(calls).toHaveLength(1);
+    } finally {
+      globalThis.fetch = real;
+      delete process.env.DATA_SECRET;
+    }
+  });
+});
