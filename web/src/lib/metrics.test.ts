@@ -40,3 +40,12 @@ describe("safeTarget", () => {
     expect(safeTarget("ivan@mail.ru phone +7 999")).not.toMatch(/ivan|mail|999/);
   });
 });
+
+describe("browserNavigation", () => {
+  it("is true only for a browser opening a page", async () => {
+    const { browserNavigation } = await import("./metrics");
+    expect(browserNavigation(new Headers({ "sec-fetch-dest": "document", "sec-fetch-mode": "navigate" }))).toBe(true);
+    expect(browserNavigation(new Headers({ "sec-fetch-dest": "empty", "sec-fetch-mode": "cors" }))).toBe(false);
+    expect(browserNavigation(new Headers({ "user-agent": "python-requests/2.31" }))).toBe(false);
+  });
+});
