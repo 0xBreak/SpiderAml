@@ -105,11 +105,13 @@ async function Report({ r }: { r: CheckReport }) {
     ...new Map(
       (r.links ?? [])
         .filter((l) => l.severity >= 2 && !(l.direction === "out" && (l.category === "phishing" || l.category === "scam" || l.category === "frozen")))
-        .map((l) => [l.label.split(" (")[0].split(":")[0].trim(), l.severity] as const),
+        // our own second-generation guess has the same text for everybody: one badge of its own, not "Linked to Linked to flagged addresses"
+        .map((l) => [l.source === "hop2-indirect" ? "__indirect" : l.label.split(" (")[0].split(":")[0].trim(), l.severity] as const),
     ),
   ].slice(0, 3);
   const hasBadges = r.sanctions.length > 0 || r.possibleScam || frozen || r.contract?.isContract || (r.linksNote !== "service" && linkNames.length > 0);
-  const signals = risky.length + r.sanctions.length + (r.counterparties?.flagged.length ?? 0);
+  // every kind of signal counts: a label, a sanction, a flagged counterparty, a transfer with a flagged address, a transit pattern
+  const signals = risky.length + r.sanctions.length + (r.counterparties?.flagged.length ?? 0) + (r.linksNote === "service" ? 0 : r.links?.length ?? 0) + ((r.scoreParts?.behaviour ?? 0) > 0 ? 1 : 0);
   // the on-chain registry matters to the visitor only when the address is recorded there
   const recorded = r.onchain && r.onchain.level > 0 ? r.onchain : null;
   const showSummary = signals > 0 || r.portfolio != null || r.counterparties != null;
@@ -157,7 +159,7 @@ async function Report({ r }: { r: CheckReport }) {
                 {r.linksNote !== "service" &&
                   linkNames.map(([name, severity]) => (
                     <Badge key={name} tone={severity >= 3 ? "crit" : "warn"} className={severity >= 3 ? "border-crit/70 bg-crit/30 text-silver-1" : "border-warn/70 bg-warn/25 text-silver-1"}>
-                      {t("linkBadge", { name })}
+                      {name === "__indirect" ? t("linkBadgeIndirect") : t("linkBadge", { name })}
                     </Badge>
                   ))}
                 {r.contract?.isContract && (
@@ -616,16 +618,19 @@ async function Counterparties({ r }: { r: CheckReport }) {
           </ul>
         </>
       )}
-          {(c.indirect?.length ?? 0) > 0 && (
-        <div className="mt-5 border-t border-line/60 pt-4">
-          <p className="text-base leading-relaxed text-silver-2">{t("cpIndirect")}</p>
-          <ul className="mt-3 flex flex-col gap-2">
+      {(c.indirect?.length ?? 0) > 0 && (
+        <div className={c.flagged.length === 0 && c.indirect!.length > 0 ? "mt-3" : "mt-6"}>
+          <h3 className="text-base font-semibold text-silver-1">{t("cpIndirectTitle")}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-silver-3">{t("cpIndirect")}</p>
+          <ul className="mt-3 flex flex-col divide-y divide-line/50 border-y border-line/50">
             {c.indirect!.map((x) => (
-              <li key={x.address} className="flex flex-wrap items-center gap-3">
+              <li key={x.address} className="flex items-center justify-between gap-3 py-2">
                 <Link href={`/check?address=${x.address}&network=${r.network}`} className="font-mono text-sm text-silver-1 hover:underline">
                   {short(x.address)}
                 </Link>
-                <span className="text-sm text-silver-3">{t("cpIndirectScore", { score: x.score })}</span>
+                <span title={t("cpIndirectScore", { score: x.score })}>
+                  <Badge tone={x.score >= 25 ? "warn" : "muted"}>{x.score >= 25 ? t("cpTies.strong") : x.score >= 12 ? t("cpTies.medium") : t("cpTies.weak")}</Badge>
+                </span>
               </li>
             ))}
           </ul>

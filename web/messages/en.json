@@ -326,7 +326,7 @@
     "cpHint": "Addresses: {count}",
     "cpEmpty": "None of the recent counterparties carries a risk label.",
     "cpEmptyDirect": "None of the recent counterparties carries a risk label itself.",
-    "cpIndirect": "These counterparties have no label, but our transfer history links them to flagged addresses. It is a hint, worth at most 10 points in total.",
+    "cpIndirect": "No label of their own, but our transfer history ties them to flagged addresses. A hint, not a verdict: worth at most 10 points in total.",
     "cpIndirectScore": "link score {score}",
     "cpFound": "Some counterparties are in risk databases. This counts in the score but does not by itself make the address risky.",
     "explorerLabel": "Explorer",
@@ -411,7 +411,14 @@
     "walletNote": "Read from the first transactions on the network. The source of the first funding counts in the score when it is a mixer, a sanctioned or a flagged address (by amount); a bridge or a DEX adds only a few points.",
     "pdfButton": "Download the detailed report",
     "cpLinks": "{count, plural, one {# link} other {# links}} with flagged addresses",
-    "linkBadge": "Linked to {name}"
+    "linkBadge": "Linked to {name}",
+    "cpIndirectTitle": "Indirect links",
+    "cpTies": {
+      "strong": "close tie",
+      "medium": "medium tie",
+      "weak": "weak tie"
+    },
+    "linkBadgeIndirect": "Indirectly linked to flagged addresses"
   },
   "Blog": {
     "title": "Blog",

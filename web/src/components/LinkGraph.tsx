@@ -28,6 +28,8 @@ const shortName = (label: string) => {
   const base = label.split(" (")[0].trim();
   return base.length > 20 ? `${base.slice(0, 19)}…` : base;
 };
+/** The name next to a node: the label, but for our own second-generation guess (the same text for everybody) the address says more. */
+const nodeName = (l: CheckLink) => (l.source === "hop2-indirect" ? `${l.address.slice(0, 6)}…${l.address.slice(-4)}` : shortName(l.label));
 const isVictimLink = (l: CheckLink) => l.direction === "out" && (l.category === "phishing" || l.category === "scam" || l.category === "frozen");
 
 export async function LinkGraph({ links, network, explorer, service = false }: { links: CheckLink[]; network: string; explorer: string | null; service?: boolean }) {
@@ -104,7 +106,7 @@ export async function LinkGraph({ links, network, explorer, service = false }: {
               textAnchor={label(pts[i]).anchor}
               className="fill-silver-2 text-[11px]"
             >
-              {shortName(l.label)}
+              {nodeName(l)}
             </text>
           </g>
         ))}
@@ -133,7 +135,8 @@ export async function LinkGraph({ links, network, explorer, service = false }: {
               {assetText(l) && <span className="text-silver-2">: {assetText(l)}</span>}
             </div>
             <div className="text-sm text-silver-2">
-              {t("transfers", { count: l.txCount })} · {date(l.firstTs * 1000, locale)} — {date(l.lastTs * 1000, locale)}
+              {t("transfers", { count: l.txCount })} · {date(l.firstTs * 1000, locale)}
+              {date(l.firstTs * 1000, locale) !== date(l.lastTs * 1000, locale) && <> — {date(l.lastTs * 1000, locale)}</>}
             </div>
             <div className="text-sm text-silver-3">
               {l.label} · {t("source")}: {l.sourceName}
