@@ -74,7 +74,7 @@ export async function LinkGraph({ links, network, address, explorer, service = f
 
   return (
     <Card title={t("title")} hint={network === "tron" || network === "bitcoin" ? t("hint", { network: networkName }) : t("hintEvm")}>
-      <div role="img" aria-label={t("aria")} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-start">
+      <div role="group" aria-label={t("aria")} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-start">
         <Column title={t("colIn")} items={incoming} />
         <div className="flex flex-row items-center justify-center gap-2 py-1 md:self-center md:py-0">
           <ArrowDown className="size-5 text-silver-3 md:hidden" aria-hidden />
