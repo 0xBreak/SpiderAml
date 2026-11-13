@@ -1126,7 +1126,7 @@
     "hintEvm": "Transfers between this address and the addresses in our databases, from the EVM network histories (Ethereum, Polygon, Arbitrum, Base and others) collected in advance from open sources. An address is the same on all these networks.",
     "centre": "address",
     "aria": "Diagram of the checked address and the flagged addresses it exchanged transfers with",
-    "legend": "Arrow towards the centre: the address received from it. Arrow away from the centre: the address sent to it. A thicker line means more transfers.",
+    "legend": "The bar shows how many transfers there were. The colour shows how serious the other address is.",
     "received": "The checked address received from it",
     "sent": "The checked address sent to it",
     "transfers": "{count, plural, one {# transfer} other {# transfers}}",
@@ -1135,7 +1135,12 @@
     "more": "The diagram shows the first {shown}; {count} more links are in the list only.",
     "victimNote": "Dashed: the address sent funds to a phishing, scam or frozen address. That is most often a victim or an ordinary payment, so such links are drawn neutral.",
     "inScore": "Links count in the risk score: the weight depends on the kind of address the transfer was with (sanctions, hack, mixer, phishing), the amount and the direction. Transfers of victims and ordinary payments are shown neutrally and barely change the score.",
-    "serviceNote": "This is a service (an exchange, protocol or token) with its own label: funds of many different addresses pass through it, so its links are shown for information and do not count in the score."
+    "serviceNote": "This is a service (an exchange, protocol or token) with its own label: funds of many different addresses pass through it, so its links are shown for information and do not count in the score.",
+    "colIn": "Received from",
+    "colOut": "Sent to",
+    "colEmpty": "none",
+    "moreIn": "+ {count} more",
+    "indirectLine": "Estimated from transfers: this address itself deals with flagged ones"
   },
   "Frozen": {
     "title": "Frozen USDT and USDC addresses",

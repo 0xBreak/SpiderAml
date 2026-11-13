@@ -216,7 +216,7 @@ async function Report({ r }: { r: CheckReport }) {
           {r.sanctions.length > 0 && <Sanctions r={r} />}
           {r.contract?.isContract && r.contract.risk && <TokenRisk r={r} />}
           {r.counterparties && <Counterparties r={r} />}
-          {r.links && r.links.length > 0 && <LinkGraph links={r.links} service={r.linksNote === "service"} network={r.network} explorer={explorer && r.kind === "evm" ? net?.explorer ?? null : null} />}
+          {r.links && r.links.length > 0 && <LinkGraph links={r.links} service={r.linksNote === "service"} network={r.network} address={r.address} explorer={explorer && r.kind === "evm" ? net?.explorer ?? null : null} />}
         </div>
         {hasAside && (
           <div className="flex flex-col gap-5">
