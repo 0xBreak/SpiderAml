@@ -6,7 +6,7 @@ import { cn } from "@/lib/format";
 import { Link, usePathname } from "@/i18n/navigation";
 
 export type NavItem = { href: string; label: string };
-/** A plain link (`href`) or a group with a drop-down list (`items`). `accent` boxes a link, `strong` makes it the brightest one in the row. */
+/** A plain link (`href`) or a group with a drop-down list (`items`). `accent` boxes a link, `strong` frames it in the brand colour: the main action of the site. */
 export type NavGroup = { label: string; href?: string; items?: NavItem[]; accent?: boolean; strong?: boolean };
 
 // next-intl's pathname has no locale prefix, so active detection works the same in both languages.
@@ -36,7 +36,7 @@ export function NavDesktop({ groups }: { groups: NavGroup[] }) {
               key={g.label}
               href={g.href!}
               aria-current={active ? "page" : undefined}
-              className={cn(BASE, g.accent && "border border-line px-3 text-silver-1 hover:border-silver-3", g.strong && "font-semibold text-silver-1", active && "bg-surface text-silver-1")}
+              className={cn(BASE, g.accent && "border border-line px-3 text-silver-1 hover:border-silver-3", g.strong && "border border-accent/60 px-3 font-semibold text-silver-1 hover:border-accent", active && "bg-surface text-silver-1")}
             >
               {g.label}
             </Link>
@@ -106,7 +106,7 @@ export function NavMobile({ groups }: { groups: NavGroup[] }) {
             {g.items.map((i) => link(i))}
           </div>
         ) : (
-          link({ href: g.href!, label: g.label }, g.accent)
+          link({ href: g.href!, label: g.label }, g.accent || g.strong)
         ),
       )}
     </nav>
