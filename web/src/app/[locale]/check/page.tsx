@@ -641,78 +641,91 @@ async function Counterparties({ r }: { r: CheckReport }) {
   );
 }
 
-/** The empty check page: the form with examples on the left, a sample result on the right, the four things we check and a short text about the check. */
+/** The empty check page: the form with examples and three figures on the left, a sample verdict on the right, the four checks and a short text about the check. */
 async function Landing({ network }: { network: string }) {
   const t = await getTranslations("Check");
+  const tHome = await getTranslations("Home");
   const tLv = await getTranslations("Level");
   const locale = (await getLocale()) as Locale;
+  // the same real addresses as on the home page
   const examples = [
-    { href: "/check?address=0x098B716B8Aaf21512996dC57EB0615e2383E2f96&network=ethereum", label: t("exampleSanctions"), dot: "bg-crit" },
-    { href: "/check?address=TVE2XCeDRqbLQQQhbcp6g6vit52zLgYzzT&network=tron", label: t("exampleFrozen"), dot: "bg-warn" },
+    ["0x098B716B8Aaf21512996dC57EB0615e2383E2f96", tHome("exampleSanctioned"), "bg-crit"],
+    ["0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2", tHome("exampleExploit"), "bg-crit"],
+    ["0x0582aa82344b23374d065bd9de9e1a379061f467", tHome("exampleFrozen"), "bg-warn"],
+    ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", tHome("exampleClean"), "bg-ok"],
+  ] as const;
+  const stats = [
+    [t("stat1"), t("stat1Text")],
+    [t("stat2"), t("stat2Text")],
+    [t("stat3"), t("stat3Text")],
   ];
-  const ticks = [t("tick1"), t("tick2"), t("tick3")];
   const steps = [
     [t("howSanctionsTitle"), t("howSanctionsText")],
     [t("howExploitTitle"), t("howExploitText")],
     [t("howCpTitle"), t("howCpText")],
     [t("howTokensTitle"), t("howTokensText")],
   ];
-  const seo = [1, 2, 3, 4] as const;
-  const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
   const rows = [
     { tone: "ok" as const, badge: t("sampleClear"), title: t("howSanctionsTitle"), text: t("sampleSanctionsText") },
     { tone: "warn" as const, badge: t("sampleLink"), title: t("howExploitTitle"), text: t("sampleHacksText") },
     { tone: "warn" as const, badge: t("sampleLink"), title: t("howCpTitle"), text: t("sampleLinksText") },
   ];
+  const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
   return (
-    <div className="flex flex-col gap-12 sm:gap-16">
-      <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-12">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3">
-            <p className="label text-accent-from">{t("eyebrow")}</p>
-            <h1 className="text-balance text-4xl font-semibold tracking-tight text-silver-1 sm:text-5xl">
+    <div className="flex flex-col gap-14 sm:gap-20">
+      <section className="grid gap-10 pt-4 sm:pt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-center lg:gap-14">
+        <div className="flex min-w-0 flex-col gap-7">
+          <div className="flex flex-col items-start gap-5">
+            <span className="inline-flex items-center gap-1.5 border border-ok/40 bg-ok/10 px-3 py-1 text-sm text-ok">
+              <Check className="size-4" aria-hidden /> {tHome("heroBadge")}
+            </span>
+            <h1 className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-silver-1 sm:text-6xl">
               {t("heroLead")} <span className="text-accent-from">{t("heroAccent")}</span>
             </h1>
-            <p className="max-w-2xl text-base leading-relaxed text-silver-2 sm:text-lg">{t("heroSub")}</p>
+            <p className="max-w-xl text-base leading-relaxed text-silver-2 sm:text-lg">{t("heroSub")}</p>
           </div>
-          <SearchForm action="/check" network={network} />
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-silver-3">{t("examplesLabel")}</span>
-            {examples.map((e) => (
-              <Link key={e.href} href={e.href} data-track="check:example" className="inline-flex items-center gap-2 border border-line px-3 py-1.5 text-silver-2 transition hover:border-silver-3 hover:text-silver-1">
-                <span className={cn("size-2 rounded-full", e.dot)} aria-hidden />
-                {e.label}
-              </Link>
-            ))}
-          </div>
-          <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-silver-2">
-            {ticks.map((x) => (
-              <li key={x} className="inline-flex items-center gap-1.5">
-                <Check className="size-4 text-ok" aria-hidden />
-                {x}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="card relative p-5 pt-7">
-          <span className="label absolute -top-2.5 left-4 border border-line bg-bg px-2 py-0.5 text-silver-3">{t("sampleTag")}</span>
-          <div className="font-mono text-sm text-silver-3">0x7a2f…c91e · Ethereum</div>
-          <div className="mt-4 flex items-center gap-4">
-            <Gauge score={48} tone="warn" />
-            <div>
-              <div className="text-lg font-semibold text-warn">{tLv("medium.title")}</div>
-              <p className="mt-1 text-sm text-silver-2">{t("sampleSummary")}</p>
+          <div className="flex flex-col gap-3">
+            <SearchForm action="/check" network={network} size="lg" placeholder={t("formPlaceholder")} />
+            <div className="flex flex-wrap items-center gap-2">
+              {examples.map(([a, label, dot]) => (
+                <Link key={a} href={`/check?address=${a}&network=ethereum`} data-track={`check:example:${label}`} className="inline-flex items-center gap-2 border border-line px-3 py-1 text-sm text-silver-2 transition hover:border-silver-3 hover:text-silver-1">
+                  <span className={cn("size-1.5 rounded-full", dot)} aria-hidden />
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
-          <div className="mt-4 divide-y divide-line border-t border-line">
+          <dl className="grid grid-cols-3 border-t border-line pt-6">
+            {stats.map(([value, text]) => (
+              <div key={text} className="flex flex-col gap-1 border-line pr-4 [&:not(:first-child)]:border-l [&:not(:first-child)]:pl-5">
+                <dt className="order-2 text-sm leading-snug text-silver-3">{text}</dt>
+                <dd className="text-2xl font-semibold tabular-nums text-silver-1 sm:text-3xl">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="verdict verdict-warn">
+          <div className="flex items-center justify-between gap-3 border-b border-warn/20 px-5 py-3">
+            <span className="label text-silver-2">{t("sampleTag")}</span>
+            <span className="font-mono text-xs text-silver-3">0x7a2f…c91e</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 px-5 pb-2 pt-6 text-center">
+            <div className="[&>svg]:w-48">
+              <Gauge score={48} tone="warn" />
+            </div>
+            <div className="mt-2 text-2xl font-semibold tracking-tight text-warn">{tLv("medium.title")}</div>
+            <p className="text-sm text-silver-2">{t("sampleSummary")}</p>
+          </div>
+          <div className="mt-4 divide-y divide-line/70 border-t border-line/70 px-5">
             {rows.map((r) => (
-              <div key={r.title} className="flex items-start gap-3 py-3">
-                <Badge tone={r.tone} className="mt-0.5 shrink-0">
+              <div key={r.title} className="flex items-start gap-3 py-3.5">
+                <Badge tone={r.tone} className="mt-0.5 w-16 shrink-0 justify-center">
                   {r.badge}
                 </Badge>
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-silver-1">{r.title}</div>
-                  <div className="text-sm text-silver-2">{r.text}</div>
+                  <div className="text-sm leading-snug text-silver-2">{r.text}</div>
                 </div>
               </div>
             ))}
@@ -720,31 +733,34 @@ async function Landing({ network }: { network: string }) {
         </div>
       </section>
 
-      <section className="grid gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid border-y border-line sm:grid-cols-2 lg:grid-cols-4">
         {steps.map(([title, d], i) => (
-          <div key={title} className="flex flex-col gap-1.5 border-line sm:border-l sm:pl-6 sm:first:border-l-0 sm:first:pl-0 lg:first:border-l-0 [&:nth-child(3)]:sm:border-l-0 [&:nth-child(3)]:sm:pl-0 lg:[&:nth-child(3)]:border-l lg:[&:nth-child(3)]:pl-6">
+          <div key={title} className="flex flex-col gap-2 border-line py-7 max-sm:[&:not(:first-child)]:border-t sm:px-6 sm:[&:nth-child(even)]:border-l lg:[&:not(:first-child)]:border-l lg:first:pl-0">
             <span className="font-mono text-sm text-accent-from">{String(i + 1).padStart(2, "0")}</span>
-            <h2 className="text-base font-semibold text-silver-1">{title}</h2>
-            <p className="text-base leading-relaxed text-silver-2">{d}</p>
+            <h2 className="text-lg font-semibold text-silver-1">{title}</h2>
+            <p className="text-[15px] leading-relaxed text-silver-2">{d}</p>
           </div>
         ))}
       </section>
 
-      <section aria-labelledby="check-about" className="flex flex-col gap-6">
-        <h2 id="check-about" className="text-2xl font-semibold tracking-tight text-silver-1 sm:text-3xl">
-          {t("seoTitle")}
-        </h2>
-        <div className="grid gap-x-10 gap-y-7 md:grid-cols-2">
-          {seo.map((n) => (
-            <div key={n} className="flex flex-col gap-2">
+      <section aria-labelledby="check-about" className="flex flex-col gap-7">
+        <div className="flex flex-col gap-2">
+          <p className="label text-accent-from">{t("seoEyebrow")}</p>
+          <h2 id="check-about" className="text-balance text-2xl font-semibold tracking-tight text-silver-1 sm:text-4xl">
+            {t("seoTitle")}
+          </h2>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {([1, 2, 3, 4] as const).map((n) => (
+            <div key={n} className="card flex flex-col gap-2.5 p-6">
               <h3 className="text-lg font-semibold text-silver-1">{t(`seo${n}Title`)}</h3>
-              <p className="text-base leading-relaxed text-silver-2">{t(`seo${n}Text`)}</p>
+              <p className="text-[15px] leading-7 text-silver-2">{t(`seo${n}Text`)}</p>
             </div>
           ))}
         </div>
-        <p className="text-sm">
-          <Link href={more} className="link">
-            {t("seoMore")}
+        <p>
+          <Link href={more} className="inline-flex items-center gap-2 text-[15px] text-accent-from underline decoration-accent-from/40 underline-offset-4 transition hover:decoration-accent-from">
+            {t("seoMore")} <span aria-hidden>→</span>
           </Link>
         </p>
       </section>
