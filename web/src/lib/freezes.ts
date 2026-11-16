@@ -3,7 +3,7 @@ import { NETWORKS, isNetworkId } from "./networks";
 
 // "Frozen by Circle (USDC) on Arbitrum, 2026-11-06": one line per chain. When an issuer blacklists the same address on several
 // chains, that is one decision, so it is shown (and counted) once, with a link to each chain's transaction.
-const FREEZE = /^Frozen by (\w+) \((\w+)\) on (.+), (\d{4}-\d{2}-\d{2})$/;
+const FREEZE = /^Frozen by (\w[\w ]*?) \((\w+)\) on (.+), (\d{4}-\d{2}-\d{2})$/;
 
 export const chainName = (id: string) => (isNetworkId(id) ? NETWORKS[id].label : id.charAt(0).toUpperCase() + id.slice(1));
 
@@ -48,7 +48,7 @@ export type FreezeText = { issuer: string; asset: string; networks: number; chai
 
 /** Takes a stored freeze label apart ("Frozen by Circle (USDC) on 6 networks, 2025-03-17 – 2026-11-06") so the page can say it in the visitor's language; null for any other label. */
 export function parseFreezeLabel(label: string): FreezeText | null {
-  const many = /^Frozen by (\w+) \((\w+)\) on (\d+) networks, (\d{4}-\d{2}-\d{2})(?: – (\d{4}-\d{2}-\d{2}))?$/.exec(label);
+  const many = /^Frozen by (\w[\w ]*?) \((\w+)\) on (\d+) networks, (\d{4}-\d{2}-\d{2})(?: – (\d{4}-\d{2}-\d{2}))?$/.exec(label);
   if (many) return { issuer: many[1], asset: many[2], networks: Number(many[3]), chain: null, from: many[4], to: many[5] ?? many[4] };
   const one = FREEZE.exec(label);
   return one ? { issuer: one[1], asset: one[2], networks: 1, chain: one[3], from: one[4], to: one[4] } : null;

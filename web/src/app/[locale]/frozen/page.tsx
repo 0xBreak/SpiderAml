@@ -50,7 +50,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
   const locale = (await getLocale()) as Locale;
   const fmt = (n: number) => n.toLocaleString(locale === "en" ? "en-US" : "ru-RU");
   const chain = (CHAINS as readonly string[]).includes(sp.chain ?? "") ? sp.chain : undefined;
-  const asset = sp.asset === "USDT" || sp.asset === "USDC" ? sp.asset : undefined;
+  const asset = ["USDT", "USDC", "PYUSD", "FDUSD"].includes(sp.asset ?? "") ? sp.asset : undefined;
   const q = sp.q?.trim().slice(0, 100) || undefined;
   const page = Math.min(10_000, Math.max(1, Number(sp.page) || 1));
 
