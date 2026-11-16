@@ -19,6 +19,8 @@ export interface PostMeta {
   updated?: string;
   /** the preview picture of the article, a path under /public (1200x630); the site picture is used without it */
   image?: string;
+  /** the picture on the article card in the lists: lock and glitch (USDT), alert (AML), hood (scams and analysis) */
+  art?: "lock" | "glitch" | "alert" | "hood";
 }
 
 export interface Post {

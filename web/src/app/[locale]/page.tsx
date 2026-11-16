@@ -1,4 +1,5 @@
 import { ArrowRight, BookOpen, Check, ChevronDown, Fish, Flag, Gauge, Landmark, LineChart, ListChecks, Search, Send, ShieldCheck, type LucideIcon } from "lucide-react";
+import { PostCard } from "@/components/PostCard";
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
 import type { FrozenPage, RequestsInfo } from "@/lib/api-types";
@@ -53,7 +54,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ]);
 
   // the three newest articles in the reader's language: links from the home page to the articles
-  const latest = (await allPosts(locale)).slice(0, 3);
+  const latest = (await allPosts(locale)).slice(0, 4);
 
   // the newest freezes, one row per address (an issuer often blocks one address on several networks at once)
   const FROZEN = latestFrozenRows(frozenPage?.items ?? [], 5);
@@ -250,13 +251,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <h2 id="blog-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
             {t("blogTitle")}
           </h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
             {latest.map((p) => (
-              <Link key={p.slug} href={`/blog/${p.slug}`} data-track="home:blog:post" className="card flex flex-col gap-2 p-5 transition hover:border-silver-3">
-                <div className="text-xs text-silver-3">{date(p.meta.date, locale)}</div>
-                <h3 className="text-base font-semibold text-silver-1">{p.meta.title}</h3>
-                <p className="line-clamp-3 text-sm text-silver-2">{p.meta.description}</p>
-              </Link>
+              <PostCard key={p.slug} post={p} locale={locale} track="home:blog:post" />
             ))}
           </div>
           <p className="mt-3 text-center text-sm">
