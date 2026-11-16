@@ -28,16 +28,17 @@ export async function visibleNav() {
 
 /**
  * The header menu: a few links and two drop-down groups instead of one long row (the footer still lists every page).
- * Tools: token, whales, send; Databases: sanctions, frozen, report; Services is the call to action at the right end.
+ * Tools: token, whales, send; Databases: sanctions, frozen, report. The address check is the strongest link and has its own button at the right end; Services is a plain link.
  */
 export async function headerGroups(t: (k: string) => string): Promise<NavGroup[]> {
   const posts = await hasPosts();
   return [
-    { label: t("check"), href: "/check" },
+    { label: t("home"), href: "/" },
+    { label: t("check"), href: "/check", strong: true },
     { label: t("tools"), items: [{ href: "/token", label: t("token") }, { href: "/whales", label: t("whales") }, { href: "/send", label: t("send") }] },
     { label: t("data"), items: [{ href: "/sanctions", label: t("sanctions") }, { href: "/frozen", label: t("frozen") }, { href: "/report", label: t("report") }] },
     ...(posts ? [{ label: t("blog"), href: "/blog" }] : []),
-    { label: t("services"), href: "/services", accent: true },
+    { label: t("services"), href: "/services" },
   ];
 }
 
