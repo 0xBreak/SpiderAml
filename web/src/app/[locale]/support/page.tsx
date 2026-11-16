@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NetworkIcon } from "@/components/NetworkIcon";
 import { Heart, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Addr } from "@/components/Addr";
@@ -28,6 +29,14 @@ export default async function Support() {
             <Addr value={DONATE_ADDRESS} href={`https://etherscan.io/address/${DONATE_ADDRESS}`} full className="text-sm sm:text-base" />
           </div>
           <p className="text-base leading-relaxed text-silver-2">{t("networks", { list: nets.map((n) => n.label).join(", ") })}</p>
+          <div className="flex flex-wrap gap-2">
+            {nets.map((n) => (
+              <span key={n.id} className="inline-flex items-center border border-line px-2.5 py-1 text-sm text-silver-2">
+                <NetworkIcon id={n.id} />
+                {n.label}
+              </span>
+            ))}
+          </div>
           <p className="text-base leading-relaxed text-silver-2">{t("assets")}</p>
         </div>
       </Card>

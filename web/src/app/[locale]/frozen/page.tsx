@@ -1,6 +1,7 @@
 // Addresses Tether and Circle have blocked in their own contracts right now (USDT: Ethereum, Tron; USDC: Ethereum, Arbitrum, Base, Polygon, Avalanche, Optimism).
 // A freezing is the issuer's decision, not a finding of a crime, and an address can be released: the wording says so.
 import type { Metadata } from "next";
+import { NetworkIcon } from "@/components/NetworkIcon";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Addr } from "@/components/Addr";
@@ -120,7 +121,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
                 href={href({ chain: g.chain, asset: g.asset })}
                 className={cn("border px-3 py-1.5 text-sm transition", chain === g.chain && asset === g.asset ? "border-accent-from text-silver-1" : "border-line text-silver-2 hover:border-silver-3")}
               >
-                {CHAIN_LABEL[g.chain] ?? g.chain} · {g.asset} <span className="tabular-nums text-silver-3">{fmt(g.count)}</span>
+                <NetworkIcon id={g.chain} />{CHAIN_LABEL[g.chain] ?? g.chain} · {g.asset} <span className="tabular-nums text-silver-3">{fmt(g.count)}</span>
               </Link>
             ))}
           </div>
@@ -133,7 +134,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
                   <ul className="space-y-1">
                     {hits.map((h) => (
                       <li key={`${h.chain}-${h.asset}`}>
-                        {h.issuer} · {CHAIN_LABEL[h.chain] ?? h.chain} · {h.asset} · {t("frozenOn", { date: date(h.frozenAt * 1000, locale) })}{" "}
+                        {h.issuer} · <NetworkIcon id={h.chain} />{CHAIN_LABEL[h.chain] ?? h.chain} · {h.asset} · {t("frozenOn", { date: date(h.frozenAt * 1000, locale) })}{" "}
                         <a href={h.txUrl} target="_blank" rel="noopener noreferrer" className={LINK}>
                           {t("transaction")}
                           <ExternalLink className="size-3.5" aria-hidden />
@@ -166,7 +167,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
                     <li key={`${s.chain}-${s.asset}-${s.address}`} className="py-4">
                       <Addr value={s.address} href={EXPLORER[s.chain]?.(s.address)} className="text-base text-silver-1" />
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-silver-2">
-                        <span>{CHAIN_LABEL[s.chain] ?? s.chain} · {s.asset}</span>
+                        <span><NetworkIcon id={s.chain} />{CHAIN_LABEL[s.chain] ?? s.chain} · {s.asset}</span>
                         <span>{t("frozenOn", { date: date(s.frozenAt * 1000, locale) })}</span>
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -202,7 +203,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
                             </Link>
                           </td>
                           <td className={cn(TD, "whitespace-nowrap")}>
-                            <div className="text-silver-1">{CHAIN_LABEL[s.chain] ?? s.chain}</div>
+                            <div className="text-silver-1"><NetworkIcon id={s.chain} />{CHAIN_LABEL[s.chain] ?? s.chain}</div>
                             <div className="text-sm text-silver-2">{s.asset}</div>
                           </td>
                           <td className={cn(TD, "whitespace-nowrap text-silver-1")}>{s.issuer}</td>
