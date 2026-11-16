@@ -174,7 +174,7 @@
     @apply my-4 list-decimal space-y-1 pl-6;
   }
   .prose-spider a {
-    @apply text-accent underline-offset-2 hover:underline;
+    @apply text-accent-from underline underline-offset-4 decoration-accent-from/40 hover:decoration-accent-from;
   }
   .prose-spider strong {
     @apply text-silver-1;
