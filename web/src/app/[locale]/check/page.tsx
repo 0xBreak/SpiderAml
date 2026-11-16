@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { seo } from "@/lib/seo";
 import type { ReactNode } from "react";
-import { Check, ExternalLink, FileText, Send } from "lucide-react";
+import { ExternalLink, FileText, Send } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Addr } from "@/components/Addr";
 import { Gauge } from "@/components/Gauge";
@@ -65,8 +65,6 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
   const t = await getTranslations("Check");
   const tErr = await getTranslations("Errors");
 
-  if (!address) return <Landing network={network} />;
-
   return (
     <div className="flex flex-col gap-7 sm:gap-9">
       <header className="flex flex-col gap-2">
@@ -76,6 +74,8 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
       <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
       {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
+      {!address && <HowItWorks />}
+      {!address && <About />}
     </div>
   );
 }
@@ -641,129 +641,44 @@ async function Counterparties({ r }: { r: CheckReport }) {
   );
 }
 
-/** The empty check page: the form with examples and three figures on the left, a sample verdict on the right, the four checks and a short text about the check. */
-async function Landing({ network }: { network: string }) {
+async function HowItWorks() {
   const t = await getTranslations("Check");
-  const tHome = await getTranslations("Home");
-  const tLv = await getTranslations("Level");
-  const locale = (await getLocale()) as Locale;
-  // the same real addresses as on the home page
-  const examples = [
-    ["0x098B716B8Aaf21512996dC57EB0615e2383E2f96", tHome("exampleSanctioned"), "bg-crit"],
-    ["0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2", tHome("exampleExploit"), "bg-crit"],
-    ["0x0582aa82344b23374d065bd9de9e1a379061f467", tHome("exampleFrozen"), "bg-warn"],
-    ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", tHome("exampleClean"), "bg-ok"],
-  ] as const;
-  const stats = [
-    [t("stat1"), t("stat1Text")],
-    [t("stat2"), t("stat2Text")],
-    [t("stat3"), t("stat3Text")],
-  ];
   const steps = [
     [t("howSanctionsTitle"), t("howSanctionsText")],
     [t("howExploitTitle"), t("howExploitText")],
     [t("howCpTitle"), t("howCpText")],
     [t("howTokensTitle"), t("howTokensText")],
   ];
-  const rows = [
-    { tone: "ok" as const, badge: t("sampleClear"), title: t("howSanctionsTitle"), text: t("sampleSanctionsText") },
-    { tone: "warn" as const, badge: t("sampleLink"), title: t("howExploitTitle"), text: t("sampleHacksText") },
-    { tone: "warn" as const, badge: t("sampleLink"), title: t("howCpTitle"), text: t("sampleLinksText") },
-  ];
+  return (
+    <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map(([title, d]) => (
+        <div key={title} className="flex flex-col gap-1.5">
+          <h2 className="text-base font-semibold text-silver-1">{title}</h2>
+          <p className="text-base leading-relaxed text-silver-2">{d}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Four short points about the check under the empty form, in the same plain look as the row above. */
+async function About() {
+  const t = await getTranslations("Check");
+  const locale = (await getLocale()) as Locale;
   const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
   return (
-    <div className="flex flex-col gap-14 sm:gap-20">
-      <section className="grid gap-10 pt-4 sm:pt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-center lg:gap-14">
-        <div className="flex min-w-0 flex-col gap-7">
-          <div className="flex flex-col items-start gap-5">
-            <span className="inline-flex items-center gap-1.5 border border-ok/40 bg-ok/10 px-3 py-1 text-sm text-ok">
-              <Check className="size-4" aria-hidden /> {tHome("heroBadge")}
-            </span>
-            <h1 className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-silver-1 sm:text-6xl">
-              {t("heroLead")} <span className="text-accent-from">{t("heroAccent")}</span>
-            </h1>
-            <p className="max-w-xl text-base leading-relaxed text-silver-2 sm:text-lg">{t("heroSub")}</p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <SearchForm action="/check" network={network} size="lg" placeholder={t("formPlaceholder")} />
-            <div className="flex flex-wrap items-center gap-2">
-              {examples.map(([a, label, dot]) => (
-                <Link key={a} href={`/check?address=${a}&network=ethereum`} data-track={`check:example:${label}`} className="inline-flex items-center gap-2 border border-line px-3 py-1 text-sm text-silver-2 transition hover:border-silver-3 hover:text-silver-1">
-                  <span className={cn("size-1.5 rounded-full", dot)} aria-hidden />
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <dl className="grid grid-cols-3 border-t border-line pt-6">
-            {stats.map(([value, text]) => (
-              <div key={text} className="flex flex-col gap-1 border-line pr-4 [&:not(:first-child)]:border-l [&:not(:first-child)]:pl-5">
-                <dt className="order-2 text-sm leading-snug text-silver-3">{text}</dt>
-                <dd className="text-2xl font-semibold tabular-nums text-silver-1 sm:text-3xl">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-
-        <div className="verdict verdict-warn">
-          <div className="flex items-center justify-between gap-3 border-b border-warn/20 px-5 py-3">
-            <span className="label text-silver-2">{t("sampleTag")}</span>
-            <span className="font-mono text-xs text-silver-3">0x7a2f…c91e</span>
-          </div>
-          <div className="flex flex-col items-center gap-1 px-5 pb-2 pt-6 text-center">
-            <div className="[&>svg]:w-48">
-              <Gauge score={48} tone="warn" />
-            </div>
-            <div className="mt-2 text-2xl font-semibold tracking-tight text-warn">{tLv("medium.title")}</div>
-            <p className="text-sm text-silver-2">{t("sampleSummary")}</p>
-          </div>
-          <div className="mt-4 divide-y divide-line/70 border-t border-line/70 px-5">
-            {rows.map((r) => (
-              <div key={r.title} className="flex items-start gap-3 py-3.5">
-                <Badge tone={r.tone} className="mt-0.5 w-16 shrink-0 justify-center">
-                  {r.badge}
-                </Badge>
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-silver-1">{r.title}</div>
-                  <div className="text-sm leading-snug text-silver-2">{r.text}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="grid border-y border-line sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map(([title, d], i) => (
-          <div key={title} className="flex flex-col gap-2 border-line py-7 max-sm:[&:not(:first-child)]:border-t sm:px-6 sm:[&:nth-child(even)]:border-l lg:[&:not(:first-child)]:border-l lg:first:pl-0">
-            <span className="font-mono text-sm text-accent-from">{String(i + 1).padStart(2, "0")}</span>
-            <h2 className="text-lg font-semibold text-silver-1">{title}</h2>
-            <p className="text-[15px] leading-relaxed text-silver-2">{d}</p>
+    <section className="flex flex-col gap-6 border-t border-line pt-8">
+      <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+        {([1, 2, 3, 4] as const).map((n) => (
+          <div key={n} className="flex flex-col gap-1.5">
+            <h2 className="text-base font-semibold text-silver-1">{t(`seo${n}Title`)}</h2>
+            <p className="text-base leading-relaxed text-silver-2">{t(`seo${n}Text`)}</p>
           </div>
         ))}
-      </section>
-
-      <section aria-labelledby="check-about" className="flex flex-col gap-7">
-        <div className="flex flex-col gap-2">
-          <p className="label text-accent-from">{t("seoEyebrow")}</p>
-          <h2 id="check-about" className="text-balance text-2xl font-semibold tracking-tight text-silver-1 sm:text-4xl">
-            {t("seoTitle")}
-          </h2>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {([1, 2, 3, 4] as const).map((n) => (
-            <div key={n} className="card flex flex-col gap-2.5 p-6">
-              <h3 className="text-lg font-semibold text-silver-1">{t(`seo${n}Title`)}</h3>
-              <p className="text-[15px] leading-7 text-silver-2">{t(`seo${n}Text`)}</p>
-            </div>
-          ))}
-        </div>
-        <p>
-          <Link href={more} className="inline-flex items-center gap-2 text-[15px] text-accent-from underline decoration-accent-from/40 underline-offset-4 transition hover:decoration-accent-from">
-            {t("seoMore")} <span aria-hidden>→</span>
-          </Link>
-        </p>
-      </section>
-    </div>
+      </div>
+      <Link href={more} className="text-sm text-accent-from underline decoration-accent-from/40 underline-offset-4 hover:decoration-accent-from">
+        {t("seoMore")}
+      </Link>
+    </section>
   );
 }
