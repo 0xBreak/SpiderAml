@@ -75,7 +75,6 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
       {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
       {!address && <HowItWorks />}
-      {!address && <AboutCheck />}
     </div>
   );
 }
@@ -658,49 +657,5 @@ async function HowItWorks() {
         </div>
       ))}
     </div>
-  );
-}
-
-/** Under the form of the empty check page: the scale and the supported addresses as two small cards (no method, only what every report shows). */
-async function AboutCheck() {
-  const t = await getTranslations("Check");
-  const tLv = await getTranslations("Level");
-  const locale = (await getLocale()) as Locale;
-  const LEVELS = [
-    ["low", "0–19"],
-    ["medium", "20–49"],
-    ["high", "50–79"],
-    ["critical", "80–100"],
-  ] as const;
-  const NETWORKS_SHOWN = ["USDT TRC20", "USDT ERC20", "Ethereum", "Tron", "Bitcoin", "Arbitrum", "Base", "Polygon", "Optimism", "BNB Chain", "Avalanche"];
-  const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
-  return (
-    <section className="flex flex-col gap-3">
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card title={t("detailsReadTitle")}>
-          <div className="flex flex-wrap gap-2">
-            {LEVELS.map(([lv, range]) => (
-              <Badge key={lv} tone={TONE_OF_LEVEL[lv]}>
-                {range} · {tLv(`${lv}.title`)}
-              </Badge>
-            ))}
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-silver-2">{t("detailsZero")}</p>
-        </Card>
-        <Card title={t("detailsNetworksTitle")}>
-          <div className="flex flex-wrap gap-2">
-            {NETWORKS_SHOWN.map((n) => (
-              <Badge key={n}>{n}</Badge>
-            ))}
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-silver-2">{t("detailsDepth")}</p>
-        </Card>
-      </div>
-      <p className="text-sm">
-        <Link href={more} className="link">
-          {t("detailsMore")}
-        </Link>
-      </p>
-    </section>
   );
 }

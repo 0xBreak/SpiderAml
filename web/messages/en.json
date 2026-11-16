@@ -288,7 +288,7 @@
   "Check": {
     "title": "Address AML check",
     "metaDescription": "Free wallet and USDT (TRC20, ERC20) address check for AML risk: US, EU and UK sanctions lists, hacks, phishing and freezes by Tether and Circle.",
-    "sub": "Paste a USDT, Ethereum, Tron or Bitcoin address. Free, no sign-up: we show the risk and explain why.",
+    "sub": "Paste the recipient address. We'll show the risk and why.",
     "whatToDo": "What to do",
     "sanctionedBadge": "On a sanctions list",
     "scamBadge": "Fraud signals in databases",
@@ -420,12 +420,7 @@
       "medium": "medium tie",
       "weak": "weak tie"
     },
-    "linkBadgeIndirect": "Indirectly linked to flagged addresses",
-    "detailsNetworksTitle": "Which addresses can be checked",
-    "detailsReadTitle": "How to read the result",
-    "detailsMore": "Why different services show different risk for the same address",
-    "detailsZero": "A “0” means no signals in our sources. It does not mean “safe”.",
-    "detailsDepth": "For Tron and Bitcoin the check is less deep than for Ethereum."
+    "linkBadgeIndirect": "Indirectly linked to flagged addresses"
   },
   "Blog": {
     "title": "Blog",
