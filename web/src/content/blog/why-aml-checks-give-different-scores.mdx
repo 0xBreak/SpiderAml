@@ -1,111 +1,72 @@
 export const meta = {
   "title": "Why AML checks give different scores for the same address",
-  "description": "One wallet: zero in one check and 30% in another. What a risk score is made of, why results differ and how to read any AML report.",
+  "description": "One address: zero in one check and 30% in another. What a risk score is made of, why results differ and how to read any AML report.",
   "date": "2026-11-16",
   "lang": "en",
   "translationOf": "pochemu-raznye-aml-raznyj-risk"
 };
 
-Maria checked the same wallet in two services. The first answered “0, low risk”. The second “30%, medium risk”. She was about to accept money from that wallet today. Which answer should she trust? (The example is made up, but anyone who has checked an address in more than one place will recognise it.)
+Paste the same address into three AML services: one answers “0”, another “30%”, the third “4 out of 10”. That does not necessarily mean someone made a mistake. The number in a report is not an instrument reading but a model's conclusion, and every model has its own data, its own rules and its own scale. Let us go through where the spread comes from and how to read a report so you do not mistake a neat figure for a verdict.
 
-Short version: **a risk score is not a measurement like temperature, it is a model's conclusion from data.** Every service has its own data, its own rules and its own scale, so the same address can honestly be rated differently. Neither answer has to be wrong. Below: what any score is made of, five reasons results differ, how to read a report without being fooled by a neat number, and what to do when answers disagree.
+![One address, three checks](/blog/aml-cards.en.svg?v=2)
 
-Need to check an address? [An address check on SpiderAML](/en/check?utm_source=blog-aml-en-top&utm_medium=article&utm_campaign=aml-scores) shows not only a number but what exactly was checked.
+## What a score is made of
 
-![Two checks of the same wallet: 0 and 30%](/blog/aml-scene.en.svg?v=1)
+- **Data.** What the service knows about other people's addresses: which are marked as sanctioned, stolen or fraudulent, and whose they are.
+- **Rules.** What counts as risky and how much: a direct contact, a link through intermediaries, amounts, how recent it is.
+- **Scale.** The units of the answer: points, percentages or levels.
 
-## What any risk score is made of
+Two services can part ways at any of these three steps.
 
-Whatever is printed in a report, the number comes from three steps, and two services can part ways at any of them:
+## Why results differ
 
-- **Data.** What the service knows about other people's addresses: which are marked as sanctioned, stolen, fraudulent, whose they are (exchange, service, private person).
-- **Rules.** What counts as risky and how much: a direct contact, a link through intermediaries, the size of the amounts, how recent it is.
-- **Scale.** The units of the answer: points from 0 to 100, percentages, levels such as “low / medium / high”.
+**The services have different data.** Labels are gathered from official lists, victims' reports, analysts' observations and a service's own investigations. An address labelled at one service may simply be unknown to another. “No labels” means “we know nothing about it”, not “it is clean”.
 
-Next, where exactly this leads to different answers.
+**One counts direct links, another the whole chain.** Take a wallet with no labels next to it, but three steps back the money comes from a labelled address. The first approach looks at the nearest labels and sees zero. The second counts what share of the money reached the wallet along the chain. The third treats the distant link as a weak hint. All three are legitimate.
 
-## Five reasons results differ
+![How far each approach “sees”](/blog/aml-reach.en.svg?v=2)
 
-**1. The services have different data.** Labels are gathered from different places: official sanctions lists, victims' reports, analysts' observations, a service's own investigations. An address labelled at one service may simply be unknown to another. Note: “no labels” means “we know nothing about this address”, not “the address is clean”.
+**The same number means different things.** “30” can be a model's score, a share of amounts, or the name of a level on someone else's scale. Figures from different reports can be compared only if you know what is measured underneath.
 
-**2. A direct link or one several steps away.** Suppose the wallet being checked has no labels near it, but three steps back the money comes from a labelled address. One approach looks only at the nearest labels and sees zero. Another counts what share of the money travelled along the chain and gets a noticeable figure. A third treats a distant link as a weak hint. All three are legitimate, and in the picture below they give three different answers for the same path of money.
+![“30” in three different meanings](/blog/aml-thirty.en.svg?v=2)
 
-![One path of money, three ways to rate it](/blog/aml-hops.en.svg?v=1)
+**Data goes stale and depends on the network.** Labels are added and addresses get frozen (we read such events straight from the blockchain), so yesterday's check may show something else today. A service may also have looked at only one network: addresses on Ethereum, Tron and Bitcoin are different addresses with different histories.
 
-**3. “Thirty” can mean different things.** “30 out of 100” is a model's score. “30%” can be the share of amounts that travelled along a chain from a labelled address, and then it is not at all a “probability of fraud”. The same numbers, different meanings. So you cannot compare figures from two reports without checking what is being measured underneath.
+**Different things are checked under different rules.** One tool checks a wallet, another a transaction, a third sanctions. And the decision to accept a deposit belongs to the platform: a “low risk” from a checker does not oblige an exchange to accept the money.
 
-**4. Different time and different network.** Data changes daily: labels are added and addresses are frozen. We read such events straight from the blockchain, and a check made yesterday may show something else today. A service may also have looked at only one network: a person's addresses on Ethereum, Tron and Bitcoin are different addresses with different histories.
+## What you see in a SpiderAML report
 
-**5. Different questions and different policy.** One tool checks a wallet, another a specific transaction, a third sanctions lists. And the decision to accept a deposit is made not by a tool but by the platform under its own rules: a “low risk” from a checker does not oblige an exchange to accept the money.
+We do not disclose how the calculation works, but what a user sees can be described openly. A report shows not only a number but **what was checked and what was found**: sanctions lists (US, UK, EU), hack and theft labels, phishing and scams, mixers, Tether and Circle freezes, outside risk databases and the nearest counterparties. Each label names its source.
 
-## What it looks like at SpiderAML
+The scale: 0–19 low, 20–49 medium, 50–79 high, 80–100 critical. A “0” with us means “our sources show no signals”, not “safe”. For Tron and Bitcoin the check is less deep than for Ethereum, and we do not trace long chains through several addresses. [Check an address](/en/check?utm_source=blog-aml-en-mid&utm_medium=article&utm_campaign=aml-scores).
 
-We do not disclose how the calculation works, but what every user sees in a report can be described openly. A report shows not only a number but **what was checked and what was found**: sanctions lists (US, UK, EU), hack and theft labels, phishing and scams, mixers, Tether and Circle freezes, outside risk databases and the nearest counterparties. Each label names its source.
+## What to look at in any report
 
-The scale is: 0–19 low, 20–49 medium, 50–79 high, 80–100 critical. And the honest limits: **a “0” with us means “our sources show no signals”, not “safe”**. For Tron and Bitcoin the check is less deep than for Ethereum, and we do not trace long chains through several addresses. If you need certainty before a large deal, one check is not enough.
+1. What was checked and where (a wallet or a transaction, which network) and when.
+2. Whether reasons are named, not only a number.
+3. Whether the link is direct or how many steps away.
+4. What the number measures: a score, a share of amounts or a level.
+5. Whether there are sanctions, theft or a hack. That is a separate signal, more important than an average score.
+6. What the report cannot see: which networks and how deep.
 
-## How to read any AML report
+## When not to trust a report
 
-Instead of looking only at the number, go through these questions:
+- Only a number is shown, with no reasons or sources.
+- There is no date and no network.
+- It promises “100% clean” or “the exchange will definitely not block it”.
+- It offers a paid “cleaning” of funds or asks for a seed phrase “to run the check”.
 
-1. **What was checked:** a wallet, a transaction or a list? Which network?
-2. **When:** is the date and time of the check given?
-3. **Where the number comes from:** are reasons named (risk category, addresses, amounts), or is there one score?
-4. **Direct or indirect link:** contact with whom, through how many steps?
-5. **What the number measures:** a score, a share of amounts or a level?
-6. **Is there a sanctions, theft or hack signal:** that is a separate and the most serious signal, more important than an average score.
-7. **What the report cannot see:** does it note the depth of the check and the networks covered?
+## If two reports disagree
 
-## Early warning signs
-
-A report or a service should not be trusted blindly if:
-
-- only a number is shown, with no reasons or sources;
-- there is no date and no network;
-- it promises “100% clean” or “we guarantee the exchange will not block it”;
-- it does not tell a direct link from an indirect one;
-- “medium risk” is written without a category;
-- you are offered a paid “cleaning” or “whitelisting” of funds;
-- you are asked for a seed phrase or private key “to run the check”.
-
-## What to do when answers disagree
-
-1. **Do not average.** Zero and thirty do not make fifteen: they answer different questions.
-2. **Make sure the same thing was checked:** one address, one network, close in time.
-3. **Compare reasons, not numbers:** categories, direct or indirect link, amounts.
-4. **If any report shows sanctions, theft or a hack,** deal with that before you accept or send money.
-5. **For a large amount rely on the more cautious answer** and ask the counterparty for the transaction hash and proof of the source of funds.
-6. **Remember the platform:** an exchange has its own rules, and its decision does not have to match an outside check.
-
-## What to do if you already accepted or sent money based on a check
-
-1. Save the reports with the date, address and network, and the transaction hashes.
-2. If an exchange asks for documents, prepare proof of the source of funds: a contract, correspondence, a receipt.
-3. Do not pay “cleaning specialists” and never send anyone keys or a seed phrase.
-4. In a dispute over a large amount, see a lawyer: the procedure depends on the jurisdiction.
-
-## FAQ
-
-**Why does the same wallet get different risk in different services?** The services have different data, rules and scales, and they check at different times. Answers can differ without anyone being wrong.
-
-**What does “30% risk” mean?** It depends on the service. It can be a model's score, or the share of amounts that travelled along a chain from a labelled address. Read the description under the number.
-
-**If a check shows 0, is the address safe?** No. It means the service's sources hold no signals. The address may be new, unknown or only recently labelled.
-
-**Which service is more accurate?** You cannot tell from the number. Look at whether reasons are named, whether date and network are given, and whether sources are shown.
-
-**Can two results be averaged?** No, they are different measurements. Better to compare the reasons and take the more cautious conclusion.
-
-## See also
-
-- [Why USDT gets frozen and how to check an address](/en/blog/why-usdt-gets-frozen): an address block is one of the signals we show in a report.
-- [Flash USDT: what it is and how to spot fake USDT](/en/blog/flash-usdt-what-is-it)
+1. Do not average: zero and thirty do not make fifteen, they answer different questions.
+2. Make sure the same address and the same network were checked, close in time.
+3. Compare the reasons, not the numbers.
+4. If even one report shows sanctions, theft or a hack, deal with that first.
+5. For a large amount take the more cautious answer and ask the counterparty for the transaction hash and proof of the source of funds.
 
 ## Sources and caveats
 
-- Approaches to risk scoring are described in general terms, without reference to particular services or their figures. The example with Maria and all numbers in the pictures are conditional.
-- What a SpiderAML report shows and how comes from our [check page](/en/check) and from the reports themselves (the list of sources checked and the scale).
-- Sanctions lists: the [sanctions page](/en/sanctions); freezes: the [frozen addresses page](/en/frozen).
+The approaches are described in general terms, with no reference to particular services or their figures. The address and numbers in the pictures are made up. About the SpiderAML report: our [check page](/en/check), [sanctions](/en/sanctions) and [freezes](/en/frozen). More on freezes: [Why USDT gets frozen and how to check an address](/en/blog/why-usdt-gets-frozen).
 
 *This material is informational, not legal or financial advice. SpiderAML shows risk signals with sources; it is not proof of anyone's guilt. Information may change.*
 
