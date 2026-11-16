@@ -1141,9 +1141,9 @@
     "indirectLine": "Estimated from transfers: this address itself deals with flagged ones"
   },
   "Frozen": {
-    "title": "Frozen USDT and USDC addresses",
+    "title": "USDT freeze checker: frozen addresses of Tether and Circle",
     "sub": "Check whether a wallet is frozen: addresses that Tether and Circle have blocked in their contracts.",
-    "metaDescription": "Frozen USDT and USDC addresses: check if a wallet is blocked by Tether or Circle. Network, freeze date and transaction link. Search by address.",
+    "metaDescription": "Is my USDT frozen? Check any wallet against the Tether and Circle blacklists: network, freeze date and transaction link. Updated daily from on-chain events.",
     "summary": "Addresses on issuer blacklists now: {addresses}",
     "updated": "updated {date}",
     "search": "Search by address",
@@ -1179,6 +1179,14 @@
     "faq3a": "Only through the issuer or a court. Only Tether or Circle can lift a block. If you own the address, contact their support with proof of identity and of where the funds came from.",
     "faq4q": "Where does the list come from?",
     "faq4a": "From the block and unblock events in the USDT and USDC contracts on chain. We take the latest event for each address, so an unblocked address is not listed.",
-    "pageTitle": "Frozen USDT addresses: check a wallet"
+    "pageTitle": "USDT freeze checker: is my USDT frozen?",
+    "faq5q": "How do I check if my USDT is frozen?",
+    "faq5a": "Paste the wallet address into the search above. We read the block and unblock events of the USDT and USDC contracts straight from the chains (Ethereum, Tron, Arbitrum, Polygon, Base, Optimism, Avalanche), so the answer shows whether the issuer blocks that address right now.",
+    "faq6q": "Why is my USDT frozen?",
+    "faq6a": "Only the issuer knows the reason and it does not publish it. Freezes usually follow a request from law enforcement, sanctions, or a link to fraud or theft. A freeze is not proof that the owner did anything wrong. Ask the exchange or wallet where the funds sit, and contact the issuer's support with proof of ownership.",
+    "faq7q": "Which addresses were removed from the Tether blacklist?",
+    "faq7a": "An address that the issuer unblocks drops out of the list, because we always take the latest event for each address. If an address you know was frozen before is not listed, it was most likely released; the transaction links on this page let you check the events yourself.",
+    "faq8q": "What does frozen USDT mean?",
+    "faq8a": "The issuer's smart contract blocks the address, so the tokens on it cannot be sent. The funds stay on the blockchain and the balance is still visible, but they cannot be moved until the issuer lifts the block."
   }
 }

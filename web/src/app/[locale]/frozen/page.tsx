@@ -249,7 +249,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            mainEntity: (["1", "2", "3", "4"] as const).map((n) => ({ "@type": "Question", name: t(`faq${n}q`), acceptedAnswer: { "@type": "Answer", text: t(`faq${n}a`) } })),
+            mainEntity: (["1", "2", "3", "4", "5", "6", "7", "8"] as const).map((n) => ({ "@type": "Question", name: t(`faq${n}q`), acceptedAnswer: { "@type": "Answer", text: t(`faq${n}a`) } })),
           }).replace(/</g, "\\u003c"),
         }}
       />
@@ -257,7 +257,7 @@ export default async function Frozen({ searchParams }: { searchParams: SP }) {
         <h2 id="faq" className="text-xl font-medium text-silver-1">
           {t("faqTitle")}
         </h2>
-        {(["1", "2", "3", "4"] as const).map((n) => (
+        {(["1", "2", "3", "4", "5", "6", "7", "8"] as const).map((n) => (
           <div key={n} className="space-y-1">
             <h3 className="text-base font-medium text-silver-1">{t(`faq${n}q`)}</h3>
             <p className="text-base text-silver-2">{t(`faq${n}a`)}</p>
