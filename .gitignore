@@ -13,3 +13,11 @@ relayer/
 shared/
 contracts/deployments/
 __pycache__/
+
+# private strategy docs: never go to GitHub
+docs/DECISIONS.md
+docs/IDEAS.md
+docs/GROWTH-PLAN.md
+docs/SCORING-V2-PROPOSAL.md
+blog-drafts/
+cluster_list.log

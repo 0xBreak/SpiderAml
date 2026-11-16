@@ -72,3 +72,10 @@ describe("parseFreezeLabel", () => {
     expect(parseFreezeLabel("Phishing: defi fraud")).toBeNull();
   });
 });
+
+describe("issuers with a space in the name", () => {
+  it("parses a First Digital (FDUSD) freeze", () => {
+    expect(parseFreezeLabel("Frozen by First Digital (FDUSD) on Ethereum, 2026-05-01")).toMatchObject({ issuer: "First Digital", asset: "FDUSD", chain: "Ethereum" });
+    expect(parseFreezeLabel("Frozen by First Digital (FDUSD) on 2 networks, 2026-05-01 – 2026-05-03")).toMatchObject({ issuer: "First Digital", networks: 2 });
+  });
+});
