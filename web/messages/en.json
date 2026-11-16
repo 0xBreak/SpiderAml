@@ -1152,7 +1152,7 @@
     "filters": "Filter by network and asset",
     "all": "All",
     "note": "A freeze is the issuer's decision (Tether or Circle) to block the tokens on an address. It is not proof of a crime: the issuer does not give a reason, and an address can be released. The list is built from the events of the USDT and USDC contracts.",
-    "found": "Found: {count}",
+    "found": "Entries found: {count} (one per network and token)",
     "nothing": "Nothing found",
     "colAddress": "Address",
     "colNetwork": "Network and asset",

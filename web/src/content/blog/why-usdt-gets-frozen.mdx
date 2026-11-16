@@ -6,13 +6,13 @@ export const meta = {
   "translationOf": "pochemu-blokiruyut-usdt"
 };
 
-Aidar from Bishkek sold a friend 1,200 USDT in a P2P deal and received the payment on his old wallet. The balance shows, all good. He tries to send the money to an exchange, and the wallet answers “execution reverted” and sends nothing. He restarts the app, changes the fee, writes to the wallet's support. Nothing helps. An hour later it turns out that this address was once put on Tether's blacklist. Such an address can receive money, but it cannot send it. (The example is made up, but real complaints look exactly like this.)
+Alex sold a friend 1,200 USDT in a P2P deal and received the payment on his old wallet. The balance shows, all good. He tries to send the money to an exchange, and the wallet answers “execution reverted” and sends nothing. He restarts the app, changes the fee, writes to the wallet's support. Nothing helps. An hour later it turns out that this address was once put on Tether's blacklist. Such an address can receive money, but it cannot send it. (The example is made up, but real complaints look exactly like this.)
 
 Short version: **USDT is frozen by its issuer, Tether, and what gets blocked is a wallet address.** The tokens stay on the address and show in the balance, but they cannot be moved out. Only Tether can lift the block. Below we go through how it works right in the contract's code, why addresses get blocked, how many are on the list, how to check yours in a minute and what to do if you are unlucky. Data as of 16 Nov 2026.
 
 Need to check an address right now? [The frozen addresses page](/en/frozen?utm_source=blog-freeze-en-top&utm_medium=article&utm_campaign=usdt-freeze) or a [full AML check](/en/check?utm_source=blog-freeze-en-top&utm_medium=article&utm_campaign=usdt-freeze).
 
-![Scene. The money arrived but cannot leave](/blog/freeze-scene.en.svg?v=1)
+![The wallet shows a balance, but the transfer is rejected](/blog/freeze-scene.en.svg?v=1)
 
 ## How a USDT freeze works, in plain words
 
@@ -23,7 +23,7 @@ USDT lives not in an app or on an exchange but on a blockchain, a shared ledger 
 - all three are marked `onlyOwner`: only the contract owner, Tether, can call them;
 - every addition and removal makes the contract write an `AddedBlackList` or `RemovedBlackList` event to the blockchain, so it is all public.
 
-The key point: when a transfer happens, the contract checks **only the sender**. In `transfer` the code says `require(!isBlackListed[msg.sender])`, and `transferFrom` does the same for `_from`. The recipient is not checked. So money can arrive at a blocked address, but it cannot leave. That is exactly what happened to Aidar.
+The key point: when a transfer happens, the contract checks **only the sender**. In `transfer` the code says `require(!isBlackListed[msg.sender])`, and `transferFrom` does the same for `_from`. The recipient is not checked. So money can arrive at a blocked address, but it cannot leave. That is exactly what happened to Alex.
 
 ![How the USDT contract checks a transfer](/blog/freeze-how.en.svg?v=1)
 
@@ -31,7 +31,7 @@ Two caveats. The lists on Ethereum and Tron are **separate**: an address can be 
 
 ## Why addresses get blocked: what Tether's terms say
 
-The primary document is [Token Terms of Sale and Service at tether.to](https://tether.to/en/legal/), version of 26 February 2026 (we read it on 16 Nov 2026). According to it, Tether may freeze tokens or blacklist an address when:
+The primary document is [Token Terms of Sale and Service at tether.to](https://tether.to/en/legal/), version of 26 February 2026. According to it, Tether may freeze tokens or blacklist an address when:
 
 - the law requires it, or when Tether, “in its sole discretion”, considers it prudent;
 - a government body directs it to, or the wallet is subject to litigation, an investigation or government proceedings;
@@ -44,13 +44,13 @@ Large freezes usually come from such cases. For example, [The Block reported](ht
 
 ## How many addresses are already on the list
 
-We read the `AddedBlackList` and `RemovedBlackList` events straight from the USDT contracts on Ethereum and Tron. As of 16 Nov 2026 our database shows (addresses counted by their latest event; we do not count dollar amounts):
+We read the `AddedBlackList` and `RemovedBlackList` events straight from the USDT contracts on Ethereum and Tron. As of 16 Nov 2026 our database shows (addresses counted by their latest event; the issuers' own contracts are not counted, nor are dollar amounts). You will see the same numbers on the [frozen addresses page](/en/frozen?utm_source=blog-freeze-en-nums&utm_medium=article&utm_campaign=usdt-freeze) on the Tron · USDT and Ethereum · USDT buttons:
 
-- **Addresses ever blacklisted:** 12,457 (Ethereum 3,214, Tron 9,243).
-- **Blocked now:** 11,121 (Ethereum 2,871, Tron 8,250).
+- **Addresses ever blacklisted:** 12,455 (Ethereum 3,213, Tron 9,242).
+- **Blocked now:** 11,119 (Ethereum 2,870, Tron 8,249).
 - **Released:** 1,336 (Ethereum 343, Tron 993).
 
-The pace is rising fast: 710 new addresses were blacklisted in 2023, 1,978 in 2024, 4,163 in 2025, and in 2026 (to 16 November) already 4,457.
+The pace is rising fast: 709 new addresses were blacklisted in 2023, 1,977 in 2024, 4,161 in 2025, and in 2026 (to 16 November) already 4,456.
 
 ![How many USDT addresses get blacklisted](/blog/freeze-years.en.svg?v=1)
 
@@ -123,8 +123,8 @@ Especially when you accept USDT in a P2P deal or from a stranger:
 
 ## Sources
 
-- Tether, [Token Terms of Sale and Service](https://tether.to/en/legal/), version of 26 Feb 2026 (read 16 Nov 2026).
-- Source code of the USDT contract on Ethereum, [Etherscan](https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code) (read 16 Nov 2026).
+- Tether, [Token Terms of Sale and Service](https://tether.to/en/legal/), version of 26 Feb 2026.
+- Source code of the USDT contract on Ethereum, [Etherscan](https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code).
 - USDT contract on Tron, [Tronscan](https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t).
 - The Block, [Tether freezes $344 million in USDT on Tron after wallets flagged by U.S. authorities](https://www.theblock.co/amp/post/398599/tether-freezes-344-million-in-usdt-on-tron-after-wallets-flagged-by-u-s-authorities), April 2026.
 - SpiderAML data: `AddedBlackList` and `RemovedBlackList` events of the USDT and USDC contracts on Ethereum and Tron, as of 16 Nov 2026. Dollar amounts and reasons for freezes are not in our database.
