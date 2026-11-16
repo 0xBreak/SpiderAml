@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { seo } from "@/lib/seo";
 import type { ReactNode } from "react";
-import { ExternalLink, FileText, Send } from "lucide-react";
+import { Check, ExternalLink, FileText, Send } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Addr } from "@/components/Addr";
 import { Gauge } from "@/components/Gauge";
@@ -65,6 +65,8 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
   const t = await getTranslations("Check");
   const tErr = await getTranslations("Errors");
 
+  if (!address) return <Landing network={network} />;
+
   return (
     <div className="flex flex-col gap-7 sm:gap-9">
       <header className="flex flex-col gap-2">
@@ -74,7 +76,6 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
       <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
       {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
-      {!address && <HowItWorks />}
     </div>
   );
 }
@@ -640,22 +641,113 @@ async function Counterparties({ r }: { r: CheckReport }) {
   );
 }
 
-async function HowItWorks() {
+/** The empty check page: the form with examples on the left, a sample result on the right, the four things we check and a short text about the check. */
+async function Landing({ network }: { network: string }) {
   const t = await getTranslations("Check");
+  const tLv = await getTranslations("Level");
+  const locale = (await getLocale()) as Locale;
+  const examples = [
+    { href: "/check?address=0x098B716B8Aaf21512996dC57EB0615e2383E2f96&network=ethereum", label: t("exampleSanctions"), dot: "bg-crit" },
+    { href: "/check?address=TVE2XCeDRqbLQQQhbcp6g6vit52zLgYzzT&network=tron", label: t("exampleFrozen"), dot: "bg-warn" },
+  ];
+  const ticks = [t("tick1"), t("tick2"), t("tick3")];
   const steps = [
     [t("howSanctionsTitle"), t("howSanctionsText")],
     [t("howExploitTitle"), t("howExploitText")],
     [t("howCpTitle"), t("howCpText")],
     [t("howTokensTitle"), t("howTokensText")],
   ];
+  const seo = [1, 2, 3, 4] as const;
+  const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
+  const rows = [
+    { tone: "ok" as const, badge: t("sampleClear"), title: t("howSanctionsTitle"), text: t("sampleSanctionsText") },
+    { tone: "warn" as const, badge: t("sampleLink"), title: t("howExploitTitle"), text: t("sampleHacksText") },
+    { tone: "warn" as const, badge: t("sampleLink"), title: t("howCpTitle"), text: t("sampleLinksText") },
+  ];
   return (
-    <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-      {steps.map(([title, d]) => (
-        <div key={title} className="flex flex-col gap-1.5">
-          <h2 className="text-base font-semibold text-silver-1">{title}</h2>
-          <p className="text-base leading-relaxed text-silver-2">{d}</p>
+    <div className="flex flex-col gap-12 sm:gap-16">
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-12">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3">
+            <p className="label text-accent-from">{t("eyebrow")}</p>
+            <h1 className="text-balance text-4xl font-semibold tracking-tight text-silver-1 sm:text-5xl">
+              {t("heroLead")} <span className="text-accent-from">{t("heroAccent")}</span>
+            </h1>
+            <p className="max-w-2xl text-base leading-relaxed text-silver-2 sm:text-lg">{t("heroSub")}</p>
+          </div>
+          <SearchForm action="/check" network={network} />
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-silver-3">{t("examplesLabel")}</span>
+            {examples.map((e) => (
+              <Link key={e.href} href={e.href} data-track="check:example" className="inline-flex items-center gap-2 border border-line px-3 py-1.5 text-silver-2 transition hover:border-silver-3 hover:text-silver-1">
+                <span className={cn("size-2 rounded-full", e.dot)} aria-hidden />
+                {e.label}
+              </Link>
+            ))}
+          </div>
+          <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-silver-2">
+            {ticks.map((x) => (
+              <li key={x} className="inline-flex items-center gap-1.5">
+                <Check className="size-4 text-ok" aria-hidden />
+                {x}
+              </li>
+            ))}
+          </ul>
         </div>
-      ))}
+        <div className="card relative p-5 pt-7">
+          <span className="label absolute -top-2.5 left-4 border border-line bg-bg px-2 py-0.5 text-silver-3">{t("sampleTag")}</span>
+          <div className="font-mono text-sm text-silver-3">0x7a2f…c91e · Ethereum</div>
+          <div className="mt-4 flex items-center gap-4">
+            <Gauge score={48} tone="warn" />
+            <div>
+              <div className="text-lg font-semibold text-warn">{tLv("medium.title")}</div>
+              <p className="mt-1 text-sm text-silver-2">{t("sampleSummary")}</p>
+            </div>
+          </div>
+          <div className="mt-4 divide-y divide-line border-t border-line">
+            {rows.map((r) => (
+              <div key={r.title} className="flex items-start gap-3 py-3">
+                <Badge tone={r.tone} className="mt-0.5 shrink-0">
+                  {r.badge}
+                </Badge>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-silver-1">{r.title}</div>
+                  <div className="text-sm text-silver-2">{r.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map(([title, d], i) => (
+          <div key={title} className="flex flex-col gap-1.5 border-line sm:border-l sm:pl-6 sm:first:border-l-0 sm:first:pl-0 lg:first:border-l-0 [&:nth-child(3)]:sm:border-l-0 [&:nth-child(3)]:sm:pl-0 lg:[&:nth-child(3)]:border-l lg:[&:nth-child(3)]:pl-6">
+            <span className="font-mono text-sm text-accent-from">{String(i + 1).padStart(2, "0")}</span>
+            <h2 className="text-base font-semibold text-silver-1">{title}</h2>
+            <p className="text-base leading-relaxed text-silver-2">{d}</p>
+          </div>
+        ))}
+      </section>
+
+      <section aria-labelledby="check-about" className="flex flex-col gap-6">
+        <h2 id="check-about" className="text-2xl font-semibold tracking-tight text-silver-1 sm:text-3xl">
+          {t("seoTitle")}
+        </h2>
+        <div className="grid gap-x-10 gap-y-7 md:grid-cols-2">
+          {seo.map((n) => (
+            <div key={n} className="flex flex-col gap-2">
+              <h3 className="text-lg font-semibold text-silver-1">{t(`seo${n}Title`)}</h3>
+              <p className="text-base leading-relaxed text-silver-2">{t(`seo${n}Text`)}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm">
+          <Link href={more} className="link">
+            {t("seoMore")}
+          </Link>
+        </p>
+      </section>
     </div>
   );
 }
