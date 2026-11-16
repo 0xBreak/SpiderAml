@@ -103,7 +103,7 @@ export function NavMobile({ groups }: { groups: NavGroup[] }) {
         g.items ? (
           <div key={g.label} className="mt-1.5">
             <div className="label px-3 pb-1">{g.label}</div>
-            {g.items.map((i) => link(i))}
+            <div className="flex flex-col gap-0.5">{g.items.map((i) => link(i))}</div>
           </div>
         ) : (
           link({ href: g.href!, label: g.label }, g.accent || g.strong)
