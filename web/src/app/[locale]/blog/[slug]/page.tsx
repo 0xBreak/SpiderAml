@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
     title: post.meta.title,
     description: post.meta.description,
     ...seoOwn(locale, await postPaths(post)),
-    openGraph: { type: "article", publishedTime: post.meta.date, siteName: "SpiderAML", locale: locale === "en" ? "en_US" : "ru_RU", images: ["/opengraph-image.jpg"] },
+    openGraph: { type: "article", publishedTime: post.meta.date, ...(post.meta.updated ? { modifiedTime: post.meta.updated } : {}), siteName: "SpiderAML", locale: locale === "en" ? "en_US" : "ru_RU", images: [post.meta.image ?? "/opengraph-image.jpg"] },
     twitter: { card: "summary_large_image" },
     ...(isPublished(post.meta) ? {} : { robots: { index: false, follow: false } }),
   };
@@ -44,8 +44,9 @@ export default async function PostPage({ params }: { params: P }) {
     headline: meta.title,
     description: meta.description,
     datePublished: meta.date,
+    dateModified: meta.updated ?? meta.date,
     inLanguage: locale,
-    image: `${SITE}/opengraph-image.jpg`,
+    image: `${SITE}${meta.image ?? "/opengraph-image.jpg"}`,
     mainEntityOfPage: urlOf(locale, `/blog/${slug}`),
     author: { "@type": "Organization", name: "SpiderAML", url: SITE },
     publisher: { "@type": "Organization", name: "SpiderAML", url: SITE },
@@ -64,7 +65,10 @@ export default async function PostPage({ params }: { params: P }) {
         )}
       </div>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">{meta.title}</h1>
-      <div className="mt-2 text-sm text-silver-3">{date(meta.date, locale)}</div>
+      <div className="mt-2 text-sm text-silver-3">
+        {date(meta.date, locale)} · {t("byline")}
+        {meta.updated && <> · {t("updated", { date: date(meta.updated, locale) })}</>}
+      </div>
       <div className="prose-spider mt-6">
         <Content />
       </div>

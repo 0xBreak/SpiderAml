@@ -75,6 +75,7 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
       {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
       {!address && <HowItWorks />}
+      {!address && <AboutCheck />}
     </div>
   );
 }
@@ -657,5 +658,35 @@ async function HowItWorks() {
         </div>
       ))}
     </div>
+  );
+}
+
+/** The text under the form of the empty check page: what is checked, which addresses, how to read the result (no method, only what every report shows). */
+async function AboutCheck() {
+  const t = await getTranslations("Check");
+  const locale = (await getLocale()) as Locale;
+  const items = t.raw("detailsItems") as string[];
+  const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
+  return (
+    <section aria-labelledby="about-check" className="mx-auto flex max-w-3xl flex-col gap-4">
+      <h2 id="about-check" className="text-2xl font-semibold tracking-tight text-silver-1">
+        {t("detailsTitle")}
+      </h2>
+      <p className="text-base leading-relaxed text-silver-2">{t("detailsIntro")}</p>
+      <ul className="list-disc space-y-1 pl-6 text-base leading-relaxed text-silver-2">
+        {items.map((i) => (
+          <li key={i}>{i}</li>
+        ))}
+      </ul>
+      <h3 className="mt-2 text-lg font-semibold text-silver-1">{t("detailsNetworksTitle")}</h3>
+      <p className="text-base leading-relaxed text-silver-2">{t("detailsNetworks")}</p>
+      <h3 className="mt-2 text-lg font-semibold text-silver-1">{t("detailsReadTitle")}</h3>
+      <p className="text-base leading-relaxed text-silver-2">{t("detailsRead")}</p>
+      <p className="text-sm">
+        <Link href={more} className="link">
+          {t("detailsMore")}
+        </Link>
+      </p>
+    </section>
   );
 }
