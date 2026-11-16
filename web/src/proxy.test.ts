@@ -65,3 +65,25 @@ describe("proxy: the logo posts a render event", () => {
     }
   });
 });
+
+describe("proxy: a real page of the site is never recorded as a scanner", () => {
+  it("a browser (or its link prefetch) on /services and /frozen posts nothing; a path that does not exist is a probe", () => {
+    process.env.DATA_SECRET = "test-secret";
+    const calls: { events: { kind: string; path: string }[] }[] = [];
+    const pending: Promise<unknown>[] = [];
+    const evw = { waitUntil: (p: Promise<unknown>) => pending.push(p) } as never;
+    const real = globalThis.fetch;
+    globalThis.fetch = (async (_u: unknown, init: { body: string }) => (calls.push(JSON.parse(init.body)), new Response("{}"))) as never;
+    try {
+      const browser = (path: string) => new NextRequest(`https://spideraml.com${path}`, { headers: { "user-agent": CHROME, "sec-fetch-dest": "empty", "cf-connecting-ip": "9.9.9.1", host: "spideraml.com" } });
+      for (const p of ["/services", "/en/services", "/frozen", "/en/frozen", "/blog/pochemu-blokiruyut-usdt", "/check"]) proxy(browser(p), evw);
+      expect(calls, "real pages").toHaveLength(0);
+      proxy(browser("/wp-admin"), evw);
+      expect(calls).toHaveLength(1);
+      expect(calls[0].events[0].kind).toBe("probe");
+    } finally {
+      globalThis.fetch = real;
+      delete process.env.DATA_SECRET;
+    }
+  });
+});
