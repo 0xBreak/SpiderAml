@@ -1,7 +1,7 @@
 "use client";
 // Network picker with logos in the field and in the list. A browser draws a native <select> list itself (no images),
 // so after hydration a custom listbox takes over; before that (and without JavaScript) the plain <select> still submits the form.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { networkIconSrc } from "@/lib/networks";
 import { cn } from "@/lib/format";
@@ -14,12 +14,13 @@ function Logo({ id }: { id: string }) {
   return src ? <img src={src} alt="" width={20} height={20} className="size-5 shrink-0 rounded-full" /> : <span className="size-5 shrink-0" />;
 }
 
-export function NetworkSelect({ options, defaultValue, className }: { options: Option[]; defaultValue: string; className?: string }) {
+export function NetworkSelect({ options, defaultValue, label, className }: { options: Option[]; defaultValue: string; label: string; className?: string }) {
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [enhanced, setEnhanced] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const listId = useId();
   const current = options.find((o) => o.id === value) ?? options[0];
 
   useEffect(() => setEnhanced(true), []);
@@ -34,7 +35,7 @@ export function NetworkSelect({ options, defaultValue, className }: { options: O
 
   if (!enhanced) {
     return (
-      <select name="network" defaultValue={defaultValue} className={cn("input", className)}>
+      <select name="network" aria-label={label} defaultValue={defaultValue} className={cn("input", className)}>
         {options.map((o) => (
           <option key={o.id} value={o.id}>
             {o.label}
@@ -64,12 +65,23 @@ export function NetworkSelect({ options, defaultValue, className }: { options: O
   };
 
   return (
-    <div ref={root} className="relative">
+    <div
+      ref={root}
+      className="relative"
+      // the list closes when focus leaves the whole control (Tab away), not when it moves between the button and the list
+      onBlur={(e) => {
+        if (!root.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+    >
       <input type="hidden" name="network" value={value} />
       <button
         type="button"
+        role="combobox"
+        aria-label={`${label}: ${current.label}`}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={open ? listId : undefined}
+        aria-activedescendant={open ? `${listId}-${active}` : undefined}
         onClick={() => {
           setActive(options.findIndex((o) => o.id === value));
           setOpen((v) => !v);
@@ -82,10 +94,12 @@ export function NetworkSelect({ options, defaultValue, className }: { options: O
         <ChevronDown className={cn("size-4 shrink-0 text-silver-3 transition-transform", open && "rotate-180")} aria-hidden />
       </button>
       {open && (
-        <ul role="listbox" className="absolute left-0 right-0 z-30 mt-1 max-h-80 overflow-auto border border-line bg-surface-2 py-1 shadow-xl">
+        // mousedown must not move focus off the button, or the blur handler above would close the list before the click lands
+        <ul id={listId} role="listbox" aria-label={label} onMouseDown={(e) => e.preventDefault()} className="absolute left-0 right-0 z-30 mt-1 max-h-[22rem] overflow-auto border border-line bg-surface-2 py-1 shadow-xl">
           {options.map((o, i) => (
             <li
               key={o.id}
+              id={`${listId}-${i}`}
               role="option"
               aria-selected={o.id === value}
               onMouseEnter={() => setActive(i)}

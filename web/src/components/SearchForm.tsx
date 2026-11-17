@@ -45,9 +45,9 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
         />
         <ClearInput />
       </label>
-      <label className="sm:w-44">
-        <span className="sr-only">{t("networkSr")}</span>
+      <div className="sm:w-44">
         <NetworkSelect
+          label={t("networkSr")}
           defaultValue={network}
           className={cn(size === "lg" && "h-12")}
           options={[
@@ -56,7 +56,7 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
             ...(action === "/check" ? [{ id: "tron", label: "Tron" }, { id: "bitcoin", label: "Bitcoin" }] : []),
           ]}
         />
-      </label>
+      </div>
       {children}
       <button type="submit" className={cn("btn-primary", size === "lg" && "h-12 px-6")}>
         {button ?? t("searchButton")}
