@@ -656,7 +656,7 @@ async function Landing({ network }: { network: string }) {
         <h1 className="text-balance text-4xl font-semibold tracking-tight text-silver-1 sm:text-5xl">{t("title")}</h1>
         <p className="max-w-2xl text-balance text-base leading-relaxed text-silver-2 sm:text-lg">{t("sub")}</p>
         <div className="w-full max-w-4xl text-left">
-          <SearchForm action="/check" size="lg" network={network} />
+          <SearchForm action="/check" size="lg" network={network} placeholder={t("placeholder")} />
         </div>
         <ul className="flex max-w-5xl flex-wrap justify-center gap-2">
           {[...Object.values(NETWORKS).map((n) => [n.id, n.label] as const), ["tron", "Tron"] as const, ["bitcoin", "Bitcoin"] as const].map(([id, label]) => (
