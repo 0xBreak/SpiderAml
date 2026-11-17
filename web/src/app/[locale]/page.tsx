@@ -213,6 +213,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <p className="mt-3 text-center text-sm text-silver-2">{t("levelsNote")}</p>
       </section>
 
+      {/* newest articles: internal links from the home page to the blog */}
+      {latest.length > 0 && (
+        <section aria-labelledby="blog-title">
+          <h2 id="blog-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t("blogTitle")}
+          </h2>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {latest.map((p) => (
+              <PostCard key={p.slug} post={p} locale={locale} track="home:blog:post" />
+            ))}
+          </div>
+          <p className="mt-3 text-center text-sm">
+            <Link href="/blog" data-track="home:blog:all" className="link">
+              {t("blogAll")}
+            </Link>
+          </p>
+        </section>
+      )}
+
       {/* newest freezes: our own live data, and it is what a P2P trader needs to know before accepting USDT */}
       {FROZEN.length > 0 && (
         <section aria-labelledby="frozen-title">
@@ -240,25 +259,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <p className="mt-3 text-center text-sm">
             <Link href="/frozen" data-track="home:frozen:all" className="link">
               {t("frozenAll")}
-            </Link>
-          </p>
-        </section>
-      )}
-
-      {/* newest articles: internal links from the home page to the blog */}
-      {latest.length > 0 && (
-        <section aria-labelledby="blog-title">
-          <h2 id="blog-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
-            {t("blogTitle")}
-          </h2>
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            {latest.map((p) => (
-              <PostCard key={p.slug} post={p} locale={locale} track="home:blog:post" />
-            ))}
-          </div>
-          <p className="mt-3 text-center text-sm">
-            <Link href="/blog" data-track="home:blog:all" className="link">
-              {t("blogAll")}
             </Link>
           </p>
         </section>
