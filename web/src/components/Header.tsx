@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Logo } from "./Logo";
 import { NavDesktop, NavMobile, type NavGroup } from "./NavMenu";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { hasPosts } from "@/lib/blog";
+import { allPosts, hasPosts, translationOf } from "@/lib/blog";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -46,6 +46,9 @@ export async function headerGroups(t: (k: string) => string): Promise<NavGroup[]
 export async function Header({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Nav" });
   const groups = await headerGroups((k) => t(k as never));
+  // article slug -> slug of its translation, for the language switcher
+  const articles: Record<string, string | null> = {};
+  for (const p of await allPosts()) articles[p.slug] = (await translationOf(p))?.slug ?? null;
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-page items-center gap-6 px-4">
@@ -54,7 +57,7 @@ export async function Header({ locale }: { locale: Locale }) {
           <NavDesktop groups={groups} />
         </div>
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
-          <LanguageSwitcher />
+          <LanguageSwitcher articles={articles} />
           <Link href="/check" className="btn-primary hidden h-9 px-4 text-[13px] sm:inline-flex">
             <Search className="size-4" aria-hidden /> {t("checkCta")}
           </Link>
