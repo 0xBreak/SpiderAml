@@ -15,6 +15,12 @@ export interface PostMeta {
   lang?: Locale;
   /** slug of the same article in the other language, when it exists */
   translationOf?: string;
+  /** a later date when the article was changed in substance (shown on the page and in the structured data) */
+  updated?: string;
+  /** the preview picture of the article, a path under /public (1200x630); the site picture is used without it */
+  image?: string;
+  /** the picture on the article card in the lists: lock and glitch (USDT), alert (AML), hood (scams and analysis) */
+  art?: "lock" | "glitch" | "alert" | "hood";
 }
 
 export interface Post {

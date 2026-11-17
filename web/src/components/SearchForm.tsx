@@ -5,6 +5,7 @@ import { NETWORK_IDS, NETWORKS } from "@/lib/networks";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/format";
 import { ClearInput } from "./ClearInput";
+import { NetworkSelect } from "./NetworkSelect";
 
 interface Props {
   action: "/check" | "/token" | "/whales";
@@ -44,19 +45,18 @@ export async function SearchForm({ action, address, network = "ethereum", placeh
         />
         <ClearInput />
       </label>
-      <label className="sm:w-44">
-        <span className="sr-only">{t("networkSr")}</span>
-        <select name="network" defaultValue={network} className={cn("input", size === "lg" && "h-12")}>
-          {NETWORK_IDS.map((id) => (
-            <option key={id} value={id}>
-              {NETWORKS[id].label}
-            </option>
-          ))}
-          {/* Tron and Bitcoin are screened by the AML check only (lists and databases, no token analytics) */}
-          {action === "/check" && <option value="tron">Tron</option>}
-          {action === "/check" && <option value="bitcoin">Bitcoin</option>}
-        </select>
-      </label>
+      <div className="sm:w-44">
+        <NetworkSelect
+          label={t("networkSr")}
+          defaultValue={network}
+          className={cn(size === "lg" && "h-12")}
+          options={[
+            ...NETWORK_IDS.map((id) => ({ id: id as string, label: NETWORKS[id].label })),
+            // Tron and Bitcoin are screened by the AML check only (lists and databases, no token analytics)
+            ...(action === "/check" ? [{ id: "tron", label: "Tron" }, { id: "bitcoin", label: "Bitcoin" }] : []),
+          ]}
+        />
+      </div>
       {children}
       <button type="submit" className={cn("btn-primary", size === "lg" && "h-12 px-6")}>
         {button ?? t("searchButton")}

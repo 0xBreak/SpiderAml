@@ -23,11 +23,15 @@ const LOGO = "/brand/icon-64.png";
 const renderSeen = new Map<string, number>();
 
 const handleI18nRouting = createMiddleware(routing);
+// A Russian article has no English copy, so its unprefixed URL must never be sent to /en/... by the stored or the browser language
+const handleI18nNoDetect = createMiddleware({ ...routing, localeDetection: false });
+const isArticlePath = (path: string) => /^\/blog\/[^/]+\/?$/.test(path);
 
 /** Messenger and social preview fetchers: the data layer turns their visit into "the link was shared". */
 const SHARE_BOT = /TelegramBot|WhatsApp|facebookexternalhit|Facebot|Twitterbot|Discordbot|Slackbot|vkShare|LinkedInBot|Viber|SkypeUriPreview/i;
 /** Pages that exist (with or without the /en prefix); anything else is a scanner guessing paths. */
-const SITE_PAGES = /^(?:\/en)?(?:\/(?:check(?:\/pdf)?|token|whales|sanctions(?:\/(?:frozen|[A-Za-z0-9]{20,100}))?|send|report(?:\/status)?|terms|privacy|support|blog(?:\/[a-z0-9-]+)?))?\/?$/;
+// every page of the site must be listed here: a browser request for any other path is recorded as a vulnerability scanner ("probe")
+const SITE_PAGES = /^(?:\/en)?(?:\/(?:check(?:\/pdf)?|token|whales|sanctions(?:\/(?:frozen|[A-Za-z0-9]{20,100}))?|frozen|services|send|report(?:\/status)?|terms|privacy|support|blog(?:\/[a-z0-9-]+)?))?\/?$/;
 const CRAWLER = /bot|crawl|spider|slurp|preview|headless|wget|curl|python|go-http|httpclient/i;
 
 /** spideraml.com in production (set in docker-compose); empty locally, so dev on localhost is untouched. */
@@ -85,11 +89,11 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
   const ua = h.get("user-agent") ?? "";
   const hasChoice = !!req.cookies.get("NEXT_LOCALE")?.value;
   const prefixed = req.nextUrl.pathname === "/en" || req.nextUrl.pathname.startsWith("/en/");
-  if (req.method === "GET" && !hasChoice && !prefixed && !CRAWLER.test(ua) && !SHARE_BOT.test(ua) && pickLocale(h.get("accept-language")) === "en") {
+  if (req.method === "GET" && !hasChoice && !prefixed && !isArticlePath(req.nextUrl.pathname) && !CRAWLER.test(ua) && !SHARE_BOT.test(ua) && pickLocale(h.get("accept-language")) === "en") {
     return NextResponse.redirect(new URL(`/en${req.nextUrl.pathname === "/" ? "" : req.nextUrl.pathname}${req.nextUrl.search}`, req.url), 307);
   }
 
-  const intlRes = handleI18nRouting(req);
+  const intlRes = (isArticlePath(req.nextUrl.pathname) ? handleI18nNoDetect : handleI18nRouting)(req);
 
   // ?me=1 marks this browser as the owner's so its visits stay out of the statistics; ?me=0 removes the mark
   const me = req.nextUrl.searchParams.get("me");

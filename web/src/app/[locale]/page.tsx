@@ -1,9 +1,10 @@
 import { ArrowRight, BookOpen, Check, ChevronDown, Fish, Flag, Gauge, Landmark, LineChart, ListChecks, Search, Send, ShieldCheck, type LucideIcon } from "lucide-react";
+import { PostCard } from "@/components/PostCard";
 import { getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/SearchForm";
 import type { FrozenPage, RequestsInfo } from "@/lib/api-types";
 import { latestFrozenRows } from "@/lib/freezes";
-import { hasPosts } from "@/lib/blog";
+import { allPosts, hasPosts } from "@/lib/blog";
 import { getLatestFrozen, getRequests } from "@/lib/data";
 import { RequestCounter } from "@/components/RequestCounter";
 import { date, plain, short } from "@/lib/format";
@@ -51,6 +52,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getLatestFrozen().catch(() => null),
     getRequests().catch(() => null),
   ]);
+
+  // the three newest articles in the reader's language: links from the home page to the articles
+  const latest = (await allPosts(locale)).slice(0, 4);
 
   // the newest freezes, one row per address (an issuer often blocks one address on several networks at once)
   const FROZEN = latestFrozenRows(frozenPage?.items ?? [], 5);
@@ -208,6 +212,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
         <p className="mt-3 text-center text-sm text-silver-2">{t("levelsNote")}</p>
       </section>
+
+      {/* newest articles: internal links from the home page to the blog */}
+      {latest.length > 0 && (
+        <section aria-labelledby="blog-title">
+          <h2 id="blog-title" className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t("blogTitle")}
+          </h2>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {latest.map((p) => (
+              <PostCard key={p.slug} post={p} locale={locale} track="home:blog:post" />
+            ))}
+          </div>
+          <p className="mt-3 text-center text-sm">
+            <Link href="/blog" data-track="home:blog:all" className="link">
+              {t("blogAll")}
+            </Link>
+          </p>
+        </section>
+      )}
 
       {/* newest freezes: our own live data, and it is what a P2P trader needs to know before accepting USDT */}
       {FROZEN.length > 0 && (

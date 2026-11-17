@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import { seo } from "@/lib/seo";
 import { getTranslations } from "next-intl/server";
-import { Badge, PageTitle } from "@/components/ui";
-import { allPosts, langOf } from "@/lib/blog";
-import { date } from "@/lib/format";
+import { PageTitle } from "@/components/ui";
+import { PostCard } from "@/components/PostCard";
+import { allPosts } from "@/lib/blog";
 import type { Locale } from "@/i18n/routing";
-import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Blog" });
   // nothing to read yet: keep the empty page out of the index
   const empty = (await allPosts()).length === 0;
-  return { title: t("title"), description: t("sub"), ...seo(locale, "/blog"), ...(empty ? { robots: { index: false, follow: true } } : {}) };
+  return { title: t("metaTitle"), description: t("sub"), ...seo(locale, "/blog"), ...(empty ? { robots: { index: false, follow: true } } : {}) };
 }
 
 export default async function Blog({ params }: { params: Promise<{ locale: string }> }) {
@@ -28,16 +27,9 @@ export default async function Blog({ params }: { params: Promise<{ locale: strin
       <PageTitle eyebrow={t("eyebrow")} title={t("title")} sub={t("sub")} />
       {russianOnly && posts.length > 0 && <p className="text-sm text-silver-2">{t("russianOnly")}</p>}
       {posts.length === 0 && <p className="card p-5 text-sm text-silver-2">{t("empty")}</p>}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {posts.map((p) => (
-          <Link key={p.slug} href={`/blog/${p.slug}`} locale={langOf(p.meta) === locale ? undefined : langOf(p.meta)} className="card flex flex-col gap-2 p-5 transition hover:border-silver-3">
-            <div className="flex items-center gap-2 text-xs text-silver-3">
-              {date(p.meta.date, locale)}
-              {p.meta.draft && <Badge tone="warn">{t("draft")}</Badge>}
-            </div>
-            <h2 className="text-lg font-semibold">{p.meta.title}</h2>
-            <p className="text-sm text-silver-2">{p.meta.description}</p>
-          </Link>
+          <PostCard key={p.slug} post={p} locale={locale} />
         ))}
       </div>
     </div>

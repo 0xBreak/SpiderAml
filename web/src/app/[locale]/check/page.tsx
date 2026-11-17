@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { NetworkIcon } from "@/components/NetworkIcon";
 import { seo } from "@/lib/seo";
 import type { ReactNode } from "react";
-import { ExternalLink, FileText, Send } from "lucide-react";
+import { ChevronDown, Coins, ExternalLink, FileText, Network, Send, ShieldAlert, Skull } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Addr } from "@/components/Addr";
 import { Gauge } from "@/components/Gauge";
@@ -67,14 +68,19 @@ export default async function CheckPage({ searchParams }: { searchParams: SP }) 
 
   return (
     <div className="flex flex-col gap-7 sm:gap-9">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-balance text-3xl font-semibold tracking-tight text-silver-1 sm:text-4xl">{t("title")}</h1>
-        <p className="max-w-2xl text-base leading-relaxed text-silver-2">{t("sub")}</p>
-      </header>
-      <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
+      {address ? (
+        <>
+          <header className="flex flex-col gap-2">
+            <h1 className="text-balance text-3xl font-semibold tracking-tight text-silver-1 sm:text-4xl">{t("title")}</h1>
+            <p className="max-w-2xl text-base leading-relaxed text-silver-2">{t("sub")}</p>
+          </header>
+          <SearchForm action="/check" address={address} network={report && report.kind !== "evm" ? report.kind : network} />
+        </>
+      ) : (
+        <Landing network={network} />
+      )}
       {error && <ErrorBox code={error.code} />}
       {report && <Report r={report} />}
-      {!address && <HowItWorks />}
     </div>
   );
 }
@@ -182,7 +188,7 @@ async function Report({ r }: { r: CheckReport }) {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-silver-2">
               {r.ensName && <span className="font-medium text-silver-1">{r.ensName} →</span>}
               <Addr value={r.address} href={explorer} full />
-              <span>{chainLabel}</span>
+              <span><NetworkIcon id={r.kind === "evm" ? r.network : r.kind} />{chainLabel}</span>
               {owner && <span>{owner.name}{owner.detail ? ` · ${owner.detail}` : ""}</span>}
             </div>
           </div>
@@ -640,22 +646,116 @@ async function Counterparties({ r }: { r: CheckReport }) {
   );
 }
 
+/** The empty /check page: centered hero with the form, a sample answer, the four checks, the scale and the folded reference texts. */
+async function Landing({ network }: { network: string }) {
+  const t = await getTranslations("Check");
+  return (
+    <div className="flex flex-col gap-14 sm:gap-16">
+      <section className="relative flex flex-col items-center gap-6 pt-4 text-center sm:pt-8">
+        <div aria-hidden className="pointer-events-none absolute -top-10 left-1/2 -z-10 h-80 w-[min(900px,100vw)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,oklch(0.6_0.118_184.7/0.22),transparent_70%)]" />
+        <h1 className="text-balance text-4xl font-semibold tracking-tight text-silver-1 sm:text-5xl">{t("title")}</h1>
+        <p className="max-w-2xl text-balance text-base leading-relaxed text-silver-2 sm:text-lg">{t("sub")}</p>
+        <div className="w-full max-w-4xl text-left">
+          <SearchForm action="/check" size="lg" network={network} placeholder={t("placeholder")} />
+        </div>
+        <ul className="flex max-w-5xl flex-wrap justify-center gap-2">
+          {[...Object.values(NETWORKS).map((n) => [n.id, n.label] as const), ["tron", "Tron"] as const, ["bitcoin", "Bitcoin"] as const].map(([id, label]) => (
+            <li key={id} className="inline-flex items-center border border-line px-2.5 py-1 text-sm text-silver-2">
+              <NetworkIcon id={id} />
+              {label}
+            </li>
+          ))}
+        </ul>
+      </section>
+      <Sample />
+      <HowItWorks />
+      <About />
+    </div>
+  );
+}
+
+/** An invented result, labelled as an example: shows what the answer looks like (no real address, no weights). */
+async function Sample() {
+  const t = await getTranslations("Check");
+  const tLv = await getTranslations("Level");
+  const rows: [string, "crit" | "warn" | "ok"][] = [
+    [t("sample1"), "crit"],
+    [t("sample2"), "warn"],
+    [t("sample3"), "ok"],
+  ];
+  const dot = { crit: "bg-crit", warn: "bg-warn", ok: "bg-ok" } as const;
+  return (
+    <section className="mx-auto w-full max-w-3xl">
+      <div className="border border-line bg-card shadow-[0_0_60px_-20px_oklch(0.6_0.118_184.7/0.35)]">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3 text-xs">
+          <span className="font-mono text-silver-2">0xbbbb…bbbb</span>
+          <span className="border border-line px-2 py-0.5 text-silver-3">{t("sampleTag")}</span>
+        </div>
+        <div className="grid gap-6 p-5 sm:grid-cols-[11rem_1fr] sm:items-center">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-5xl font-semibold text-crit">73</span>
+              <span className="text-sm text-silver-3">/ 100</span>
+            </div>
+            <span className="text-sm font-semibold text-crit">{tLv("high.title")}</span>
+          </div>
+          <ul className="flex flex-col gap-2.5">
+            {rows.map(([text, tone]) => (
+              <li key={text} className="flex items-start gap-3 text-sm text-silver-1">
+                <span className={cn("mt-1.5 size-2 shrink-0", dot[tone])} aria-hidden />
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="border-t border-line px-5 py-2.5 text-xs text-silver-3">{t("sampleNote")}</p>
+      </div>
+    </section>
+  );
+}
+
 async function HowItWorks() {
   const t = await getTranslations("Check");
   const steps = [
-    [t("howSanctionsTitle"), t("howSanctionsText")],
-    [t("howExploitTitle"), t("howExploitText")],
-    [t("howCpTitle"), t("howCpText")],
-    [t("howTokensTitle"), t("howTokensText")],
-  ];
+    [ShieldAlert, t("howSanctionsTitle"), t("howSanctionsText")],
+    [Skull, t("howExploitTitle"), t("howExploitText")],
+    [Network, t("howCpTitle"), t("howCpText")],
+    [Coins, t("howTokensTitle"), t("howTokensText")],
+  ] as const;
   return (
-    <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-      {steps.map(([title, d]) => (
-        <div key={title} className="flex flex-col gap-1.5">
-          <h2 className="text-base font-semibold text-silver-1">{title}</h2>
-          <p className="text-base leading-relaxed text-silver-2">{d}</p>
+    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map(([Icon, title, d]) => (
+        <div key={title} className="flex flex-col gap-2">
+          <Icon className="size-6 text-accent-from" aria-hidden />
+          <h2 className="mt-1 text-base font-semibold text-silver-1">{title}</h2>
+          <p className="text-sm leading-relaxed text-silver-2">{d}</p>
         </div>
       ))}
     </div>
+  );
+}
+
+/** The long reference texts in folded blocks (they stay in the HTML). */
+async function About() {
+  const t = await getTranslations("Check");
+  const locale = (await getLocale()) as Locale;
+  const more = locale === "en" ? "/blog/why-aml-checks-give-different-scores" : "/blog/pochemu-raznye-aml-raznyj-risk";
+  return (
+    <section className="flex flex-col gap-10">
+      <div className="border-t border-line">
+        {([1, 2, 3, 4] as const).map((n) => (
+          <details key={n} open={n === 1} className="group border-b border-line">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 [&::-webkit-details-marker]:hidden">
+              <h2 className="text-base font-semibold text-silver-1">{t(`seo${n}Title`)}</h2>
+              <ChevronDown className="size-4 shrink-0 text-silver-3 transition-transform group-open:rotate-180" aria-hidden />
+            </summary>
+            <p className="max-w-3xl pb-5 text-sm leading-relaxed text-silver-2">{t(`seo${n}Text`)}</p>
+          </details>
+        ))}
+      </div>
+      <Link href={more} className="text-sm text-accent-from underline decoration-accent-from/40 underline-offset-4 hover:decoration-accent-from">
+        {t("seoMore")}
+      </Link>
+    </section>
   );
 }

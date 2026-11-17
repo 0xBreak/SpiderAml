@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Logo } from "./Logo";
 import { NavDesktop, NavMobile, type NavGroup } from "./NavMenu";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { hasPosts } from "@/lib/blog";
+import { allPosts, hasPosts, translationOf } from "@/lib/blog";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -28,16 +28,17 @@ export async function visibleNav() {
 
 /**
  * The header menu: a few links and two drop-down groups instead of one long row (the footer still lists every page).
- * Tools: token, whales, send; Databases: sanctions, frozen, report; Services is the call to action at the right end.
+ * Tools: token, whales, send; Databases: sanctions, frozen, report. The address check is the strongest link and has its own button at the right end; Services is a plain link.
  */
 export async function headerGroups(t: (k: string) => string): Promise<NavGroup[]> {
   const posts = await hasPosts();
   return [
-    { label: t("check"), href: "/check" },
+    { label: t("home"), href: "/" },
+    { label: t("check"), href: "/check", strong: true },
     { label: t("tools"), items: [{ href: "/token", label: t("token") }, { href: "/whales", label: t("whales") }, { href: "/send", label: t("send") }] },
     { label: t("data"), items: [{ href: "/sanctions", label: t("sanctions") }, { href: "/frozen", label: t("frozen") }, { href: "/report", label: t("report") }] },
     ...(posts ? [{ label: t("blog"), href: "/blog" }] : []),
-    { label: t("services"), href: "/services", accent: true },
+    { label: t("services"), href: "/services" },
   ];
 }
 
@@ -45,6 +46,9 @@ export async function headerGroups(t: (k: string) => string): Promise<NavGroup[]
 export async function Header({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Nav" });
   const groups = await headerGroups((k) => t(k as never));
+  // article slug -> slug of its translation, for the language switcher
+  const articles: Record<string, string | null> = {};
+  for (const p of await allPosts()) articles[p.slug] = (await translationOf(p))?.slug ?? null;
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-page items-center gap-6 px-4">
@@ -53,7 +57,7 @@ export async function Header({ locale }: { locale: Locale }) {
           <NavDesktop groups={groups} />
         </div>
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
-          <LanguageSwitcher />
+          <LanguageSwitcher articles={articles} />
           <Link href="/check" className="btn-primary hidden h-9 px-4 text-[13px] sm:inline-flex">
             <Search className="size-4" aria-hidden /> {t("checkCta")}
           </Link>

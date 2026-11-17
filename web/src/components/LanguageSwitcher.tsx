@@ -9,13 +9,16 @@ import { Link, usePathname } from "@/i18n/navigation";
 // Locale switch that stays on the same page (path + query are kept).
 // next-intl persists the choice in its locale cookie, so unprefixed
 // forms and links keep resolving to the chosen locale.
-function SwitcherInner() {
+/** `articles` maps an article slug to the slug of its translation (null when there is none), so the switch never lands on a missing page. */
+function SwitcherInner({ articles }: { articles: Record<string, string | null> }) {
   const locale = useLocale();
   const pathname = usePathname();
   const search = useSearchParams();
   const next = locale === "ru" ? "en" : "ru";
   const qs = search.toString();
-  const href = qs ? `${pathname}?${qs}` : pathname;
+  const article = pathname.match(/^\/blog\/([^/]+)$/);
+  // an article exists in one language only: go to its translation, or to the blog list when there is none
+  const href = article ? (articles[article[1]] ? `/blog/${articles[article[1]]}` : "/blog") : qs ? `${pathname}?${qs}` : pathname;
   return (
     <Link
       href={href}
@@ -29,10 +32,10 @@ function SwitcherInner() {
   );
 }
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ articles = {} }: { articles?: Record<string, string | null> }) {
   return (
     <Suspense>
-      <SwitcherInner />
+      <SwitcherInner articles={articles} />
     </Suspense>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NetworkIcon } from "@/components/NetworkIcon";
 import { seo } from "@/lib/seo";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -151,7 +152,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                         <Addr value={s.address} href={EXPLORER[s.chain]?.(s.address)} className="text-base text-silver-1" />
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-silver-2">
-                        <span>{chainName(s.chain)}</span>
+                        <span><NetworkIcon id={s.chain} />{chainName(s.chain)}</span>
                         <span>{s.asset}</span>
                         <a
                           href={s.sourceUrl}
@@ -190,7 +191,7 @@ export default async function Sanctions({ searchParams }: { searchParams: SP }) 
                             </Link>
                           </td>
                           <td className={cn(TD, "whitespace-nowrap")}>
-                            <div className="text-silver-1">{chainName(s.chain)}</div>
+                            <div className="text-silver-1"><NetworkIcon id={s.chain} />{chainName(s.chain)}</div>
                             <div className="text-sm text-silver-2">{s.asset}</div>
                           </td>
                           <td className={TD}>

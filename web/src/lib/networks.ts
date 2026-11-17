@@ -27,6 +27,10 @@ export const NETWORKS: Record<NetworkId, NetworkMeta> = {
   avalanche: { id: "avalanche", label: "Avalanche", chainId: 43114, zerionChainId: "avalanche", nativeSymbol: "AVAX", explorer: "https://snowtrace.io", blockTimeSec: 2, color: "#e84142" },
 };
 
+/** Logo of a network (vendored under /public/brand/networks, nominative use). Takes our ids plus the chain names used in the lists (tron, bitcoin). */
+const NETWORK_ICON = new Set<string>([...NETWORK_IDS, "tron", "bitcoin"]);
+export const networkIconSrc = (id: string): string | null => (NETWORK_ICON.has(id) ? `/brand/networks/${id}.png` : null);
+
 export const isNetworkId = (v: string): v is NetworkId => (NETWORK_IDS as readonly string[]).includes(v);
 
 export const explorerAddress = (n: NetworkId, addr: string) => `${NETWORKS[n].explorer}/address/${addr}`;

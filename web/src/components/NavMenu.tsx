@@ -6,8 +6,8 @@ import { cn } from "@/lib/format";
 import { Link, usePathname } from "@/i18n/navigation";
 
 export type NavItem = { href: string; label: string };
-/** A plain link (`href`) or a group with a drop-down list (`items`). `accent` marks the link that is a call to action. */
-export type NavGroup = { label: string; href?: string; items?: NavItem[]; accent?: boolean };
+/** A plain link (`href`) or a group with a drop-down list (`items`). `accent` boxes a link, `strong` frames it in the brand colour: the main action of the site. */
+export type NavGroup = { label: string; href?: string; items?: NavItem[]; accent?: boolean; strong?: boolean };
 
 // next-intl's pathname has no locale prefix, so active detection works the same in both languages.
 const isActive = (path: string, href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`));
@@ -36,7 +36,7 @@ export function NavDesktop({ groups }: { groups: NavGroup[] }) {
               key={g.label}
               href={g.href!}
               aria-current={active ? "page" : undefined}
-              className={cn(BASE, g.accent && "border border-line px-3 text-silver-1 hover:border-silver-3", active && "bg-surface text-silver-1")}
+              className={cn(BASE, g.accent && "border border-line px-3 text-silver-1 hover:border-silver-3", g.strong && "border border-accent/60 px-3 font-semibold text-silver-1 hover:border-accent", active && "bg-surface text-silver-1")}
             >
               {g.label}
             </Link>
@@ -103,10 +103,10 @@ export function NavMobile({ groups }: { groups: NavGroup[] }) {
         g.items ? (
           <div key={g.label} className="mt-1.5">
             <div className="label px-3 pb-1">{g.label}</div>
-            {g.items.map((i) => link(i))}
+            <div className="flex flex-col gap-0.5">{g.items.map((i) => link(i))}</div>
           </div>
         ) : (
-          link({ href: g.href!, label: g.label }, g.accent)
+          link({ href: g.href!, label: g.label }, g.accent || g.strong)
         ),
       )}
     </nav>

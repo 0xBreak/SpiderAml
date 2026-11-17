@@ -1,5 +1,6 @@
 // AML page blocks. Each async block fetches its own section from the data layer; a failure stays inside its card.
 import { Link } from "@/i18n/navigation";
+import { NetworkIcon } from "@/components/NetworkIcon";
 import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -64,7 +65,7 @@ export function OverviewSection({ o, markets }: { o: ContractOverview; markets: 
             </h2>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-base text-silver-2">
               <Addr value={o.address} href={explorer(o.network, o.address)} />
-              <span>{NETWORKS[o.network].label}</span>
+              <span><NetworkIcon id={o.network} />{NETWORKS[o.network].label}</span>
               <span>{t.has(`kind.${o.kind}`) ? t(`kind.${o.kind}`) : o.kindLabel}</span>
             </div>
           </div>

@@ -174,7 +174,7 @@
     @apply my-4 list-decimal space-y-1 pl-6;
   }
   .prose-spider a {
-    @apply text-accent underline-offset-2 hover:underline;
+    @apply text-accent-from underline underline-offset-4 decoration-accent-from/40 hover:decoration-accent-from;
   }
   .prose-spider strong {
     @apply text-silver-1;
@@ -187,6 +187,15 @@
   }
   .prose-spider blockquote > :last-child {
     @apply mb-0;
+  }
+  .prose-spider .post-note {
+    @apply my-8 border-t border-line pt-4 text-[13px] leading-6 text-silver-3;
+  }
+  .prose-spider .post-cta {
+    @apply my-6;
+  }
+  .prose-spider a.btn-primary {
+    @apply text-bg no-underline hover:no-underline;
   }
   .prose-spider code {
     @apply bg-surface-2 px-1 py-0.5 font-mono text-[13px];

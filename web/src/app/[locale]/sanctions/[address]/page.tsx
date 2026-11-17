@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { NetworkIcon } from "@/components/NetworkIcon";
 // One address from an official sanctions list: what the regulator published, with a link to the record.
 // Search-engine landing page for people who look up a specific address; wording stays factual (a regulator's entry, not our verdict).
 import type { Metadata } from "next";
@@ -77,7 +78,7 @@ export default async function SanctionedAddress({ params }: { params: Params }) 
           <dl className="grid gap-x-6 gap-y-3 text-base sm:grid-cols-2">
             <div>
               <dt className="label">{t("network")}</dt>
-              <dd className="text-silver-1">{tChain.has(s.chain) ? tChain(s.chain) : s.chain} · {s.asset}</dd>
+              <dd className="text-silver-1"><NetworkIcon id={s.chain} />{tChain.has(s.chain) ? tChain(s.chain) : s.chain} · {s.asset}</dd>
             </div>
             <div>
               <dt className="label">{t("listedAs")}</dt>
